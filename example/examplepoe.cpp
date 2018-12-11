@@ -25,7 +25,7 @@ void interactivePoe(Poe &p)
 			Poe::PoeState ps = p.getPortState(port);
 			if (ps == Poe::StateError)
 			{
-				std::cout << "Error: " << p.getLastErrorString() << std::endl;
+				std::cout << "Error: " << p.getLastError() << std::endl;
 			}
 			else
 			{
@@ -55,7 +55,7 @@ void interactivePoe(Poe &p)
 			std::cin.clear();
             if (!p.setPortState(port, (Poe::PoeState)state))
 			{
-				std::cout << "Error: " << p.getLastErrorString() << std::endl; 
+				std::cout << "Error: " << p.getLastError() << std::endl; 
 			}
 		}
 		else
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	if (p.open())
 		interactivePoe(p);
 	else
-		std::cout << p.getLastErrorString() << std::endl;
+		std::cout << p.getLastError() << std::endl;
 
 	return 0;
 }

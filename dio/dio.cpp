@@ -41,7 +41,6 @@ bool Dio::open()
     rapidxml::xml_node<> *invertNode = nullptr;
     rapidxml::xml_node<> *inputNode = nullptr;
     rapidxml::xml_node<> *outputNode = nullptr;
-
     
     try
     {

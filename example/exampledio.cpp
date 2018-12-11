@@ -5,7 +5,7 @@
 void interactiveDio(Dio &d)
 {
 	char cmd;
-	int pin, state;
+	int dio, pin, state;
 	while (1)
 	{
 		std::cout << "Please enter a command" << std::endl;
@@ -16,36 +16,43 @@ void interactiveDio(Dio &d)
 		std::cin.clear();
 		if (cmd == 'e') break;
 
+		std::cout << "Please enter a dio number" << std::endl;
+		std::cin >> pin;
+		std::cin.clear();
+
 		std::cout << "Please enter a pin number" << std::endl;
 		std::cin >> pin;
 		std::cin.clear();
 
-		try
+		if (cmd == 'r')
 		{
-			if (cmd == 'r')
+			state = d.digitalRead(dio, pin);
+			if (state < 0)
 			{
-				std::cout << "Pin " << pin << " is ";
-				if (d.digitalRead(1, pin)) std::cout << "high";
-				else std::cout << "low";
-				std::cout << std::endl;
-			}
-			else if (cmd == 's')
-			{
-				std::cout << "Enter desired state" << std::endl;
-				std::cout << "0 = LOW" << std::endl;
-				std::cout << "1 = HIGH" << std::endl;
-				std::cin >> state;
-				std::cin.clear();
-                d.digitalWrite(1, pin, state);
+				std::cout << "Error: " << d.getLastError() << std::endl;
 			}
 			else
 			{
-				std::cout << "Invalid command!!!" << std::endl;
+				std::cout << "Pin " << pin << " is ";
+				if (state) std::cout << "high";
+				else std::cout << "low";
+				std::cout << std::endl;
 			}
 		}
-		catch (std::exception &ex)
+		else if (cmd == 's')
 		{
-			std::cout << "ERROR: " << ex.what() << std::endl;
+			std::cout << "Enter desired state" << std::endl;
+			std::cout << "0 = LOW" << std::endl;
+			std::cout << "1 = HIGH" << std::endl;
+			std::cin >> state;
+			std::cin.clear();
+
+			if (d.digitalWrite(dio, pin, state))
+				std::cout << "Error: " << d.getLastError() << std::endl;
+		}
+		else
+		{
+			std::cout << "Invalid command!!!" << std::endl;
 		}
 	}
 }
@@ -62,7 +69,7 @@ int main(int argc, char *argv[])
 	if (d.open())
 		interactiveDio(d);
 	else
-		std::cout << d.getLastErrorString() << std::endl;
+		std::cout << d.getLastError() << std::endl;
 
 	return 0;
 }
