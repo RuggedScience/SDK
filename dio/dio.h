@@ -60,18 +60,15 @@ public:
 
     int setOutputMode(int dio, OutputMode mode);
 
-    std::string getLastErrorString();
+    std::string getLastError();
 
 private:
     std::string m_initFile;
-    std::string m_lastErrorString;
+    std::string m_lastError;
     AbstractDioController *mp_controller;
 
     typedef std::map<int, PinInfo> pinmap_t;
     std::map<int, pinmap_t> m_dioMap;
-
-    void setLastError(const char *error);
-    void setLastError(std::string error);
 };
 
 #endif

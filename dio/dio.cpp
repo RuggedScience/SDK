@@ -6,19 +6,19 @@
 
 Dio::Dio() :
     m_initFile(),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
 Dio::Dio(const char *initFile) :
     m_initFile(initFile),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
 Dio::Dio(std::string initFile) :
     m_initFile(initFile),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
@@ -32,30 +32,40 @@ bool Dio::open()
 {
     m_dioMap.clear();
     mp_controller = nullptr;
+    rapidxml::xml_node<> *controllerNode = nullptr;
+    rapidxml::xml_attribute<> *idAttr = nullptr;
+    rapidxml::xml_node<> *connectorNode = nullptr;
+    rapidxml::xml_node<> *pinNode = nullptr;
+    rapidxml::xml_node<> *bitNode = nullptr;
+    rapidxml::xml_node<> *gpioNode = nullptr;
+    rapidxml::xml_node<> *invertNode = nullptr;
+    rapidxml::xml_node<> *inputNode = nullptr;
+    rapidxml::xml_node<> *outputNode = nullptr;
 
-    rapidxml::xml_document<> doc;
+    
     try
     {
+        rapidxml::xml_document<> doc;
         rapidxml::file<> file(m_initFile.c_str());
         doc.parse<0>(file.data());
+        controllerNode = doc.first_node("dio_controller");
     }
     catch (std::exception &ex)
     {
-        setLastError("XML Error: " + std::string(ex.what()));
+        m_lastError = "XML Error: " + std::string(ex.what());
         return false;
     }
 
-    rapidxml::xml_node<> *dioNode = doc.first_node("dio_controller");
-    if (!dioNode)
+    if (!controllerNode)
     {
-        setLastError("XML Error: No dio_controller found");
+        m_lastError = "XML Error: No dio_controller found";
         return false;
     }
 
-    rapidxml::xml_attribute<> *idAttr = dioNode->first_attribute("id");
+    idAttr = controllerNode->first_attribute("id");
     if (!idAttr)
     {
-        setLastError("XML Error: No id attribute found for dio_controller");
+        m_lastError = "XML Error: No id attribute found for dio_controller";
         return false;
     }
 
@@ -68,29 +78,29 @@ bool Dio::open()
             mp_controller = new Ite8786();
         else
         {
-            setLastError("XML Error: Invalid id attribute found for dio_controller");
+            m_lastError = "XML Error: Invalid id attribute found for dio_controller";
             return false;
         }
     }
     catch (DioControllerError &ex)
     {
-        setLastError("DIO Controller Error: " + std::string(ex.what()));
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
         return false;
     }
     
-    rapidxml::xml_node<> *connectorNode = dioNode->first_node("connector");
+    connectorNode = controllerNode->first_node("connector");
     for (; connectorNode; connectorNode = connectorNode->next_sibling("connector"))
     {
         idAttr = connectorNode->first_attribute("id");
         if (idAttr)
         {
             int dioNumber = std::stoi(std::string(idAttr->value()));
-            rapidxml::xml_node<> *pinNode = connectorNode->first_node("internal_pin");
+            pinNode = connectorNode->first_node("internal_pin");
             for (; pinNode; pinNode = pinNode->next_sibling("pin"))
             {
                 idAttr = pinNode->first_attribute("id");
-                rapidxml::xml_node<> *bitNode = pinNode->first_node("bit_number");
-                rapidxml::xml_node<> *gpioNode = pinNode->first_node("gpio_number");
+                bitNode = pinNode->first_node("bit_number");
+                gpioNode = pinNode->first_node("gpio_number");
                 if (idAttr && bitNode && gpioNode)
                 {
                     int pinNumber = std::stoi(std::string(idAttr->value()));
@@ -107,11 +117,11 @@ bool Dio::open()
             for (; pinNode; pinNode = pinNode->next_sibling("pin"))
             {
                 idAttr = pinNode->first_attribute("id");
-                rapidxml::xml_node<> *bitNode = pinNode->first_node("bit_number");
-                rapidxml::xml_node<> *gpioNode = pinNode->first_node("gpio_number");
-                rapidxml::xml_node<> *invertNode = pinNode->first_node("invert");
-                rapidxml::xml_node<> *inputNode = pinNode->first_node("input");
-                rapidxml::xml_node<> *outputNode = pinNode->first_node("output");
+                bitNode = pinNode->first_node("bit_number");
+                gpioNode = pinNode->first_node("gpio_number");
+                invertNode = pinNode->first_node("invert");
+                inputNode = pinNode->first_node("input");
+                outputNode = pinNode->first_node("output");
                 if (idAttr && bitNode && gpioNode && invertNode && inputNode && outputNode)
                 {
                     int pinNumber = std::stoi(std::string(idAttr->value()));
@@ -132,7 +142,7 @@ bool Dio::open()
     if (m_dioMap.size() <= 0)
     {
         mp_controller = nullptr;
-        setLastError("XML Error: No connectors found");
+        m_lastError = "XML Error: No connectors found";
         return false;
     }
 
@@ -158,14 +168,14 @@ int Dio::digitalRead(int dio, int pin)
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        setLastError("Argument Error: Invalid dio " + std::to_string(dio));
+        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
     pinmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        setLastError("Argument Error: Invalid pin " + std::to_string(pin));
+        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
         return -1;
     }
 
@@ -177,7 +187,7 @@ int Dio::digitalRead(int dio, int pin)
     }
     catch (DioControllerError &ex)
     {
-        setLastError("DIO Controller Error: " + std::string(ex.what()));
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 }
@@ -189,21 +199,21 @@ int Dio::digitalWrite(int dio, int pin, bool state)
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        setLastError("Argument Error: Invalid dio " + std::to_string(dio));
+        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
     pinmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        setLastError("Argument Error: Invalid pin " + std::to_string(pin));
+        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
         return -1;
     }
 
     PinInfo info = pinMap.at(pin);
     if (!info.supportsOutput)
     {
-        setLastError("Argument Error: Output mode not supported for pin " + std::to_string(pin));
+        m_lastError = "Argument Error: Output mode not supported for pin " + std::to_string(pin);
         return -1;
     }
 
@@ -213,7 +223,7 @@ int Dio::digitalWrite(int dio, int pin, bool state)
     }
     catch (DioControllerError &ex)
     {
-        setLastError("DIO Controller Error: " + std::string(ex.what()));
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 
@@ -227,14 +237,14 @@ int Dio::setOutputMode(int dio, OutputMode mode)
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        setLastError("Argument Error: Invalid dio " + std::to_string(dio));
+        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
     pinmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {
-        setLastError("Argument Error: Function not supported by dio " + std::to_string(dio));
+        m_lastError = "Argument Error: Function not supported by dio " + std::to_string(dio);
         return -1;
     }
 
@@ -245,24 +255,14 @@ int Dio::setOutputMode(int dio, OutputMode mode)
     }
     catch (DioControllerError &ex)
     {
-        setLastError("DIO Controller Error: " + std::string(ex.what()));
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 
     return 0;
 }
 
-std::string Dio::getLastErrorString()
+std::string Dio::getLastError()
 {
-    return m_lastErrorString;
-}
-
-void Dio::setLastError(const char *error)
-{
-    m_lastErrorString = std::string(error);
-}
-
-void Dio::setLastError(std::string error)
-{
-    m_lastErrorString = error;
+    return m_lastError;
 }
