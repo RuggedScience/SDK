@@ -18,14 +18,6 @@ public:
         StateError          //Error retreiving state. Use getLastError and getLastErrorString for more details.
     };
 
-    enum PoeError
-    {
-        NoError,
-        XmlError,           //Error parsing the provided XML file.
-        PortError,          //Requested port does not exist.
-        ControllerError     //Error while communicating with the PoE controller
-    };
-
     Poe();
     Poe(const char *initFile);
     Poe(std::string initFile);
@@ -36,20 +28,16 @@ public:
     bool open(std::string initFile);
     
     PoeState getPortState(int port);
-    bool setPortState(int port, PoeState state);
+    int setPortState(int port, PoeState state);
 
-    PoeError getLastError();
-    std::string getLastErrorString();
+    std::string getLastError();
 
 private:
     std::string m_initFile;
-    PoeError m_lastError;
-    std::string m_lastErrorString;
+    std::string m_lastError;
     AbstractPoeController *mp_controller;
     std::map<int, uint8_t> m_portMap;
 
-    void setLastError(PoeError error, const char *string);
-    void setLastError(PoeError error, std::string string);
 };
 
 #endif

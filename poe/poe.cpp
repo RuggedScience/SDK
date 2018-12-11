@@ -7,22 +7,19 @@
 
 Poe::Poe() :
     m_initFile(),
-    m_lastError(NoError),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
 Poe::Poe(const char *initFile) :
     m_initFile(initFile),
-    m_lastError(NoError),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
 Poe::Poe(std::string initFile) :
     m_initFile(initFile),
-    m_lastError(NoError),
-    m_lastErrorString(),
+    m_lastError(),
     mp_controller(nullptr)
 {}
 
@@ -36,30 +33,35 @@ bool Poe::open()
 {
     m_portMap.clear();
     mp_controller = nullptr;
-    rapidxml::xml_document<> doc;
+    rapidxml::xml_node<> *controllerNode = nullptr;
+    rapidxml::xml_attribute<> *idAttr = nullptr;
+    rapidxml::xml_node<> *portNode = nullptr;
+    rapidxml::xml_node<> *bitNode = nullptr;
 
     try
     {
+        rapidxml::xml_document<> doc;
         rapidxml::file<> file(m_initFile.c_str());
         doc.parse<0>(file.data());
+        controllerNode = doc.first_node("poe_controller");
+
     }
     catch (std::exception &ex)
     {
-        setLastError(XmlError, ex.what());
+        m_lastError = "XML Error: " + std::string(ex.what());
         return false;
     }
 
-    rapidxml::xml_node<> *node = doc.first_node("poe_controller");
-    if (!node)
+    if (!controllerNode)
     {
-        setLastError(XmlError, "No poe_controller found in XML file");
+        m_lastError = "XML Error: No poe_controller found";
         return false;
     }
     
-    rapidxml::xml_attribute<> *idAttr = node->first_attribute("id");
+    idAttr = controllerNode->first_attribute("id");
     if (!idAttr)
     {
-        setLastError(XmlError, "No id attribute found for poe_controller");
+        m_lastError = "XML Error: No id attribute found for poe_controller";
         return false;
     }
 
@@ -70,21 +72,21 @@ bool Poe::open()
             mp_controller = new Pd69104();
         else
         {
-            setLastError(XmlError, "Invalid poe_controller found in XML file");
+            m_lastError = "XML Error: Invalid poe_controller found";
             return false;
         }
     }
     catch (PoeControllerError &ex)
     {
-        setLastError(ControllerError, ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return false;
     }
 
-    rapidxml::xml_node<> *port = node->first_node("port");
-    for (; port; port = port->next_sibling("port"))
+    portNode = controllerNode->first_node("port");
+    for (; portNode; portNode = portNode->next_sibling("port"))
     {
-        idAttr = port->first_attribute("id");
-        rapidxml::xml_node<> *bitNode = port->first_node("bit_number");
+        idAttr = portNode->first_attribute("id");
+        bitNode = portNode->first_node("bit_number");
         if (idAttr && bitNode)
         {
             int portNumber = std::stoi(std::string(idAttr->value()));
@@ -96,7 +98,7 @@ bool Poe::open()
     if (m_portMap.size() <= 0)
     {
         mp_controller = nullptr;
-        setLastError(XmlError, "No PoE ports found in XML file");
+        m_lastError = "XML Error: No ports found";
         return false;
     }
 
@@ -122,7 +124,7 @@ Poe::PoeState Poe::getPortState(int port)
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        setLastError(PortError, "Invalid Port");
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return StateError;
     }
 
@@ -132,20 +134,20 @@ Poe::PoeState Poe::getPortState(int port)
     }
     catch (PoeControllerError &ex) 
     {
-        setLastError(ControllerError, ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
     }
 
     return StateError;
 }
 
-bool Poe::setPortState(int port, PoeState state)
+int Poe::setPortState(int port, PoeState state)
 {
     if (mp_controller == nullptr)
         return false;
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        setLastError(PortError, "Invalid Port");
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return false;
     }
 
@@ -155,31 +157,14 @@ bool Poe::setPortState(int port, PoeState state)
     }
     catch (PoeControllerError &ex)
     {
-        setLastError(ControllerError, ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return false;
     }
 
     return true;
 }
 
-Poe::PoeError Poe::getLastError()
+std::string Poe::getLastError()
 {
     return m_lastError;
-}
-
-std::string Poe::getLastErrorString()
-{
-    return m_lastErrorString;
-}
-
-void Poe::setLastError(PoeError error, const char *string)
-{
-    m_lastError = error;
-    m_lastErrorString = std::string(string);
-}
-
-void Poe::setLastError(PoeError error, std::string string)
-{
-    m_lastError = error;
-    m_lastErrorString = string;
 }
