@@ -113,7 +113,7 @@ bool Dio::open()
             }
 
             pinNode = connectorNode->first_node("external_pin");
-            for (; pinNode; pinNode = pinNode->next_sibling("pin"))
+            for (; pinNode; pinNode = pinNode->next_sibling("external_pin"))
             {
                 idAttr = pinNode->first_attribute("id");
                 bitNode = pinNode->first_node("bit_number");
@@ -143,6 +143,34 @@ bool Dio::open()
         mp_controller = nullptr;
         m_lastError = "XML Error: No connectors found";
         return false;
+    }
+
+    //Set the output mode of each dio if it's not already a valid mode.
+    std::map<int, pinmap_t>::iterator it;
+    for (it = m_dioMap.begin(); it != m_dioMap.end(); ++it)
+    {
+        pinmap_t pinMap = it->second;
+        //Not all units support programmable NPN/PNP modes so if these pins don't exist we don't really care.
+        if (pinMap.find(ModeNpn) != pinMap.end() && pinMap.find(ModePnp) != pinMap.end())
+        {
+            PinInfo npn = pinMap[ModeNpn];
+            PinInfo pnp = pinMap[ModePnp];
+
+            try
+            {
+                //If these two pins are in the same state the dio will not operate. Let's fix that.
+                if (mp_controller->getPinState(npn) == mp_controller->getPinState(pnp))
+                {
+                    mp_controller->setPinState(npn, true);
+                    mp_controller->setPinState(pnp, false);
+                }
+            }
+            catch (std::exception &ex) 
+            {
+                m_lastError = "DIO Controller Error: " + std::string(ex.what());
+                return false;
+            }
+        }
     }
 
     return true;
