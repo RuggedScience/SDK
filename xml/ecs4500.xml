@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dio_controller id="ite8786">
+  <connector id="1">
+    <internal_pin id="-1" name="pnp">
+      <bit_number>1</bit_number>
+      <gpio_number>6</gpio_number>
+    </internal_pin>
+    <internal_pin id="-2" name="npn">
+      <bit_number>0</bit_number>
+      <gpio_number>6</gpio_number>
+    </internal_pin>
+    <external_pin id="1">
+      <bit_number>0</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="2">
+      <bit_number>1</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="3">
+      <bit_number>2</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="4">
+      <bit_number>3</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="5">
+      <bit_number>4</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="6">
+      <bit_number>5</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="7">
+      <bit_number>6</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="8">
+      <bit_number>7</bit_number>
+      <gpio_number>8</gpio_number>
+      <invert>1</invert>
+      <input>1</input>
+      <output>0</output>
+    </external_pin>
+    <external_pin id="11">
+      <bit_number>0</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="12">
+      <bit_number>1</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="13">
+      <bit_number>2</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="14">
+      <bit_number>3</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="15">
+      <bit_number>4</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="16">
+      <bit_number>5</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="17">
+      <bit_number>6</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+    <external_pin id="18">
+      <bit_number>7</bit_number>
+      <gpio_number>7</gpio_number>
+      <invert>1</invert>
+      <input>0</input>
+      <output>1</output>
+    </external_pin>
+  </connector>
+</dio_controller>
+<poe_controller id="pd69104">
+  <port id="3">
+    <bit_number>0</bit_number>
+  </port>
+  <port id="4">
+    <bit_number>1</bit_number>
+  </port>
+  <port id="5">
+    <bit_number>2</bit_number>
+  </port>
+  <port id="6">
+    <bit_number>3</bit_number>
+  </port>
+</poe_controller>
