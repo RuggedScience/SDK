@@ -46,6 +46,12 @@ bool Poe::open()
         controllerNode = doc.first_node("poe_controller");
 
     }
+    catch (rapidxml::parse_error &ex)
+    {
+        
+        m_lastError = "XML Error: " + std::string(ex.what()) + "\n" + std::string(ex.where<char>());
+        return false;
+    }
     catch (std::exception &ex)
     {
         m_lastError = "XML Error: " + std::string(ex.what());
