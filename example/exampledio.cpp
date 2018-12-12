@@ -4,6 +4,8 @@
 //This function goes into a loop to allow interactive control over the DIO
 void interactiveDio(Dio &d)
 {
+	d.setOutputMode(1, Dio::ModeNpn);
+
 	char cmd;
 	int dio, pin, state;
 	while (1)
@@ -17,7 +19,7 @@ void interactiveDio(Dio &d)
 		if (cmd == 'e') break;
 
 		std::cout << "Please enter a dio number" << std::endl;
-		std::cin >> pin;
+		std::cin >> dio;
 		std::cin.clear();
 
 		std::cout << "Please enter a pin number" << std::endl;
