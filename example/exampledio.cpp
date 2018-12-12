@@ -4,7 +4,11 @@
 //This function goes into a loop to allow interactive control over the DIO
 void interactiveDio(Dio &d)
 {
-	d.setOutputMode(1, Dio::ModeNpn);
+	if (d.setOutputMode(1, Dio::ModeNpn) < 0)
+		std::cout << d.getLastError() << std::endl;
+
+	if (d.setOutputMode(2, Dio::ModePnp) < 0)
+		std::cout << d.getLastError() << std::endl;
 
 	char cmd;
 	int dio, pin, state;
