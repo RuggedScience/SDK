@@ -122,8 +122,7 @@
       <output>1</output>
     </external_pin>
   </connector>
-</dio_controller>
-<connector id="2">
+  <connector id="2">
     <internal_pin id="-1" name="pnp">
       <bit_number>1</bit_number>
       <gpio_number>6</gpio_number>
