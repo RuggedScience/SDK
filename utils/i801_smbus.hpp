@@ -33,8 +33,6 @@ static const uint8_t kCntrlByteCmd	= 0b01000;
 #define HST_XMIT(x)	(x + 4)
 #define HST_DATA0(x)	(x + 5)
 
-#include <iostream>
-
 //Added both of the below functions for readability.
 static void clearStatusBits(uint16_t bus, uint8_t bits)
 {
