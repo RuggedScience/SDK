@@ -75,7 +75,7 @@ bool Poe::open()
     {
         std::string s(idAttr->value());
         if (s == "pd69104")
-            mp_controller = new Pd69104();
+            mp_controller = new Pd69104(0xF040, 0x40);
         else
         {
             m_lastError = "XML Error: Invalid poe_controller found";

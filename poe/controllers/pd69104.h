@@ -6,14 +6,15 @@
 class Pd69104 : public AbstractPoeController
 {
 public:
-	Pd69104();
+	Pd69104(uint16_t bus, uint8_t dev);
 	~Pd69104() override;
 
 	Poe::PoeState getPortState(uint8_t port) override;
 	void setPortState(uint8_t port, Poe::PoeState state) override;
 
 private:
-	int m_smbusfd;
+	uint16_t m_busAddr;
+	uint8_t m_devAddr;
 
 	int getDeviceId();
 
