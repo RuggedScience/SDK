@@ -95,7 +95,7 @@ bool Dio::open()
         {
             int dioNumber = std::stoi(std::string(idAttr->value()));
             pinNode = connectorNode->first_node("internal_pin");
-            for (; pinNode; pinNode = pinNode->next_sibling("pin"))
+            for (; pinNode; pinNode = pinNode->next_sibling("internal_pin"))
             {
                 idAttr = pinNode->first_attribute("id");
                 bitNode = pinNode->first_node("bit_number");
