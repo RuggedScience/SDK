@@ -1,9 +1,9 @@
 #include "pd69104.h"
+#include "../../utils/i2c-dev.h"
 
 #include <stdexcept>
 #include <fcntl.h>
 #include <cstring>
-#include <linux/i2c-dev.h>
 #include <unistd.h>
 
 static const uint8_t kBus = 5;
