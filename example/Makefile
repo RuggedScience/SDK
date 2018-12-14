@@ -1,12 +1,12 @@
 CC=g++
 CCFLAGS=
 
-all: dio poe
+all: exampledio examplepoe
 
-dio:
+exampledio: exampledio.cpp
 	$(CC) -std=c++11 exampledio.cpp -lrsdio -o exampledio
 
-poe:
+examplepoe: examplepoe.cpp
 	$(CC) -std=c++11 examplepoe.cpp -lrspoe -o examplepoe
 
 clean:

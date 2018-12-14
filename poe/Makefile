@@ -2,13 +2,13 @@ CC=g++
 CCFLAGS=
 INSTALL_PATH=/usr/local
 
-lib:
+librspoe.so: controllers/pd69104.cpp poe.cpp
 	$(CC) -std=c++11 -c -Wall -Werror -fPIC controllers/pd69104.cpp
 	$(CC) -std=c++11 -c -Wall -Werror -fPIC poe.cpp 
 	$(CC) -shared -o librspoe.so poe.o pd69104.o
 
 clean:
-	rm -f *.o *.so
+	rm -f pd69104.o poe.o librspoe.so
 
 install: lib
 	mkdir -p $(INSTALL_PATH)/lib

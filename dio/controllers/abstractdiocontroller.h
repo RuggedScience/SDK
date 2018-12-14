@@ -1,10 +1,33 @@
 #ifndef ABSTRACTDIOCONTROLLER_H
 #define ABSTRACTDIOCONTROLLER_H
 
-#include "../dio.h"
-
 #include <stdint.h>
 #include <exception>
+
+struct PinInfo
+{
+	uint8_t bitmask;
+	uint8_t offset;
+	bool invert;
+	bool supportsInput;
+	bool supportsOutput; 
+
+	PinInfo() :
+		bitmask(0),
+		offset(0),
+		invert(0),
+		supportsInput(false),
+		supportsOutput(false)
+	{}
+
+	PinInfo(uint8_t bit, uint8_t gpio, bool inv, bool input, bool output) :
+		bitmask(1 << bit),
+		offset(gpio - 1),
+		invert(inv),
+		supportsInput(input),
+		supportsOutput(output)
+    {}
+};
 
 class DioControllerError: public std::exception
 {
@@ -28,12 +51,12 @@ class AbstractDioController
 public:
 	virtual ~AbstractDioController() {}
 
-    virtual void initPin(Dio::PinInfo) = 0;
-	virtual Dio::PinMode getPinMode(Dio::PinInfo info) = 0;
-	virtual void setPinMode(Dio::PinInfo info, Dio::PinMode mode) = 0;
+    virtual void initPin(PinInfo) = 0;
+	virtual PinMode getPinMode(PinInfo info) = 0;
+	virtual void setPinMode(PinInfo info, PinMode mode) = 0;
 
-	virtual bool getPinState(Dio::PinInfo info) = 0;
-	virtual void setPinState(Dio::PinInfo info, bool state) = 0;
+	virtual bool getPinState(PinInfo info) = 0;
+	virtual void setPinState(PinInfo info, bool state) = 0;
 };
 
 #endif

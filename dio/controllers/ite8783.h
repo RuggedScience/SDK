@@ -9,12 +9,12 @@ public:
 	Ite8783();
 	~Ite8783();
 	
-	void initPin(Dio::PinInfo) override;
-	Dio::PinMode getPinMode(Dio::PinInfo info) override;
-	void setPinMode(Dio::PinInfo info, Dio::PinMode mode) override;
+	void initPin(PinInfo) override;
+	PinMode getPinMode(PinInfo info) override;
+	void setPinMode(PinInfo info, PinMode mode) override;
 
-	bool getPinState(Dio::PinInfo info) override;
-	void setPinState(Dio::PinInfo info, bool state) override;
+	bool getPinState(PinInfo info) override;
+	void setPinState(PinInfo info, bool state) override;
 
 private:
 	uint16_t m_baseAddress;

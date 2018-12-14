@@ -1,13 +1,12 @@
 #include "ite8786.h"
+#include "../dio.h"
 
 #include <exception>
 
-#ifdef _WIN32
-#include "drv.h"
-#endif
-
 #ifdef __linux__
 #include <sys/io.h>
+#elif _WIN32
+#include "../../utils/portio.hpp"
 #endif
 
 static const uint16_t	kSpecialAddress = 0x002E;				//MMIO of the SuperIO's address port. Set this to the value of the register in the SuperIO that you would like to change / read.
@@ -67,7 +66,7 @@ Ite8786::~Ite8786()
 	exitSio();
 }
 
-void Ite8786::initPin(Dio::PinInfo info)
+void Ite8786::initPin(PinInfo info)
 {
 	setSioLdn(kGpioLdn);
 	uint16_t reg = kPolarityBar + info.offset;
@@ -79,39 +78,39 @@ void Ite8786::initPin(Dio::PinInfo info)
 		writeSioRegister(reg, readSioRegister(reg) | info.bitmask);		//Set pin as "Simple I/O" instead of "Alternate function"
 
 	if (info.supportsInput)
-		setPinMode(info, Dio::ModeInput);
+		setPinMode(info, ModeInput);
 	else
-		setPinMode(info, Dio::ModeOutput);
+		setPinMode(info, ModeOutput);
 }
 
-Dio::PinMode Ite8786::getPinMode(Dio::PinInfo info)
+PinMode Ite8786::getPinMode(PinInfo info)
 {
 	setSioLdn(kGpioLdn);
 	uint16_t reg = kOutputEnableBar + info.offset;
 	uint8_t data = readSioRegister(reg);
 	if ((data & info.bitmask) == info.bitmask) 
-		return Dio::ModeOutput;
+		return ModeOutput;
 	else 
-		return Dio::ModeInput;
+		return ModeInput;
 }
 
-void Ite8786::setPinMode(Dio::PinInfo info, Dio::PinMode mode)
+void Ite8786::setPinMode(PinInfo info, PinMode mode)
 {
-	if (mode == Dio::ModeInput && !info.supportsInput)
+	if (mode == ModeInput && !info.supportsInput)
 		throw DioControllerError("Input mode not supported on pin");
 
-	if (mode == Dio::ModeOutput && !info.supportsOutput)
+	if (mode == ModeOutput && !info.supportsOutput)
 		throw DioControllerError("Output mode not supported on pin");
 
 	setSioLdn(kGpioLdn);
 	uint16_t reg = kOutputEnableBar + info.offset;
 	uint8_t data = readSioRegister(reg);
-	if (mode == Dio::ModeInput) data &= ~info.bitmask;
-	else if (mode == Dio::ModeOutput) data |= info.bitmask;
+	if (mode == ModeInput) data &= ~info.bitmask;
+	else if (mode == ModeOutput) data |= info.bitmask;
 	writeSioRegister(reg, data);
 }
 
-bool Ite8786::getPinState(Dio::PinInfo info)
+bool Ite8786::getPinState(PinInfo info)
 {
 	uint16_t reg = m_baseAddress + info.offset;
 	if (ioperm(reg, 1, 1))
@@ -128,12 +127,12 @@ bool Ite8786::getPinState(Dio::PinInfo info)
 	return state;
 }
 
-void Ite8786::setPinState(Dio::PinInfo info, bool state)
+void Ite8786::setPinState(PinInfo info, bool state)
 {
 	if (!info.supportsOutput)
 		throw DioControllerError("Output mode not supported on pin");
 
-	if (getPinMode(info) != Dio::ModeOutput)
+	if (getPinMode(info) != ModeOutput)
 		throw DioControllerError("Can't change state of pin in input mode");
 
 	if (info.invert) state = !state;

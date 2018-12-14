@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <fcntl.h>
 #include <cstring>
-#include <unistd.h>
 
 //Registers as described in the datasheet for the PD69104.
 static const uint8_t kSataPwrReg = 0x10;	//Power Status register

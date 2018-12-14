@@ -2,14 +2,14 @@ CC=g++
 CCFLAGS=
 INSTALL_PATH=/usr/local
 
-lib:
+librsdio.so: controllers/ite8783.cpp controllers/ite8786.cpp dio.cpp
 	$(CC) -std=c++11 -c -Wall -Werror -fPIC controllers/ite8783.cpp
 	$(CC) -std=c++11 -c -Wall -Werror -fPIC controllers/ite8786.cpp
 	$(CC) -std=c++11 -c -Wall -Werror -fPIC dio.cpp 
 	$(CC) -shared -o librsdio.so dio.o ite8786.o ite8783.o
 
 clean:
-	rm -f *.o *.so
+	rm -f ite8783.o ite8786.o dio.o librsdio.so
 
 install: lib
 	mkdir -p $(INSTALL_PATH)/lib

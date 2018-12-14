@@ -4,34 +4,20 @@
 #include "../utils/rapidxml.hpp"
 #include "../utils/rapidxml_utils.hpp"
 
-Dio::Dio() :
-    m_initFile(),
-    m_lastError(),
-    mp_controller(nullptr)
-{}
+#include <map>
+#include <string>
 
-Dio::Dio(const char *initFile) :
-    m_initFile(initFile),
-    m_lastError(),
-    mp_controller(nullptr)
-{}
+static std::string s_lastError;
+static AbstractDioController *sp_controller;
 
-Dio::Dio(std::string initFile) :
-    m_initFile(initFile),
-    m_lastError(),
-    mp_controller(nullptr)
-{}
+typedef std::map<int, PinInfo> pinmap_t;
+static std::map<int, pinmap_t> s_dioMap;
 
-Dio::~Dio()
+bool init(const char* initFile)
 {
-    if (mp_controller)
-        delete mp_controller;
-}
-
-bool Dio::open()
-{
-    m_dioMap.clear();
-    mp_controller = nullptr;
+    s_dioMap.clear();
+    if (sp_controller) delete sp_controller;
+    sp_controller = nullptr;
     rapidxml::xml_node<> *controllerNode = nullptr;
     rapidxml::xml_attribute<> *idAttr = nullptr;
     rapidxml::xml_node<> *connectorNode = nullptr;
@@ -45,26 +31,26 @@ bool Dio::open()
     try
     {
         rapidxml::xml_document<> doc;
-        rapidxml::file<> file(m_initFile.c_str());
+        rapidxml::file<> file(initFile);
         doc.parse<0>(file.data());
         controllerNode = doc.first_node("dio_controller");
     }
     catch (std::exception &ex)
     {
-        m_lastError = "XML Error: " + std::string(ex.what());
+        s_lastError = "XML Error: " + std::string(ex.what());
         return false;
     }
 
     if (!controllerNode)
     {
-        m_lastError = "XML Error: No dio_controller found";
+        s_lastError = "XML Error: No dio_controller found";
         return false;
     }
 
     idAttr = controllerNode->first_attribute("id");
     if (!idAttr)
     {
-        m_lastError = "XML Error: No id attribute found for dio_controller";
+        s_lastError = "XML Error: No id attribute found for dio_controller";
         return false;
     }
 
@@ -72,18 +58,18 @@ bool Dio::open()
     {
         std::string s(idAttr->value());
         if (s == "ite8783")
-            mp_controller = new Ite8783();
+            sp_controller = new Ite8783();
         else if (s == "ite8786")
-            mp_controller = new Ite8786();
+            sp_controller = new Ite8786();
         else
         {
-            m_lastError = "XML Error: Invalid id attribute found for dio_controller";
+            s_lastError = "XML Error: Invalid id attribute found for dio_controller";
             return false;
         }
     }
     catch (DioControllerError &ex)
     {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        s_lastError = "DIO Controller Error: " + std::string(ex.what());
         return false;
     }
     
@@ -107,8 +93,8 @@ bool Dio::open()
                     uint8_t gpioNumber = std::stoi(std::string(gpioNode->value()));
 
                     PinInfo info(bitNumber, gpioNumber, false, false, true);
-                    mp_controller->initPin(info);
-                    m_dioMap[dioNumber][pinNumber] = info;
+                    sp_controller->initPin(info);
+                    s_dioMap[dioNumber][pinNumber] = info;
                 }
             }
 
@@ -131,23 +117,23 @@ bool Dio::open()
                     bool output = (std::string(outputNode->value()) == "1");
 
                     PinInfo info(bitNumber, gpioNumber, invert, input, output);
-                    mp_controller->initPin(info);
-                    m_dioMap[dioNumber][pinNumber] = info;
+                    sp_controller->initPin(info);
+                    s_dioMap[dioNumber][pinNumber] = info;
                 }
             }
         }
     }
 
-    if (m_dioMap.size() <= 0)
+    if (s_dioMap.size() <= 0)
     {
-        mp_controller = nullptr;
-        m_lastError = "XML Error: No connectors found";
+        sp_controller = nullptr;
+        s_lastError = "XML Error: No connectors found";
         return false;
     }
 
     //Set the output mode of each dio if it's not already a valid mode.
     std::map<int, pinmap_t>::iterator it;
-    for (it = m_dioMap.begin(); it != m_dioMap.end(); ++it)
+    for (it = s_dioMap.begin(); it != s_dioMap.end(); ++it)
     {
         pinmap_t pinMap = it->second;
         //Not all units support programmable NPN/PNP modes so if these pins don't exist we don't really care.
@@ -159,15 +145,15 @@ bool Dio::open()
             try
             {
                 //If these two pins are in the same state the dio will not operate. Let's fix that.
-                if (mp_controller->getPinState(npn) == mp_controller->getPinState(pnp))
+                if (sp_controller->getPinState(npn) == sp_controller->getPinState(pnp))
                 {
-                    mp_controller->setPinState(npn, true);
-                    mp_controller->setPinState(pnp, false);
+                    sp_controller->setPinState(npn, true);
+                    sp_controller->setPinState(pnp, false);
                 }
             }
             catch (std::exception &ex) 
             {
-                m_lastError = "DIO Controller Error: " + std::string(ex.what());
+                s_lastError = "DIO Controller Error: " + std::string(ex.what());
                 return false;
             }
         }
@@ -176,33 +162,21 @@ bool Dio::open()
     return true;
 }
 
-bool Dio::open(const char *initFile)
+int digitalRead(int dio, int pin)
 {
-    m_initFile = std::string(initFile);
-    return open();
-}
-
-bool Dio::open(std::string initFile)
-{
-    m_initFile = initFile;
-    return open();
-}
-
-int Dio::digitalRead(int dio, int pin)
-{
-    if (mp_controller == nullptr)
+    if (sp_controller == nullptr)
         return -1;
 
-    if (m_dioMap.find(dio) == m_dioMap.end())
+    if (s_dioMap.find(dio) == s_dioMap.end())
     {
-        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
+        s_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
-    pinmap_t pinMap = m_dioMap.at(dio);
+    pinmap_t pinMap = s_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
+        s_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
         return -1;
     }
 
@@ -210,86 +184,86 @@ int Dio::digitalRead(int dio, int pin)
 
     try 
     { 
-        return mp_controller->getPinState(info);
+        return sp_controller->getPinState(info);
     }
     catch (DioControllerError &ex)
     {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        s_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 }
 
-int Dio::digitalWrite(int dio, int pin, bool state)
+int digitalWrite(int dio, int pin, bool state)
 {
-    if (mp_controller == nullptr)
+    if (sp_controller == nullptr)
         return -1;
 
-    if (m_dioMap.find(dio) == m_dioMap.end())
+    if (s_dioMap.find(dio) == s_dioMap.end())
     {
-        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
+        s_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
-    pinmap_t pinMap = m_dioMap.at(dio);
+    pinmap_t pinMap = s_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
+        s_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
         return -1;
     }
 
     PinInfo info = pinMap.at(pin);
     if (!info.supportsOutput)
     {
-        m_lastError = "Argument Error: Output mode not supported for pin " + std::to_string(pin);
+        s_lastError = "Argument Error: Output mode not supported for pin " + std::to_string(pin);
         return -1;
     }
 
     try
     {
-        mp_controller->setPinState(info, state);
+        sp_controller->setPinState(info, state);
     }
     catch (DioControllerError &ex)
     {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        s_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 
     return 0;
 }
 
-int Dio::setOutputMode(int dio, OutputMode mode)
+int setOutputMode(int dio, OutputMode mode)
 {
-    if (mp_controller == nullptr)
+    if (sp_controller == nullptr)
         return -1;
 
-    if (m_dioMap.find(dio) == m_dioMap.end())
+    if (s_dioMap.find(dio) == s_dioMap.end())
     {
-        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
+        s_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
-    pinmap_t pinMap = m_dioMap.at(dio);
+    pinmap_t pinMap = s_dioMap.at(dio);
     if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {
-        m_lastError = "Argument Error: Function not supported by dio " + std::to_string(dio);
+        s_lastError = "Argument Error: Function not supported by dio " + std::to_string(dio);
         return -1;
     }
 
     try
     {
-        mp_controller->setPinState(pinMap.at(ModeNpn), (mode == ModeNpn));
-        mp_controller->setPinState(pinMap.at(ModePnp), (mode == ModePnp));
+        sp_controller->setPinState(pinMap.at(ModeNpn), (mode == ModeNpn));
+        sp_controller->setPinState(pinMap.at(ModePnp), (mode == ModePnp));
     }
     catch (DioControllerError &ex)
     {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        s_lastError = "DIO Controller Error: " + std::string(ex.what());
         return -1;
     }
 
     return 0;
 }
 
-std::string Dio::getLastError()
+const char* getLastError()
 {
-    return m_lastError;
+    return s_lastError.c_str();
 }

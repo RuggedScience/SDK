@@ -3,7 +3,12 @@
 
 #include <stdint.h>
 #include <stdexcept>
+
+#ifdef __linux__
 #include <sys/io.h>
+#elif _WIN32
+#include "portio.hpp"
+#endif
 
 static const int kMaxRetry = 400;
 
