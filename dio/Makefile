@@ -11,7 +11,7 @@ librsdio.so: controllers/ite8783.cpp controllers/ite8786.cpp dio.cpp
 clean:
 	rm -f ite8783.o ite8786.o dio.o librsdio.so
 
-install: lib
+install: librsdio.so
 	mkdir -p $(INSTALL_PATH)/lib
 	mkdir -p $(INSTALL_PATH)/include/librsdio
 	cp librsdio.so $(INSTALL_PATH)/lib

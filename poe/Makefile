@@ -10,7 +10,7 @@ librspoe.so: controllers/pd69104.cpp poe.cpp
 clean:
 	rm -f pd69104.o poe.o librspoe.so
 
-install: lib
+install: librspoe.so
 	mkdir -p $(INSTALL_PATH)/lib
 	mkdir -p $(INSTALL_PATH)/include/librspoe
 	cp librspoe.so $(INSTALL_PATH)/lib
