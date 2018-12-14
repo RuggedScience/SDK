@@ -11,7 +11,7 @@ std::string s_lastError;
 AbstractPoeController *sp_controller = nullptr;
 std::map<int, uint8_t> s_portMap;
 
-bool init(const char* initFile)
+bool initPoe(const char* initFile)
 {
     s_portMap.clear();
     if (sp_controller) delete sp_controller;
@@ -116,7 +116,7 @@ PoeState getPortState(int port)
     return StateError;
 }
 
-int getPortState(int port, PoeState state)
+int setPortState(int port, PoeState state)
 {
     if (sp_controller == nullptr)
         return false;
@@ -140,7 +140,7 @@ int getPortState(int port, PoeState state)
     return true;
 }
 
-const char* getLastError()
+const char* getLastPoeError()
 {
     return s_lastError.c_str();
 }
