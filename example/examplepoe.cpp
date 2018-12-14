@@ -2,7 +2,7 @@
 #include <iostream>
 
 //This function goes into a loop to allow interactive control over the PoE ports
-void interactivePoe(Poe &p)
+void interactivePoe()
 {
 	char cmd;
 	int port, state;
@@ -22,23 +22,23 @@ void interactivePoe(Poe &p)
 
 		if (cmd == 'r')
 		{
-			Poe::PoeState ps = p.getPortState(port);
-			if (ps == Poe::StateError)
+			PoeState ps = getPortState(port);
+			if (ps == StateError)
 			{
-				std::cout << "Error: " << p.getLastError() << std::endl;
+				std::cout << "Error: " << getLastPoeError() << std::endl;
 			}
 			else
 			{
 				std::cout << "Port " << port << " is ";
 				switch (ps)
 				{
-					case Poe::StateEnabled:
+					case StateEnabled:
 						std::cout << "enabled";
 						break;
-					case Poe::StateDisabled:
+					case StateDisabled:
 						std::cout << "disabled";
 						break;
-					case Poe::StateAuto:
+					case StateAuto:
 						std::cout << "auto";
 						break;
 				}
@@ -53,9 +53,9 @@ void interactivePoe(Poe &p)
 			std::cout << "2 = AUTO" << std::endl;
 			std::cin >> state;
 			std::cin.clear();
-            if (!p.setPortState(port, (Poe::PoeState)state))
+            if (setPortState(port, (PoeState)state) < 0)
 			{
-				std::cout << "Error: " << p.getLastError() << std::endl; 
+				std::cout << "Error: " << getLastPoeError() << std::endl; 
 			}
 		}
 		else
@@ -73,11 +73,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	Poe p(argv[1]);
-	if (p.open())
-		interactivePoe(p);
+	if (initPoe(argv[1]))
+		interactivePoe();
 	else
-		std::cout << p.getLastError() << std::endl;
+		std::cout << getLastPoeError() << std::endl;
 
 	return 0;
 }

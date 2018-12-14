@@ -35,40 +35,40 @@ Pd69104::~Pd69104()
 
 }
 
-Poe::PoeState Pd69104::getPortState(uint8_t port)
+PoeState Pd69104::getPortState(uint8_t port)
 {
 	uint8_t mode = getPortMode(port);
 	if (mode == kManualMode)
-		return Poe::StateEnabled;
+		return StateEnabled;
 	else if (mode == kShutdownMode)
-		return Poe::StateDisabled;
+		return StateDisabled;
 	else if (mode == kAutoMode)
-		return Poe::StateAuto;
+		return StateAuto;
 	else
 		throw PoeControllerError("Unknown port mode found");
 }
 
-void Pd69104::setPortState(uint8_t port, Poe::PoeState state)
+void Pd69104::setPortState(uint8_t port, PoeState state)
 {
 	switch (state)
 	{
-		case Poe::StateEnabled:
+		case StateEnabled:
 			setPortMode(port, kManualMode);
 			setPortDetection(port, false);
 			setPortClassification(port, false);
 			setPortSensing(port, false);
 			setPortEnabled(port, true);
 			break;
-		case Poe::StateDisabled:
+		case StateDisabled:
 			setPortMode(port, kShutdownMode);
 			break;
-		case Poe::StateAuto:
+		case StateAuto:
 			setPortMode(port, kAutoMode);
 			setPortDetection(port, true);
 			setPortClassification(port, true);
 			setPortSensing(port, true);
 			break;
-		case Poe::StateError:
+		case StateError:
 			break;
 	}
 }

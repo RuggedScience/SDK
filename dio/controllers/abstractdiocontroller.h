@@ -1,6 +1,8 @@
 #ifndef ABSTRACTDIOCONTROLLER_H
 #define ABSTRACTDIOCONTROLLER_H
 
+#include "../dio.h"
+
 #include <stdint.h>
 #include <exception>
 

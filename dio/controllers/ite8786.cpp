@@ -1,5 +1,4 @@
 #include "ite8786.h"
-#include "../dio.h"
 
 #include <exception>
 

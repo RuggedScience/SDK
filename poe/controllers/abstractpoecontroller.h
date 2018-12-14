@@ -3,6 +3,7 @@
 
 #include "../poe.h"
 
+#include <exception>
 #include <stdint.h>
 
 class PoeControllerError: public std::exception
@@ -27,8 +28,8 @@ class AbstractPoeController
 public:
 	virtual ~AbstractPoeController() {}
 
-	virtual Poe::PoeState getPortState(uint8_t port) = 0;
-	virtual void setPortState(uint8_t port, Poe::PoeState state) = 0;
+	virtual PoeState getPortState(uint8_t port) = 0;
+	virtual void setPortState(uint8_t port, PoeState state) = 0;
 };
 
 #endif

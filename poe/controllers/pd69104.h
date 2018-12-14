@@ -9,8 +9,8 @@ public:
 	Pd69104(uint16_t bus, uint8_t dev);
 	~Pd69104() override;
 
-	Poe::PoeState getPortState(uint8_t port) override;
-	void setPortState(uint8_t port, Poe::PoeState state) override;
+	PoeState getPortState(uint8_t port) override;
+	void setPortState(uint8_t port, PoeState state) override;
 
 private:
 	uint16_t m_busAddr;

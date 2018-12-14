@@ -2,13 +2,13 @@
 #include <iostream>
 
 //This function goes into a loop to allow interactive control over the DIO
-void interactiveDio(Dio &d)
+void interactiveDio()
 {
-	if (d.setOutputMode(1, Dio::ModeNpn) < 0)
-		std::cout << d.getLastError() << std::endl;
+	if (setOutputMode(1, ModeNpn) < 0)
+		std::cout << getLastDioError() << std::endl;
 
-	if (d.setOutputMode(2, Dio::ModePnp) < 0)
-		std::cout << d.getLastError() << std::endl;
+	if (setOutputMode(2, ModePnp) < 0)
+		std::cout << getLastDioError() << std::endl;
 
 	char cmd;
 	int dio, pin, state;
@@ -32,10 +32,10 @@ void interactiveDio(Dio &d)
 
 		if (cmd == 'r')
 		{
-			state = d.digitalRead(dio, pin);
+			state = digitalRead(dio, pin);
 			if (state < 0)
 			{
-				std::cout << "Error: " << d.getLastError() << std::endl;
+				std::cout << "Error: " << getLastDioError() << std::endl;
 			}
 			else
 			{
@@ -53,8 +53,8 @@ void interactiveDio(Dio &d)
 			std::cin >> state;
 			std::cin.clear();
 
-			if (d.digitalWrite(dio, pin, state))
-				std::cout << "Error: " << d.getLastError() << std::endl;
+			if (digitalWrite(dio, pin, state) < 0)
+				std::cout << "Error: " << getLastDioError() << std::endl;
 		}
 		else
 		{
@@ -71,11 +71,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	Dio d(argv[1]);
-	if (d.open())
-		interactiveDio(d);
+	if (initDio(argv[1]))
+		interactiveDio();
 	else
-		std::cout << d.getLastError() << std::endl;
+		std::cout << getLastDioError() << std::endl;
 
 	return 0;
 }
