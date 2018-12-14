@@ -13,7 +13,7 @@ static AbstractDioController *sp_controller;
 typedef std::map<int, PinInfo> pinmap_t;
 static std::map<int, pinmap_t> s_dioMap;
 
-bool init(const char* initFile)
+bool initDio(const char* initFile)
 {
     s_dioMap.clear();
     if (sp_controller) delete sp_controller;
@@ -263,7 +263,7 @@ int setOutputMode(int dio, OutputMode mode)
     return 0;
 }
 
-const char* getLastError()
+const char* getLastDioError()
 {
     return s_lastError.c_str();
 }
