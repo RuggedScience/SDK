@@ -1,0 +1,6 @@
+add_compile_definitions(POE_EXPORTS)
+set(poesrc poe.cpp controllers/pd69104.cpp)
+add_library(objpoe OBJECT ${poesrc})
+set_property(TARGET objpoe PROPERTY POSITION_INDEPENDENT_CODE 1)
+add_library(rspoe_shared SHARED $<TARGET_OBJECTS:objpoe>)
+add_library(rspoe_static STATIC $<TARGET_OBJECTS:objpoe>)

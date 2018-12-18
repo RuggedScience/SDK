@@ -34,3 +34,5 @@
 .vscode/settings.json
 example/examplepoe
 example/exampledio
+
+build/

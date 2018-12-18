@@ -1,0 +1,6 @@
+add_compile_definitions(DIO_EXPORTS)
+set(diosrc dio.cpp controllers/ite8783.cpp controllers/ite8786.cpp)
+add_library(objdio OBJECT ${diosrc})
+set_property(TARGET objdio PROPERTY POSITION_INDEPENDENT_CODE 1)
+add_library(rsdio_shared SHARED $<TARGET_OBJECTS:objdio>)
+add_library(rsdio_static STATIC $<TARGET_OBJECTS:objdio>)

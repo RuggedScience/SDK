@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 
+#include <iostream>
+
 static std::string s_lastError;
 static AbstractDioController *sp_controller;
 

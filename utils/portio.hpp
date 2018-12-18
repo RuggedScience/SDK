@@ -7,50 +7,63 @@
 
 #define ioperm(x,y,z) 0
 
-typedef void(*InitialDriver_t)();
-static InitialDriver_t pfn_InitialDriver;
-
-typedef uint8_t(*Inp_t)(uint16_t);
-static Inp_t pfn_Inp;
-
-typedef void(*Outp_t)(uint16_t, uint8_t);
-static Outp_t pfn_Outp;
-
-static void init()
+static void init(HINSTANCE hlib)
 {
-    HINSTANCE hlib = LoadLibrary(L"drv.dll");
-    if (hlib == NULL)
+    typedef void(*pfn_t)();
+    static pfn_t pfn = NULL;
+
+	if (hlib == NULL)
         throw std::runtime_error("Error loading drv.dll");
 
-    pfn_InitialDriver = (InitialDriver_t)GetProcAddress(hlib, "InitialDriver");
-    pfn_Inp = (Inp_t)GetProcAddress(hlib, "Inp");
-    pfn_Outp = (Outp_t)GetProcAddress(hlib, "Outp");
-
-    if (!pfn_InitialDriver || !pfn_Inp || pfn_Outp)
+    if (pfn == NULL)
     {
-        pfn_InitialDriver = NULL;
-        pfn_Inp = NULL;
-        pfn_Outp = NULL;
-        throw std::runtime_error("Failed to load functions from drv.dll");
+        pfn = (pfn_t)GetProcAddress(hlib, "InitialDriver");
+        pfn();
+    }
+}
+
+static HINSTANCE GetIOMemLibrary()
+{
+	static HINSTANCE hlib = NULL;
+	if (hlib == NULL)
+    {
+		hlib = LoadLibrary("iomem.dll");
+        init(hlib);
     }
 
-    pfn_InitialDriver();
+	return hlib;
 }
 
-uint8_t inb(uint16_t port)
+inline uint8_t inb(uint16_t port)
 {
-    if (!pfn_Inp)
-        init();
+	typedef uint8_t(*pfn_t)(uint64_t);
+	static pfn_t pfn = NULL;
 
-    return pfn_Inp(port);
+	if (pfn == NULL)
+	{
+		HINSTANCE hlib = GetIOMemLibrary();
+		if (hlib != NULL)
+			pfn = (pfn_t)GetProcAddress(hlib, "Inp");
+	}
+
+	uint8_t value = 0;
+	if (pfn) value = (pfn)(port);
+	return value;
 }
 
-void outb(uint8_t value, uint16_t port)
+inline void outb(uint8_t value, uint16_t port)
 {
-    if (pfn_Outp == NULL)
-        init();
+    typedef void(*pfn_t)(uint16_t, uint8_t);
+    static pfn_t pfn = NULL;
 
-    return pfn_Outp(port, value);
+    if (pfn == NULL)
+    {
+        HINSTANCE hlib = GetIOMemLibrary();
+        if (hlib != NULL)
+            pfn = (pfn_t)GetProcAddress(hlib, "Outp");
+    }
+
+    if (pfn) (pfn)(port, value);
 }
 
 #endif //PORTIO_HPP
