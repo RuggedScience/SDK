@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.13.2)
+cmake_minimum_required (VERSION 3.10.2)
 project(rssdk VERSION 1.0.1 DESCRIPTION "Rugged Science SDK")
 add_subdirectory (dio)
 add_subdirectory (poe)

@@ -1,4 +1,4 @@
-add_compile_definitions(POE_EXPORTS)
+add_definitions(-DPOE_EXPORTS)
 set(poesrc poe.cpp controllers/pd69104.cpp)
 add_library(objpoe OBJECT ${poesrc})
 set_property(TARGET objpoe PROPERTY POSITION_INDEPENDENT_CODE 1)
