@@ -27,7 +27,7 @@ static HINSTANCE GetIOMemLibrary()
 	static HINSTANCE hlib = NULL;
 	if (hlib == NULL)
     {
-		hlib = LoadLibrary("iomem.dll");
+		hlib = LoadLibrary("drv.dll");
         init(hlib);
     }
 
