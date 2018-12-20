@@ -68,7 +68,7 @@ Ite8786::~Ite8786()
 void Ite8786::initPin(PinInfo info)
 {
 	setSioLdn(kGpioLdn);
-	uint16_t reg = kPolarityBar + info.offset;
+	uint8_t reg = kPolarityBar + info.offset;
 	if (reg <= kPolarityMax)
 		writeSioRegister(reg, readSioRegister(reg) & ~info.bitmask);	//Set polarity to non-inverting
 
@@ -85,7 +85,7 @@ void Ite8786::initPin(PinInfo info)
 PinMode Ite8786::getPinMode(PinInfo info)
 {
 	setSioLdn(kGpioLdn);
-	uint16_t reg = kOutputEnableBar + info.offset;
+	uint8_t reg = kOutputEnableBar + info.offset;
 	uint8_t data = readSioRegister(reg);
 	if ((data & info.bitmask) == info.bitmask) 
 		return ModeOutput;
@@ -102,7 +102,7 @@ void Ite8786::setPinMode(PinInfo info, PinMode mode)
 		throw DioControllerError("Output mode not supported on pin");
 
 	setSioLdn(kGpioLdn);
-	uint16_t reg = kOutputEnableBar + info.offset;
+	uint8_t reg = kOutputEnableBar + info.offset;
 	uint8_t data = readSioRegister(reg);
 	if (mode == ModeInput) data &= ~info.bitmask;
 	else if (mode == ModeOutput) data |= info.bitmask;
