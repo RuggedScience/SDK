@@ -1,13 +1,10 @@
 #include "dio.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
-#include "../utils/rapidxml.hpp"
-#include "../utils/rapidxml_utils.hpp"
+#include "../utils/tinyxml2.h"
 
 #include <map>
 #include <string>
-
-#include <iostream>
 
 static std::string s_lastError;
 static AbstractDioController *sp_controller;
@@ -15,121 +12,136 @@ static AbstractDioController *sp_controller;
 typedef std::map<int, PinInfo> pinmap_t;
 static std::map<int, pinmap_t> s_dioMap;
 
+static tinyxml2::XMLError getInternalPinInfo(tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+{
+	using namespace tinyxml2;
+
+	int id, bit, gpio;
+	XMLError e = pin->QueryAttribute("id", &id);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("bit", &bit);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("gpio", &gpio);
+	if (e != XML_SUCCESS) return e;
+	
+	pinId = id;
+	info = PinInfo(bit, gpio, false, false, true);
+	return XML_SUCCESS;
+}
+
+static tinyxml2::XMLError getExternalPinInfo(tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+{
+	using namespace tinyxml2;
+
+	int id, bit, gpio;
+	bool invert, input, output;
+	XMLError e = pin->QueryAttribute("id", &id);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("bit", &bit);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("gpio", &gpio);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("invert", &invert);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("input", &input);
+	if (e != XML_SUCCESS) return e;
+	e = pin->QueryAttribute("output", &output);
+	if (e != XML_SUCCESS) return e;
+
+	pinId = id;
+	info = PinInfo(bit, gpio, invert, input, output);
+	return XML_SUCCESS;
+}
+
 bool initDio(const char* initFile)
 {
-    s_dioMap.clear();
-    if (sp_controller) delete sp_controller;
-    sp_controller = nullptr;
-    rapidxml::xml_node<> *controllerNode = nullptr;
-    rapidxml::xml_attribute<> *idAttr = nullptr;
-    rapidxml::xml_node<> *connectorNode = nullptr;
-    rapidxml::xml_node<> *pinNode = nullptr;
-    rapidxml::xml_node<> *bitNode = nullptr;
-    rapidxml::xml_node<> *gpioNode = nullptr;
-    rapidxml::xml_node<> *invertNode = nullptr;
-    rapidxml::xml_node<> *inputNode = nullptr;
-    rapidxml::xml_node<> *outputNode = nullptr;
-    
+    using namespace tinyxml2;
+	s_dioMap.clear();
+	if (sp_controller) delete sp_controller;
+	sp_controller = nullptr;
+
+	XMLDocument doc;
+	if (doc.LoadFile(initFile) != XML_SUCCESS)
+	{
+        s_lastError = "XML Error: Unable to load file";
+        return false;
+    }
+
+	XMLElement *comp = doc.FirstChildElement("computer");
+	if (!comp)
+	{
+        s_lastError = "XML Error: Unable to find computer node";
+        return false;
+    }
+
+	XMLElement *dio = comp->FirstChildElement("dio_controller");
+	if (!dio)
+	{
+        s_lastError = "XML Error: Unable to find dio_controller node";
+        return false;
+    }
+
+	std::string id(dio->Attribute("id"));
     try
     {
-        rapidxml::xml_document<> doc;
-        rapidxml::file<> file(initFile);
-        doc.parse<0>(file.data());
-        controllerNode = doc.first_node("dio_controller");
+	    if (id == "ite8783")
+    		sp_controller = new Ite8783();
+    	else if (id == "ite8786")
+		    sp_controller = new Ite8786();
+	    else
+	    {
+    		s_lastError = "XML Error: Invalid id found for dio_controller";
+		    return false;
+	    }
     }
     catch (std::exception &ex)
-    {
-        s_lastError = "XML Error: " + std::string(ex.what());
-        return false;
-    }
-
-    if (!controllerNode)
-    {
-        s_lastError = "XML Error: No dio_controller found";
-        return false;
-    }
-
-    idAttr = controllerNode->first_attribute("id");
-    if (!idAttr)
-    {
-        s_lastError = "XML Error: No id attribute found for dio_controller";
-        return false;
-    }
-
-    try
-    {
-        std::string s(idAttr->value());
-        if (s == "ite8783")
-            sp_controller = new Ite8783();
-        else if (s == "ite8786")
-            sp_controller = new Ite8786();
-        else
-        {
-            s_lastError = "XML Error: Invalid id attribute found for dio_controller";
-            return false;
-        }
-    }
-    catch (DioControllerError &ex)
     {
         s_lastError = "DIO Controller Error: " + std::string(ex.what());
         return false;
     }
-    
-    connectorNode = controllerNode->first_node("connector");
-    for (; connectorNode; connectorNode = connectorNode->next_sibling("connector"))
-    {
-        idAttr = connectorNode->first_attribute("id");
-        if (idAttr)
-        {
-            int dioNumber = std::stoi(std::string(idAttr->value()));
-            pinNode = connectorNode->first_node("internal_pin");
-            for (; pinNode; pinNode = pinNode->next_sibling("internal_pin"))
-            {
-                idAttr = pinNode->first_attribute("id");
-                bitNode = pinNode->first_node("bit_number");
-                gpioNode = pinNode->first_node("gpio_number");
-                if (idAttr && bitNode && gpioNode)
-                {
-                    int pinNumber = std::stoi(std::string(idAttr->value()));
-                    uint8_t bitNumber = std::stoi(std::string(bitNode->value()));
-                    uint8_t gpioNumber = std::stoi(std::string(gpioNode->value()));
 
-                    PinInfo info(bitNumber, gpioNumber, false, false, true);
-                    sp_controller->initPin(info);
-                    s_dioMap[dioNumber][pinNumber] = info;
-                }
-            }
-
-            pinNode = connectorNode->first_node("external_pin");
-            for (; pinNode; pinNode = pinNode->next_sibling("external_pin"))
-            {
-                idAttr = pinNode->first_attribute("id");
-                bitNode = pinNode->first_node("bit_number");
-                gpioNode = pinNode->first_node("gpio_number");
-                invertNode = pinNode->first_node("invert");
-                inputNode = pinNode->first_node("input");
-                outputNode = pinNode->first_node("output");
-                if (idAttr && bitNode && gpioNode && invertNode && inputNode && outputNode)
-                {
-                    int pinNumber = std::stoi(std::string(idAttr->value()));
-                    uint8_t bitNumber = std::stoi(std::string(bitNode->value()));
-                    uint8_t gpioNumber = std::stoi(std::string(gpioNode->value()));
-                    bool invert = (std::string(invertNode->value()) == "1");
-                    bool input = (std::string(inputNode->value()) == "1");
-                    bool output = (std::string(outputNode->value()) == "1");
-
-                    PinInfo info(bitNumber, gpioNumber, invert, input, output);
-                    sp_controller->initPin(info);
-                    s_dioMap[dioNumber][pinNumber] = info;
-                }
-            }
-        }
+	XMLElement *con = dio->FirstChildElement("connector");
+	if (!con)
+	{
+        s_lastError = "XML Error: Unable to find connector node";
+        return false;
     }
 
+	for (; con; con = con->NextSiblingElement("connector"))
+	{
+		int conId = 0;
+		if (con->QueryAttribute("id", &conId) == XML_SUCCESS)
+		{
+			XMLElement *ip = dio->FirstChildElement("internal_pin");
+			for (; ip; ip = ip->NextSiblingElement("internal_pin"))
+			{
+				int pinId;
+				PinInfo info;
+				if (getInternalPinInfo(ip, pinId, info) == XML_SUCCESS)
+				{
+					sp_controller->initPin(info);
+					s_dioMap[conId][pinId] = info;
+				}
+			}
+
+			XMLElement *ep = dio->FirstChildElement("external_pin");
+			for (; ep; ep = ep->NextSiblingElement("external_pin"))
+			{
+				int pinId;
+				PinInfo info;
+				if (getExternalPinInfo(ep, pinId, info) == XML_SUCCESS)
+				{
+					sp_controller->initPin(info);
+					s_dioMap[conId][pinId] = info;
+				}
+			}
+		}
+	}
+    
     if (s_dioMap.size() <= 0)
     {
         sp_controller = nullptr;
-        s_lastError = "XML Error: No connectors found";
+        s_lastError = "XML Error: No valid connectors found";
         return false;
     }
 
