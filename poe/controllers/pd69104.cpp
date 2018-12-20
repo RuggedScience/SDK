@@ -3,7 +3,7 @@
 
 #include <stdexcept>
 #include <fcntl.h>
-#include <cstring>
+#include <string.h>
 
 //Registers as described in the datasheet for the PD69104.
 static const uint8_t kSataPwrReg = 0x10;	//Power Status register
@@ -17,8 +17,6 @@ static const uint8_t kShutdownMode = 0;
 static const uint8_t kManualMode =	1;
 static const uint8_t kSemiAutoMode = 2;
 static const uint8_t kAutoMode = 3;
-
-#include <iostream>
 
 Pd69104::Pd69104(uint16_t bus, uint8_t dev) :
 	AbstractPoeController(),
