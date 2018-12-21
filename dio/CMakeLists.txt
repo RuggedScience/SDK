@@ -13,3 +13,8 @@ target_include_directories(rsdio-static PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 generate_export_header(rsdio)
 set_target_properties(rsdio PROPERTIES COMPILE_FLAGS -DBUILD_RSDIO_SHARED)
 set_target_properties(rsdio-static PROPERTIES COMPILE_FLAGS -DRSDIO_STATIC_DEFINE)
+
+if(MSVC)
+    target_compile_definitions(rsdio PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(rsdio-static PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)

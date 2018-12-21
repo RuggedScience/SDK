@@ -13,3 +13,8 @@ target_include_directories(rspoe-static PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 generate_export_header(rspoe)
 set_target_properties(rspoe PROPERTIES COMPILE_FLAGS -DBUILD_RSPOE_SHARED)
 set_target_properties(rspoe-static PROPERTIES COMPILE_FLAGS -DRSPOE_STATIC_DEFINE)
+
+if(MSVC)
+    target_compile_definitions(rspoe PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(rspoe-static PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
