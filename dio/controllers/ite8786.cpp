@@ -53,7 +53,7 @@ Ite8786::Ite8786() :
 			writeSioRegister(0x2C, readSioRegister(0x2C) & ~0x01);
 		}
 	}
-	catch (std::exception &ex)
+	catch (std::exception)
 	{
 		exitSio();
 		throw;

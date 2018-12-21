@@ -41,7 +41,7 @@ Ite8783::Ite8783() :
 		if (chipId == 0x8783)
 			m_baseAddress = getBaseAddressRegister();
 	}
-	catch (std::exception &ex)
+	catch (std::exception)
 	{
 		exitSio();
 		throw;
