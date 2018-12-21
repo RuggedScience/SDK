@@ -1,3 +1,4 @@
+include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 

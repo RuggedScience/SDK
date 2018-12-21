@@ -1,3 +1,4 @@
+include(GNUInstallDirs)
 option(INSTALL_EXAMPLES "Installs examples" ON)
 
 add_executable(exampledio exampledio.cpp)
