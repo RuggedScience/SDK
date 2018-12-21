@@ -1,7 +1,7 @@
 #ifndef POE_H
 #define POE_H
 
-#include <poe/rspoe_export.h>
+#include <rspoe_export.h>
 #include "poe_global.h"
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 #ifndef DIO_H
 #define DIO_H
 
-#include <dio/rsdio_export.h>
+#include <rsdio_export.h>
 #include "dio_global.h"
 
 #ifdef __cplusplus
