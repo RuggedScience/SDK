@@ -6,7 +6,7 @@ For pre-built libraries please see the "releases" tab above.
 # Building
 For best results, create a seperate build folder inside the root of this SDK. From inside of that folder run the following commands.  
  `cmake .. -DCMAKE_INSTALL_PREFIX=../install`  
- `cmake --build . --config release  --target INSTALL`  
+ `cmake --build . --config release  --target install`  
    
 For debug builds remove the `--config release`  
 For static builds run `cmake .. -DBUILD_SHARED_LIBS=OFF` instead of `cmake ..`  
@@ -20,7 +20,7 @@ By default the examples are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can
 Windows requires 64-bit builds due to driver limitations. To do this you will need to specify the generator and architecture using the "-G" switch.  
   
 `cmake -G "Visual Studio 15 2017 Win64" .. -DCMAKE_INSTALL_PREFIX=../install`  
-`cmake --build . --target INSTALL`
+`cmake --build . --target install`
 
 To obtain a copy of the Windows driver, please contact your Rugged Science sales representative.
 
