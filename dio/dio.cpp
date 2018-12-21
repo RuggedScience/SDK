@@ -112,7 +112,7 @@ bool initDio(const char* initFile)
 		int conId = 0;
 		if (con->QueryAttribute("id", &conId) == XML_SUCCESS)
 		{
-			XMLElement *ip = dio->FirstChildElement("internal_pin");
+			XMLElement *ip = con->FirstChildElement("internal_pin");
 			for (; ip; ip = ip->NextSiblingElement("internal_pin"))
 			{
 				int pinId;
@@ -124,7 +124,7 @@ bool initDio(const char* initFile)
 				}
 			}
 
-			XMLElement *ep = dio->FirstChildElement("external_pin");
+			XMLElement *ep = con->FirstChildElement("external_pin");
 			for (; ep; ep = ep->NextSiblingElement("external_pin"))
 			{
 				int pinId;
