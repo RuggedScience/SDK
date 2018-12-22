@@ -15,6 +15,8 @@ If `-DCMAKE_INSTALL_PREFIX` is omitted, the files will be installed in the defau
 Windows: "C:\Program Files\rssdk\"
 Linux: "/usr/local"
 
+By default the examples are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with -DINSTALL_EXAMPLES=OFF
+
 Windows requires 64-bit builds due to driver limitations. To do this you will need to specify the generator and architecture using the "-G" switch.  
   
 `cmake -G "Visual Studio 15 2017 Win64" .. -DCMAKE_INSTALL_PREFIX=../install`  
