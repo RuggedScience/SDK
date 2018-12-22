@@ -18,4 +18,10 @@ generate_export_header(rspoe)
 
 if(MSVC)
     target_compile_definitions(rspoe PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_INCLUDEDIR include)
 endif(MSVC)
+
+install(TARGETS rspoe DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES rspoe.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rspoe_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

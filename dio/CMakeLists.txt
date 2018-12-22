@@ -18,4 +18,10 @@ generate_export_header(rsdio)
 
 if(MSVC)
     target_compile_definitions(rsdio PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_INCLUDEDIR include)
 endif(MSVC)
+
+install(TARGETS rsdio DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES rsdio.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rsdio_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
