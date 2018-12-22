@@ -6,6 +6,3 @@ target_include_directories(examplepoe PRIVATE "${PROJECT_BINARY_DIR}/poe")
 
 target_link_libraries (exampledio rsdio)
 target_link_libraries (examplepoe rspoe)
-
-install(TARGETS exampledio DESTINATION bin)
-install(TARGETS examplepoe DESTINATION bin)
