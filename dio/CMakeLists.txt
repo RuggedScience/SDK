@@ -1,20 +1,21 @@
 include(GenerateExportHeader)
-set(diosrc dio.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
+option(BUILD_SHARED_LIBS "build as shared library" ON)
 
-add_library(rsdio SHARED ${diosrc})
-add_library(rsdio-static STATIC ${diosrc})
+set(diosrc rsdio.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
 
-set_property(TARGET rsdio PROPERTY POSITION_INDEPENDENT_CODE 1)
-set_property(TARGET rsdio-static PROPERTY POSITION_INDEPENDENT_CODE 1)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN1)
+
+set(CMAKE_DEBUG_POSTFIX "d")
+
+add_library(rsdio ${diosrc})
 
 target_include_directories(rsdio PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(rsdio-static PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 generate_export_header(rsdio)
-set_target_properties(rsdio PROPERTIES COMPILE_FLAGS -DBUILD_RSDIO_SHARED)
-set_target_properties(rsdio-static PROPERTIES COMPILE_FLAGS -DRSDIO_STATIC_DEFINE)
 
 if(MSVC)
     target_compile_definitions(rsdio PUBLIC -D_CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(rsdio-static PUBLIC -D_CRT_SECURE_NO_WARNINGS)
 endif(MSVC)

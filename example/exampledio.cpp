@@ -1,4 +1,4 @@
-#include "../dio/dio.h"
+#include "../dio/rsdio.h"
 #include <iostream>
 
 //This function goes into a loop to allow interactive control over the DIO

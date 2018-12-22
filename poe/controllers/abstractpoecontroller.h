@@ -1,7 +1,7 @@
 #ifndef ABSTRACTPOECONTROLLER_H
 #define ABSTRACTPOECONTROLLER_H
 
-#include "../poe_global.h"
+#include "../rspoe_global.h"
 
 #include <exception>
 #include <stdint.h>

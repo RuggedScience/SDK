@@ -1,20 +1,21 @@
 include(GenerateExportHeader)
-set(poesrc poe.cpp controllers/pd69104.cpp ../utils/tinyxml2.cpp)
+option(BUILD_SHARED_LIBS "build as shared library" ON)
 
-add_library(rspoe SHARED ${poesrc})
-add_library(rspoe-static STATIC ${poesrc})
+set(poesrc rspoe.cpp controllers/pd69104.cpp ../utils/tinyxml2.cpp)
 
-set_property(TARGET rspoe PROPERTY POSITION_INDEPENDENT_CODE 1)
-set_property(TARGET rspoe-static PROPERTY POSITION_INDEPENDENT_CODE 1)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN1)
+
+set(CMAKE_DEBUG_POSTFIX "d")
+
+add_library(rspoe ${poesrc})
 
 target_include_directories(rspoe PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(rspoe-static PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 generate_export_header(rspoe)
-set_target_properties(rspoe PROPERTIES COMPILE_FLAGS -DBUILD_RSPOE_SHARED)
-set_target_properties(rspoe-static PROPERTIES COMPILE_FLAGS -DRSPOE_STATIC_DEFINE)
 
 if(MSVC)
     target_compile_definitions(rspoe PUBLIC -D_CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(rspoe-static PUBLIC -D_CRT_SECURE_NO_WARNINGS)
 endif(MSVC)

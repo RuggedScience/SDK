@@ -1,9 +1,11 @@
-include_directories("${PROJECT_BINARY_DIR}")
 add_executable(exampledio exampledio.cpp)
 add_executable(examplepoe examplepoe.cpp)
 
-set_target_properties(exampledio PROPERTIES COMPILE_FLAGS -DRSDIO_STATIC_DEFINE)
-set_target_properties(examplepoe PROPERTIES COMPILE_FLAGS -DRSPOE_STATIC_DEFINE)
+target_include_directories(exampledio PRIVATE "${PROJECT_BINARY_DIR}/dio")
+target_include_directories(examplepoe PRIVATE "${PROJECT_BINARY_DIR}/poe")
 
-target_link_libraries (exampledio rsdio-static)
-target_link_libraries (examplepoe rspoe-static)
+target_link_libraries (exampledio rsdio)
+target_link_libraries (examplepoe rspoe)
+
+install(TARGETS exampledio DESTINATION bin)
+install(TARGETS examplepoe DESTINATION bin)

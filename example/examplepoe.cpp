@@ -1,4 +1,4 @@
-#include "../poe/poe.h"
+#include "../poe/rspoe.h"
 #include <iostream>
 
 //This function goes into a loop to allow interactive control over the PoE ports
