@@ -9,27 +9,31 @@ public:
 	Pd69104(uint16_t bus, uint8_t dev);
 	~Pd69104() override;
 
-	PoeState getPortState(uint8_t port) override;
+	PoeState getPortState(uint8_t port) const override;
 	void setPortState(uint8_t port, PoeState state) override;
+
+	float getPortVoltage(uint8_t port) const override;
+	float getPortCurrent(uint8_t port) const override;
+	uint8_t getPortPower(uint8_t port) const override;
 
 private:
 	uint16_t m_busAddr;
 	uint8_t m_devAddr;
 
-	int getDeviceId();
+	int getDeviceId() const;
 
 	void setPortEnabled(uint8_t port, bool enabled);
 
-	uint8_t getPortMode(uint8_t port);
+	uint8_t getPortMode(uint8_t port) const;
 	void setPortMode(uint8_t port, uint8_t mode);
 
-	bool getPortSensing(uint8_t port);
+	bool getPortSensing(uint8_t port) const;
 	void setPortSensing(uint8_t port, bool sense);
 
-	bool getPortDetection(uint8_t port);
+	bool getPortDetection(uint8_t port) const;
 	void setPortDetection(uint8_t port, bool detect);
 
-	bool getPortClassification(uint8_t port);
+	bool getPortClassification(uint8_t port) const;
 	void setPortClassification(uint8_t port, bool classify);
 };
 

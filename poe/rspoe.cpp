@@ -109,13 +109,13 @@ int setPortState(int port, PoeState state)
     if (sp_controller == nullptr)
     {
         s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return StateError;
+        return -1;
     }
 
     if (s_portMap.find(port) == s_portMap.end())
     {
         s_lastError = "Argument Error: Invalid port " + std::to_string(port);
-        return false;
+        return -1;
     }
 
     try
@@ -125,10 +125,94 @@ int setPortState(int port, PoeState state)
     catch (PoeControllerError &ex)
     {
         s_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return false;
+        return -1;
     }
 
-    return true;
+    return 0;
+}
+
+float getPortVoltage(int port)
+{
+    float volts = -1.0f;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return volts;
+    }
+
+    if (s_portMap.find(port) == s_portMap.end())
+    {
+        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        return volts;
+    }
+    
+    try
+    {
+        volts = sp_controller->getPortVoltage(s_portMap[port]);
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return volts;
+    }
+
+    return volts;
+}
+
+float getPortCurrent(int port)
+{
+    float cur = -1.0f;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return cur;
+    }
+
+    if (s_portMap.find(port) == s_portMap.end())
+    {
+        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        return cur;
+    }
+
+    try
+    {
+        cur = sp_controller->getPortCurrent(s_portMap[port]);
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return cur;
+    }
+
+    return cur;
+}
+
+int getPortPower(int port)
+{
+    int power = -1;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return power;
+    }
+
+    if (s_portMap.find(port) == s_portMap.end())
+    {
+        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        return power;
+    }
+
+    try
+    {
+        power = sp_controller->getPortPower(s_portMap[port]);
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return power;
+    }
+
+    return power;
 }
 
 const char* getLastPoeError()

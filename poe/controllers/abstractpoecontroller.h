@@ -28,8 +28,12 @@ class AbstractPoeController
 public:
 	virtual ~AbstractPoeController() {}
 
-	virtual PoeState getPortState(uint8_t port) = 0;
+	virtual PoeState getPortState(uint8_t port) const = 0;
 	virtual void setPortState(uint8_t port, PoeState state) = 0;
+
+    virtual float getPortVoltage(uint8_t port) const = 0;
+	virtual float getPortCurrent(uint8_t port) const = 0;
+	virtual uint8_t getPortPower(uint8_t port) const = 0;
 };
 
 #endif
