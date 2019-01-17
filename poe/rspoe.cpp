@@ -187,9 +187,9 @@ float getPortCurrent(int port)
     return cur;
 }
 
-int getPortPower(int port)
+float getPortPower(int port)
 {
-    int power = -1;
+    float power = -1.0f;
     if (sp_controller == nullptr)
     {
         s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";

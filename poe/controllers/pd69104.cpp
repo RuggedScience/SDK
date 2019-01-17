@@ -19,17 +19,11 @@ static const uint8_t kPort2VoltReg = 0x36;
 static const uint8_t kPort3VoltReg = 0x3A;
 static const uint8_t kPort4VoltReg = 0x3E;
 
-static const float kCurCoef = 122.07;
+static const float kCurCoef = 122.07f;
 static const uint8_t kPort1CurReg = 0x30;
 static const uint8_t kPort2CurReg = 0x34;
 static const uint8_t kPort3CurReg = 0x38;
 static const uint8_t kPort4CurReg = 0x3C;
-
-static const uint8_t kPort1PwrReg = 0x92;
-static const uint8_t kPort2PwrReg = 0x93;
-static const uint8_t kPort3PwrReg = 0x94;
-static const uint8_t kPort4PwrReg = 0x95;
-static const uint8_t kTotalPwrReg = 0x96;
 
 static const uint8_t kShutdownMode = 0;
 static const uint8_t kManualMode =	1;
@@ -112,7 +106,7 @@ float Pd69104::getPortVoltage(uint8_t port) const
 
 	volts |= data << 8;
 
-	return volts * kVoltsCoef;
+	return (volts * kVoltsCoef) / 1000.0f; // Convert from mV to V
 }
 
 float Pd69104::getPortCurrent(uint8_t port) const
@@ -138,25 +132,7 @@ float Pd69104::getPortCurrent(uint8_t port) const
 
 	cur |= data << 8;
 
-	return cur * kCurCoef;
-}
-
-uint8_t Pd69104::getPortPower(uint8_t port) const
-{
-	uint8_t reg = 0;
-	if (port == 0) reg = kPort1PwrReg;
-	else if (port == 1) reg = kPort2PwrReg;
-	else if (port == 2) reg = kPort3PwrReg;
-	else if (port == 3) reg = kPort4PwrReg;
-
-	if (reg == 0)
-		throw PoeControllerError("Invalid port");
-
-	int data = smbusReadRegister(m_busAddr, m_devAddr, reg);
-	if (data < 0)
-		throw PoeControllerError(std::strerror(errno));
-	
-	return data;
+	return (cur * kCurCoef) / 1000000.0f; // Convert from uA to A
 }
 
 int Pd69104::getDeviceId() const

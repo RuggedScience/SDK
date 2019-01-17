@@ -14,7 +14,6 @@ public:
 
 	float getPortVoltage(uint8_t port) const override;
 	float getPortCurrent(uint8_t port) const override;
-	uint8_t getPortPower(uint8_t port) const override;
 
 private:
 	uint16_t m_busAddr;
