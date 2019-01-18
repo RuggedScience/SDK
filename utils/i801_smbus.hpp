@@ -1,6 +1,7 @@
 #ifndef SMBUS_HPP
 #define SMBUS_HPP
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdexcept>
 
@@ -30,13 +31,24 @@ static const uint8_t kCntrlLastByte = (1 << 5);
 static const uint8_t kCntrlKill		= (1 << 1);
 static const uint8_t kCntrlIntrEn	= (1 << 0);
 
+static const uint8_t kCntrlQuick	= 0x00;
+static const uint8_t kCntrlByte		= 0x04;
+static const uint8_t kCntrlByteData	= 0x08;
+static const uint8_t kCntrlWordData = 0x0C;
+static const uint8_t kCntrlProcCall	= 0x10;
+static const uint8_t kCntrlBlck		= 0x14;
+static const uint8_t kCntrlI2CRead	= 0x18;
+static const uint8_t kCntrlBlckProc	= 0x1C;
+
 static const uint8_t kCntrlByteCmd	= 0b01000;
 
-#define HST_STS(x) 	x
+#define HST_STS(x) 		x
 #define HST_CTRL(x) 	(x + 2)
-#define HST_CMD(x) 	(x + 3)
-#define HST_XMIT(x)	(x + 4)
+#define HST_CMD(x) 		(x + 3)
+#define HST_XMIT(x)		(x + 4)
 #define HST_DATA0(x)	(x + 5)
+#define HST_DATA1(x)	(x + 6)
+#define HST_BLK_DB(x)	(x + 7)
 
 //Added both of the below functions for readability.
 static void clearStatusBits(uint16_t bus, uint8_t bits)
@@ -87,7 +99,7 @@ int smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
 
 	outb(dev + 1, HST_XMIT(bus));
 	outb(reg, HST_CMD(bus));
-	outb(kCntrlStart | kCntrlByteCmd, HST_CTRL(bus));
+	outb(kCntrlStart | kCntrlByteData, HST_CTRL(bus));
 
 	for (i = 0; i < kMaxRetry; ++i)
 	{
@@ -146,7 +158,7 @@ int smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
 	outb(dev, HST_XMIT(bus));
 	outb(reg, HST_CMD(bus));
 	outb(val, HST_DATA0(bus));
-	outb(kCntrlStart | kCntrlByteCmd, HST_CTRL(bus));
+	outb(kCntrlStart | kCntrlByteData, HST_CTRL(bus));
 
 	for (i = 0; i < kMaxRetry; ++i)
 	{
@@ -162,6 +174,201 @@ int smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
 		return -1;
 	}
 
+	ioperm(bus, 6, 0);
+	return 0;
+}
+
+// Function supplied by manufacturer. Only altered for readability.
+int smbusReadByte(uint16_t bus, uint8_t dev)
+{
+	if (ioperm(bus, 6, 1))
+	{
+		errno = EACCES;
+		return -1;
+	}
+
+	uint8_t status = inb(HST_STS(bus));
+	if (isBitSet(status, kStsDone | kStsFailed))
+		outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+
+	clearStatusBits(bus, 0xFF);
+	outb(0x00, HST_DATA0(bus));
+
+	int i;
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDone | kStsFailed))
+			outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+
+		if (isBitSet(status, kStsDone | kStsFailed | kStsDevErr))
+			clearStatusBits(bus, status | kStsDone | kStsFailed | kStsDevErr);
+
+		if (isBitSet(status, kStsDevErr) || status == kStsInUse) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	outb(dev + 1, HST_XMIT(bus));
+	outb(kCntrlStart | kCntrlByteData, HST_CTRL(bus));
+
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDevErr)) clearStatusBits(bus, kStsDevErr);
+		if (isBitSet(status, kStsDevErr) || status == (kStsInUse | kStsIntr)) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	uint8_t data = inb(HST_CMD(bus));
+	ioperm(bus, 6, 0);
+	return data;
+}
+
+int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
+{
+	if (ioperm(bus, 6, 1))
+	{
+		errno = EACCES;
+		return -1;
+	}
+
+	uint8_t status = inb(HST_STS(bus));
+	if (isBitSet(status, kStsDone | kStsFailed))
+		outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+
+	clearStatusBits(bus, 0xFF);
+
+	int i;
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDone | kStsFailed))
+			outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+			
+		if (isBitSet(status, kStsDone | kStsFailed | kStsDevErr))
+			clearStatusBits(bus, status | kStsDone | kStsFailed | kStsDevErr);
+
+		if (isBitSet(status, kStsDevErr) || status == kStsInUse) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	outb(dev, HST_XMIT(bus));
+	outb(val, HST_CMD(bus));
+	outb(kCntrlStart | kCntrlByte, HST_CTRL(bus));
+
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDevErr)) clearStatusBits(bus, kStsDevErr);
+		if (isBitSet(status, kStsDevErr) || status == (kStsInUse | kStsIntr)) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	ioperm(bus, 6, 0);
+	return 0;
+}
+
+int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t size)
+{
+	assert(buf != nullptr);
+	assert(size > 0);
+
+	if (ioperm(bus, 6, 1))
+	{
+		errno = EACCES;
+		return -1;
+	}
+
+	uint8_t status = inb(HST_STS(bus));
+	if (isBitSet(status, kStsDone | kStsFailed))
+		outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+
+	clearStatusBits(bus, 0xFF);
+
+	int i;
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDone | kStsFailed))
+			outb(inb(HST_CTRL(bus)) | (status & kStsDone) | kCntrlKill, HST_CTRL(bus));
+			
+		if (isBitSet(status, kStsDone | kStsFailed | kStsDevErr))
+			clearStatusBits(bus, status | kStsDone | kStsFailed | kStsDevErr);
+
+		if (isBitSet(status, kStsDevErr) || status == kStsInUse) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	outb(dev, HST_XMIT(bus));
+	outb(cmd, HST_DATA1(bus));
+	outb(kCntrlStart | kCntrlI2CRead, HST_CTRL(bus));
+
+	for (i = 0; i < kMaxRetry; ++i)
+	{
+		status = inb(HST_STS(bus));
+		if (isBitSet(status, kStsDevErr)) clearStatusBits(bus, kStsDevErr);
+		if (isBitSet(status, kStsDevErr) || status == (kStsInUse | kStsIntr)) break;
+	}
+
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+	{
+		ioperm(bus, 6, 0);
+		errno = EBUSY;
+		return -1;
+	}
+
+	for (int j = 0; j < size; ++j)
+	{
+		buf[j] = inb(HST_BLK_DB(bus));
+		clearStatusBits(bus, 0xFF);
+
+		for (i = 0; i < kMaxRetry; ++i)
+		{
+			status = inb(HST_STS(bus));
+			if (isBitSet(status, kStsDevErr)) clearStatusBits(bus, kStsDevErr);
+			if (isBitSet(status, kStsDevErr) || status == (kStsInUse | kStsIntr)) break;
+		}
+
+		if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
+		{
+			outb(kCntrlLastByte | kCntrlI2CRead | kCntrlKill, HST_CTRL(bus));
+			ioperm(bus, 6, 0);
+			errno = EBUSY;
+			return -1;
+		}
+	}
+
+	outb(kCntrlLastByte | kCntrlI2CRead | kCntrlKill, HST_CTRL(bus));
 	ioperm(bus, 6, 0);
 	return 0;
 }

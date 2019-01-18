@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <cstring>
 
+static const uint8_t kDeviceId = 0x44;
+
 //Registers as described in the datasheet for the PD69104.
 static const uint8_t kSataPwrReg = 0x10;	//Power Status register
 static const uint8_t kOpmdReg = 0x12;		//Operating Mode register
@@ -36,7 +38,7 @@ Pd69104::Pd69104(uint16_t bus, uint8_t dev) :
 	m_devAddr(dev)
 {
 	int devId = getDeviceId();
-	if (devId < 0)
+	if (devId < 0 || devId != kDeviceId)
 		throw PoeControllerError(std::strerror(errno));
 }
 
@@ -45,7 +47,7 @@ Pd69104::~Pd69104()
 
 }
 
-PoeState Pd69104::getPortState(uint8_t port) const
+PoeState Pd69104::getPortState(uint8_t port)
 {
 	uint8_t mode = getPortMode(port);
 	if (mode == kManualMode)
@@ -83,7 +85,7 @@ void Pd69104::setPortState(uint8_t port, PoeState state)
 	}
 }
 
-float Pd69104::getPortVoltage(uint8_t port) const
+float Pd69104::getPortVoltage(uint8_t port)
 {
 	uint8_t reg = 0;
 	if (port == 0) reg = kPort1VoltReg;
@@ -109,7 +111,7 @@ float Pd69104::getPortVoltage(uint8_t port) const
 	return (volts * kVoltsCoef) / 1000.0f; // Convert from mV to V
 }
 
-float Pd69104::getPortCurrent(uint8_t port) const
+float Pd69104::getPortCurrent(uint8_t port)
 {
 	uint8_t reg = 0;
 	if (port == 0) reg = kPort1CurReg;
