@@ -11,6 +11,9 @@ void interactivePoe()
 		std::cout << "Please enter a command" << std::endl;
 		std::cout << "r = Read port state" << std::endl;
 		std::cout << "s = Set port state" << std::endl;
+		std::cout << "v = Read port voltage" << std::endl;
+		std::cout << "c = Read port current" << std::endl;
+		std::cout << "p = Read port watts" << std::endl;
 		std::cout << "e = Exit" << std::endl;
 		std::cin >> cmd;
 		std::cin.clear();
@@ -57,6 +60,21 @@ void interactivePoe()
 			{
 				std::cout << "Error: " << getLastPoeError() << std::endl; 
 			}
+		}
+		else if (cmd == 'v')
+		{
+			std::cout << "Port " << port << " voltage: ";
+			std::cout << getPortVoltage(port) << "V" << std::endl;
+		}
+		else if (cmd == 'c')
+		{
+			std::cout << "Port " << port << " current: ";
+			std::cout << getPortCurrent(port) << "A" << std::endl;
+		}
+		else if (cmd == 'p')
+		{
+			std::cout << "Port " << port << " watts: ";
+			std::cout << getPortPower(port) << "W" << std::endl;
 		}
 		else
 		{
