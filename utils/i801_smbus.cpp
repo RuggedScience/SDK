@@ -1,7 +1,5 @@
 #include <assert.h>
 #include <stdexcept>
-#include <thread>
-#include <chrono>
 
 #include <iostream>
 
@@ -13,7 +11,7 @@
 #include "portio.hpp"
 #endif
 
-static const int kMaxRetry = 1000;
+static const int kMaxRetry = 10000;
 
 //SMBus Registers and bits as described in the Intel chipset datasheet. (Page 746 Table 18-2)
 //https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/6-chipset-c200-chipset-datasheet.pdf
@@ -279,8 +277,6 @@ int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
 
 		if (isBitSet(status, kStsDevErr) || status == kStsInUse) 
 			break;
-
-		std::this_thread::sleep_for(std::chrono::microseconds(10)); // Inconsistent results without this
 	}
 
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
@@ -303,8 +299,6 @@ int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
 
 		if (isBitSet(status, kStsDevErr) || status == (kStsInUse | kStsIntr)) 
 			break;
-
-		std::this_thread::sleep_for(std::chrono::microseconds(10)); // Inconsistent results without this
 	}
 
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
@@ -349,8 +343,6 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 
 		if (isBitSet(status, kStsDevErr) || status == kStsInUse) 
 			break;
-
-		std::this_thread::sleep_for(std::chrono::microseconds(10)); // Inconsistent results without this
 	}
 
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
@@ -373,8 +365,6 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 
 		if (isBitSet(status, kStsDevErr) || (status & 0xC0) == 0xC0 && status & 0x3) 
 			break;
-
-		std::this_thread::sleep_for(std::chrono::microseconds(10)); // Inconsistent results without this
 	}
 
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
@@ -399,8 +389,6 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 
 			if (isBitSet(status, kStsDevErr) || (status & 0xC0) == 0xC0 && status & 0x3) 
 				break;
-			
-			std::this_thread::sleep_for(std::chrono::microseconds(10)); // Inconsistent results without this
 		}
 
 		if (j && !(j % size) && !data)
