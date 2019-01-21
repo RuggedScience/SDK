@@ -1,5 +1,5 @@
 #include "pd69104.h"
-#include "../../utils/i801_smbus.hpp"
+#include "../../utils/i801_smbus.h"
 
 #include <stdexcept>
 #include <fcntl.h>

@@ -2,7 +2,7 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 
-set(poesrc rspoe.cpp controllers/pd69104.cpp ../utils/tinyxml2.cpp)
+set(poesrc rspoe.cpp controllers/pd69104.cpp ../utils/tinyxml2.cpp ../utils/i801_smbus.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
