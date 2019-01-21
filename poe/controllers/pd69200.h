@@ -1,7 +1,12 @@
 #ifndef PD69200_H
 #define PD69200_H
 
+#include <array>
+
 #include "abstractpoecontroller.h"
+
+#define MSG_LEN     15
+typedef std::array<uint8_t, MSG_LEN> msg_t;
 
 class Pd69200 : public AbstractPoeController
 {
@@ -14,18 +19,48 @@ public:
 
 	float getPortVoltage(uint8_t port) override;
 	float getPortCurrent(uint8_t port) override;
+	float getPortPower(uint8_t port) override;
+
+	int getBudgetConsumed() override;
+	int getBudgetAvailable() override;
+	int getBudgetTotal() override;
 
 private:
 	uint16_t m_busAddr;
 	uint8_t m_devAddr;
 	uint8_t m_lastEcho;
 
-	void sendMsgToController(std::vector<uint8_t>& msg, bool response = false);
+	msg_t sendMsgToController(msg_t& msg);
 
 	int getDeviceId();
 
-	bool getPortEnabled(uint8_t port);
-	bool getPortForce(uint8_t port);
+	struct PortStatus
+	{
+		bool enabled;
+		uint8_t status;
+		bool force;
+	};
+	PortStatus getPortStatus(uint8_t port);
+	void setPortEnabled(uint8_t port, bool enable);
+	void setPortForce(uint8_t port, bool force);
+
+	struct PortMeasurements
+	{
+		float voltage;
+		float current;
+		float wattage;
+	};
+	PortMeasurements getPortMeasurements(uint8_t port);
+
+	struct SystemMeasurements
+	{
+		int measuredWatts;
+		int calculatedWatts;
+		int availableWatts;
+		int budgetedWatts;
+
+	};
+	SystemMeasurements getSystemMeasuerments();
 };
 
 #endif // PD69200_H

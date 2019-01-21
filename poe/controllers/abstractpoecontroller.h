@@ -31,13 +31,16 @@ public:
 	virtual PoeState getPortState(uint8_t port) = 0;
 	virtual void setPortState(uint8_t port, PoeState state) = 0;
 
-    virtual float getPortVoltage(uint8_t port) = 0;   // Should always return volts
-	virtual float getPortCurrent(uint8_t port) = 0;   // Should always return amps
-
-	float getPortPower(uint8_t port)
+    virtual float getPortVoltage(uint8_t port) { throw PoeControllerError("Function not supported"); } // Should always return volts
+	virtual float getPortCurrent(uint8_t port) { throw PoeControllerError("Function not supported"); } // Should always return amps
+	virtual float getPortPower(uint8_t port)
     {
         return getPortVoltage(port) * getPortCurrent(port);
     };
+
+    virtual int getBudgetConsumed()     { throw PoeControllerError("Function not supported"); }
+    virtual int getBudgetAvailable()    { throw PoeControllerError("Function not supported"); }
+    virtual int getBudgetTotal()        { throw PoeControllerError("Function not supported"); }
 };
 
 #endif

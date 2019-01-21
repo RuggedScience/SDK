@@ -1,5 +1,6 @@
 #include "rspoe.h"
 #include "controllers/pd69104.h"
+#include "controllers/pd69200.h"
 #include "../utils/tinyxml2.h"
 
 #include <map>
@@ -43,6 +44,8 @@ bool initPoe(const char* initFile)
     {
         if (id == "pd69104")
             sp_controller = new Pd69104(0xF040, 0x40);
+        else if (id == "pd69200")
+            sp_controller = new Pd69200(0xF040, 0x40);
         else
         {
             s_lastError = "XML Error: Invalid id found for poe_controller";
@@ -213,6 +216,72 @@ float getPortPower(int port)
     }
 
     return power;
+}
+
+int getBudgetConsumed()
+{
+    int consumed = -1;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return consumed;
+    }
+
+    try
+    {
+        consumed = sp_controller->getBudgetConsumed();
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return consumed;
+    }
+
+    return consumed;
+}
+
+int getBudgetAvailable()
+{
+    int available = -1;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return available;
+    }
+
+    try
+    {
+        available = sp_controller->getBudgetAvailable();
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return available;
+    }
+
+    return available;
+}
+
+int getBudgetTotal()
+{
+    int total = -1;
+    if (sp_controller == nullptr)
+    {
+        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        return total;
+    }
+
+    try
+    {
+        total = sp_controller->getBudgetTotal();
+    }
+    catch (PoeControllerError& ex)
+    {
+        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        return total;
+    }
+
+    return total;
 }
 
 const char* getLastPoeError()
