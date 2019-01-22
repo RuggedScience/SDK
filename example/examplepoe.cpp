@@ -2,21 +2,20 @@
 #include <iostream>
 #include <cstdio>
 #include <cctype>
+#include <algorithm>
 
 static PoeState stringToState(std::string str)
 {
-	str = str.toupper(str.begin(), str.end());
-	switch (str)
-	{
-		case "DISABLED":
-			return StateDisabled;
-		case "ENABLED":
-			return StateEnabled;
-		case "AUTO":
-			return StateAuto;
-		default:
-			return StateError;
-	}
+	std::transform(str.begin(), str.end(), str.begin(), toupper);
+	//str = std::toupper((str.begin(), str.end());
+	if (str == "DISABLED")
+		return StateDisabled;
+	else if (str == "ENABLED")
+		return StateEnabled;
+	else if (str == "AUTO")
+		return StateAuto;
+	
+	return StateError;
 }
 
 static const char *stateToString(PoeState state)
@@ -43,7 +42,7 @@ static void printLastError()
 static void interactivePoe()
 {
 	int val = getBudgetConsumed();
-	if (val >= 0) printf("\nBudget Consumed: %d\n", val)
+	if (val >= 0) printf("\nBudget Consumed: %d\n", val);
 	else printLastError();
 
 	val = getBudgetAvailable();
@@ -77,7 +76,7 @@ static void interactivePoe()
 		{
 			PoeState ps = getPortState(port);
 			if (ps != StateError)
-				printf("Port %d state: %s\n", port, stateToString(state));
+				printf("Port %d state: %s\n", port, stateToString((PoeState)state));
 			else 
 				printLastError();
 		}
@@ -126,29 +125,29 @@ static void interactivePoe()
 
 static void showUsage()
 {
-	std::cout 	<< "Usage: " argv[0] << " FILE COMMAND [PORT] [OPTIONS]...\n"
+	std::cout 	<< "Usage: rspoe FILE COMMAND [PORT] [OPTIONS]...\n"
 				<< "Commands:\n"
 				<< "-s, --state\t\toutput the state of a port\n"
-				<< "\t\t\t\trequires PORT to be defined\n"
-				<< "-s, --state=STATE\t\tsets the state of a port\n"
-				<< "\t\t\t\tStates:\n"
-				<< "\t\t\t\t0, DISABLED\n"
-				<< "\t\t\t\t1, ENABLED\n"
-				<< "\t\t\t\t2, AUTO\n"
-				<< "\t\t\t\tif PORT is not supplied all ports will be set to STATE\n"
+				<< "\t\t\trequires PORT to be defined\n"
+				<< "-s, --state=STATE\tsets the state of a port\n"
+				<< "\t\t\tStates:\n"
+				<< "\t\t\t0, DISABLED\n"
+				<< "\t\t\t1, ENABLED\n"
+				<< "\t\t\t2, AUTO\n"
+				<< "\t\t\tif PORT is not supplied all ports will be set to STATE\n"
 				<< "-v, --voltage\t\toutput the voltage in volts of a port\n"
-				<< "\t\t\t\trequires PORT to be defined\n"
+				<< "\t\t\trequires PORT to be defined\n"
 				<< "-c, --current\t\toutput the current in amps of a port\n"
-				<< "\t\t\t\trequires PORT to be defined\n"
+				<< "\t\t\trequires PORT to be defined\n"
 				<< "-w, --wattage\t\toutput the wattage in watts of a port\n"
-				<< "\t\t\t\trequires PORT to be defined\n"
+				<< "\t\t\trequires PORT to be defined\n"
 				<< "-b, --budget-consumed\t\toutput the consumed budget in watts\n"
 				<< "-a, --budget-available\t\toutput the available budget in watts\n"
 				<< "-t, --budget-total\t\toutput the total budget in watts\n"
 				<< "-i, --interactive\t\tenter interactive control mode\n"
-				<< "--help\t\tdisplay this help and exit\n";
+				<< "--help\t\tdisplay this help and exit\n"
 				<< "Options:\n"
-				<< "-h, --human-readable \t\toutput data in a human readable format\n"
+				<< "-h, --human-readable \t\toutput data in a human readable format\n";
 }
 
 int main(int argc, char *argv[])
@@ -179,20 +178,56 @@ int main(int argc, char *argv[])
 	}
 
 	int port = -1;
-	std::string arg = argv[3];
-	try	{ port = std::stoi(arg); }
-	catch (std::exception &ex) { }
-
-	// If no port is defined we need to look for options in place of it.
-	if (port == -1) i = 3;
-	else i = 4;
-
 	bool human = false;
-	for (; i < argc, ++i)
+	PoeState state = StateError;
+	if (argc > 3)
 	{
-		arg = argv[i];
-		if (arg == "-h" || arg == "--human-readable")
-			human = true;
+		std::string arg = argv[3];
+		try	
+		{ 
+			port = std::stoi(arg); 
+		}
+		catch (std::exception& ex) 
+		{
+			
+		}
+
+		// If no port is defined we need to look for options in place of it.
+		int i = 0;
+		if (port == -1) i = 3;
+		else i = 4;
+
+		for (; i < argc; ++i)
+		{
+			arg = argv[i];
+			if (arg == "-h" || arg == "--human-readable")
+				human = true;
+		}
+		
+		size_t index = cmd.find("=");
+		if (index != cmd.npos)
+		{
+			std::string val = cmd.substr(index + 1);
+			cmd = cmd.substr(0, cmd.size() - val.size());
+			state = stringToState(val);
+
+			if (state == StateError)
+			{
+				try
+				{
+					int s = std::stoi(val);
+					if (s >= 0 && s < (int)StateError)
+						state = (PoeState)s;
+				}
+				catch (std::exception& ex) {}
+			}
+
+			if (state == StateError)
+			{
+				showUsage();
+				return 1;
+			}
+		}
 	}
 
 	if (port == -1 && (
@@ -200,37 +235,11 @@ int main(int argc, char *argv[])
 		cmd == "-v" || cmd == "--voltage" ||
 		cmd == "-c" || cmd == "--current" ||
 		cmd == "-w" || cmd == "--wattage"
-	))
-	{
-		showUsage();
-		return 1;
-	}
-
-	PoeState state = StateError;
-	size_t i = cmd.find("=");
-	if (i != cmd.npos)
-	{
-		std::string val = cmd.substr(i + 1);
-		cmd = cmd.substr(0, cmd.size() - val.size());
-		state = stringToState(val);
-
-		if (state == StateError)
+		))
 		{
-			try
-			{
-				int s = std::stoi(val);
-				if (s > 0 && s < (int)StateError)
-					state = (PoeState)s;
-			}
-			catch (std::exception& ex) {}
+			showUsage();
+			return 1;
 		}
-	}
-
-	if (state == StateError)
-	{
-		showUsage();
-		return 1;
-	}
 
 	if (cmd == "-s=" || cmd == "--state=")
 	{
@@ -264,7 +273,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError()
+			printLastError();
 			return 1;
 		}
 	}
