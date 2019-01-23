@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cctype>
+#include <string>
 #include <algorithm>
 
 static PoeState stringToState(std::string str)
@@ -28,9 +29,9 @@ static const char *stateToString(PoeState state)
             return "enabled";
         case StateAuto:
             return "auto";
-        case StateError:
-            return "error";
     }
+
+	return "error";
 }
 
 static void printLastError()
@@ -127,25 +128,25 @@ static void showUsage()
 {
 	std::cout 	<< "Usage: rspoe FILE COMMAND [PORT] [OPTIONS]...\n"
 				<< "Commands:\n"
-				<< "-s, --state\t\toutput the state of a port\n"
+				<< "s, state\t\toutput the state of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "-s, --state=STATE\tsets the state of a port\n"
+				<< "s, state=STATE\tsets the state of a port\n"
 				<< "\t\t\tStates:\n"
 				<< "\t\t\t0, DISABLED\n"
 				<< "\t\t\t1, ENABLED\n"
 				<< "\t\t\t2, AUTO\n"
 				<< "\t\t\tif PORT is not supplied all ports will be set to STATE\n"
-				<< "-v, --voltage\t\toutput the voltage in volts of a port\n"
+				<< "v, voltage\t\toutput the voltage in volts of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "-c, --current\t\toutput the current in amps of a port\n"
+				<< "c, current\t\toutput the current in amps of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "-w, --wattage\t\toutput the wattage in watts of a port\n"
+				<< "w, wattage\t\toutput the wattage in watts of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "-b, --budget-consumed\t\toutput the consumed budget in watts\n"
-				<< "-a, --budget-available\t\toutput the available budget in watts\n"
-				<< "-t, --budget-total\t\toutput the total budget in watts\n"
-				<< "-i, --interactive\t\tenter interactive control mode\n"
-				<< "--help\t\tdisplay this help and exit\n"
+				<< "b, budget-consumed\t\toutput the consumed budget in watts\n"
+				<< "a, budget-available\t\toutput the available budget in watts\n"
+				<< "t, budget-total\t\toutput the total budget in watts\n"
+				<< "i, interactive\t\tenter interactive control mode\n"
+				<< "help\t\tdisplay this help and exit\n"
 				<< "Options:\n"
 				<< "-h, --human-readable \t\toutput data in a human readable format\n";
 }
@@ -166,12 +167,12 @@ int main(int argc, char *argv[])
 
 	std::string cmd = argv[2];
 
-	if (cmd == "-i" || cmd == "--interactive")
+	if (cmd == "i" || cmd == "interactive")
 	{
 		interactivePoe();
 		return 0;
 	}
-	else if (cmd == "--help")
+	else if (cmd == "help")
 	{
 		showUsage();
 		return 0;
@@ -187,10 +188,7 @@ int main(int argc, char *argv[])
 		{ 
 			port = std::stoi(arg); 
 		}
-		catch (std::exception& ex) 
-		{
-			
-		}
+		catch (...) {}
 
 		// If no port is defined we need to look for options in place of it.
 		int i = 0;
@@ -219,7 +217,7 @@ int main(int argc, char *argv[])
 					if (s >= 0 && s < (int)StateError)
 						state = (PoeState)s;
 				}
-				catch (std::exception& ex) {}
+				catch (...) {}
 			}
 
 			if (state == StateError)
@@ -231,17 +229,17 @@ int main(int argc, char *argv[])
 	}
 
 	if (port == -1 && (
-		cmd == "-s" || cmd == "--state" ||
-		cmd == "-v" || cmd == "--voltage" ||
-		cmd == "-c" || cmd == "--current" ||
-		cmd == "-w" || cmd == "--wattage"
+		cmd == "s" || cmd == "state" ||
+		cmd == "v" || cmd == "voltage" ||
+		cmd == "c" || cmd == "current" ||
+		cmd == "w" || cmd == "wattage"
 		))
 		{
 			showUsage();
 			return 1;
 		}
 
-	if (cmd == "-s=" || cmd == "--state=")
+	if (cmd == "s=" || cmd == "state=")
 	{
 		if (setPortState(port, state) < 0)
 		{
@@ -249,7 +247,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-s" || cmd == "--state")
+	else if (cmd == "s" || cmd == "state")
 	{
 		state = getPortState(port);
 		if (state != StateError)
@@ -263,7 +261,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-v" || cmd == "--voltage")
+	else if (cmd == "v" || cmd == "voltage")
 	{
 		float voltage = getPortVoltage(port);
 		if (voltage >= 0.0f)
@@ -277,7 +275,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-c" || cmd == "--current")
+	else if (cmd == "c" || cmd == "current")
 	{
 		float current = getPortCurrent(port);
 		if (current >= 0.0f)
@@ -291,7 +289,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-w" || cmd == "--wattage")
+	else if (cmd == "w" || cmd == "wattage")
 	{
 		float watts = getPortPower(port);
 		if (watts >= 0.0f)
@@ -305,7 +303,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-b" || cmd == "--budget-consumed")
+	else if (cmd == "b" || cmd == "budget-consumed")
 	{
 		int consumed = getBudgetConsumed();
 		if (consumed >= 0)
@@ -319,7 +317,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-a" || cmd == "--budget-available")
+	else if (cmd == "a" || cmd == "budget-available")
 	{
 		int available = getBudgetAvailable();
 		if (available >= 0)
@@ -333,7 +331,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (cmd == "-t" || cmd == "--budget-total")
+	else if (cmd == "t" || cmd == "budget-total")
 	{
 		int total = getBudgetTotal();
 		if (total >= 0)
