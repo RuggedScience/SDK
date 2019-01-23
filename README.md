@@ -11,7 +11,7 @@ For best results, create a seperate build folder inside the root of this SDK. Fr
 For static builds run `cmake .. -DBUILD_SHARED_LIBS=OFF` instead of `cmake ..`
 
 ## Debug and Release
-Windows and Linux require different parameters to switch between debug and release but both default to debug. For release builds in Windows user the `--config release` option with the second command. For example...  
+Windows and Linux require different parameters to switch between debug and release builds but both default to debug. For release builds in Windows use the `--config release` option with the second command as shown below.
 
 `cmake ..`
 `cmake --build . --config release`
