@@ -50,22 +50,13 @@ static uint16_t calcCheckSum(const uint8_t *msg, size_t size)
     return sum;
 }
 
-static uint16_t calcCheckSum(const msg_t& msg)
-{
-    uint16_t sum = 0;
-    for (uint8_t byte : msg)
-        sum += byte;
-
-    return sum;
-}
-
 Pd69200::Pd69200(uint16_t bus, uint8_t dev) :
 	AbstractPoeController(),
 	m_busAddr(bus),
 	m_devAddr(dev),
     m_lastEcho(0)
 {
-	int devId = getDeviceId();
+    int devId = getDeviceId();
 	if (devId < 0 || devId != kDeviceId)
 		throw PoeControllerError(std::strerror(errno));
 }
@@ -134,7 +125,7 @@ float Pd69200::getPortPower(uint8_t port)
 
 int Pd69200::getBudgetConsumed()
 {
-    return getSystemMeasuerments().measuredWatts;
+    return getSystemMeasuerments().calculatedWatts;
 }
 
 int Pd69200::getBudgetAvailable()
@@ -150,7 +141,9 @@ int Pd69200::getBudgetTotal()
 msg_t Pd69200::sendMsgToController(msg_t& msg)
 {
     msg[1] = m_lastEcho++;
-    uint16_t chksum = calcCheckSum(msg);
+    if (m_lastEcho > 0xFE) m_lastEcho = 0; // According to docs echo shouldn't exceed 0xFE.
+
+    uint16_t chksum = calcCheckSum(msg.data(), MSG_LEN - 2);
     uint8_t chksum_h = chksum >> 8;
     uint8_t chksum_l = chksum & 0xFF;
 
@@ -182,6 +175,10 @@ int Pd69200::getDeviceId()
 {
     msg_t response, msg = softwareVersionCmd;
     response = sendMsgToController(msg);
+
+    if (response[0] != 0x03)
+        throw PoeControllerError("Invalid response received from controller");
+        
     return response[4];
 }
 
