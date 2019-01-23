@@ -1,20 +1,20 @@
 include(GNUInstallDirs)
 option(INSTALL_EXAMPLES "Installs examples" ON)
 
-add_executable(exampledio exampledio.cpp)
-add_executable(examplepoe examplepoe.cpp)
+add_executable(rsdioctl rsdio.cpp)
+add_executable(rspoectl rspoe.cpp)
 
-target_include_directories(exampledio PRIVATE "${PROJECT_BINARY_DIR}/dio")
-target_include_directories(examplepoe PRIVATE "${PROJECT_BINARY_DIR}/poe")
+target_include_directories(rsdioctl PRIVATE "${PROJECT_BINARY_DIR}/dio")
+target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")
 
-target_link_libraries (exampledio rsdio)
-target_link_libraries (examplepoe rspoe)
+target_link_libraries (rsdioctl rsdio)
+target_link_libraries (rspoectl rspoe)
 
 if(INSTALL_EXAMPLES)
     if(MSVC)
         set(CMAKE_INSTALL_BINDIR bin)
     endif(MSVC)
 
-    install(TARGETS exampledio DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(TARGETS examplepoe DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS rsdioctl DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS rspoectl DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif(INSTALL_EXAMPLES)
