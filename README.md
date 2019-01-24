@@ -13,12 +13,12 @@ For static builds run `cmake .. -DBUILD_SHARED_LIBS=OFF` instead of `cmake ..`
 ## Debug and Release
 Windows and Linux require different parameters to switch between debug and release builds but both default to debug. For release builds in Windows use the `--config release` option with the second command as shown below.
 
-`cmake ..`
+`cmake ..`  
 `cmake --build . --config release`
 
 For Linux you will need to use the `-DCMAKE_BUILD_TYPE` switch shown below.  
 
-`cmake -DCMAKE_BUILD_TYPE=Debug ..`
+`cmake -DCMAKE_BUILD_TYPE=Debug ..`  
 `cmake --build .`
 
 # Intalling
