@@ -10,6 +10,10 @@ target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")
 target_link_libraries (rsdioctl rsdio)
 target_link_libraries (rspoectl rspoe)
 
+SET_TARGET_PROPERTIES(rsdioctl rspoectl
+    PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
+
+
 if(INSTALL_EXAMPLES)
     if(MSVC)
         set(CMAKE_INSTALL_BINDIR bin)
