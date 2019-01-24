@@ -146,7 +146,7 @@ static void showUsage()
 				<< "a, budget-available\toutput the available budget in watts\n"
 				<< "t, budget-total\t\toutput the total budget in watts\n"
 				<< "i, interactive\t\tenter interactive control mode\n"
-				<< "help\t\tdisplay this help and exit\n"
+				<< "help\t\t\tdisplay this help and exit\n"
 				<< "Options:\n"
 				<< "-h, --human-readable \t\toutput data in a human readable format\n";
 }
