@@ -130,7 +130,7 @@ static void showUsage()
 				<< "Commands:\n"
 				<< "s, state\t\toutput the state of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "s, state=STATE\tsets the state of a port\n"
+				<< "s, state=STATE\t\tsets the state of a port\n"
 				<< "\t\t\tStates:\n"
 				<< "\t\t\t0, DISABLED\n"
 				<< "\t\t\t1, ENABLED\n"
@@ -148,7 +148,7 @@ static void showUsage()
 				<< "i, interactive\t\tenter interactive control mode\n"
 				<< "help\t\t\tdisplay this help and exit\n"
 				<< "Options:\n"
-				<< "-h, --human-readable \t\toutput data in a human readable format\n";
+				<< "-h, --human-readable \toutput data in a human readable format\n";
 }
 
 int main(int argc, char *argv[])
@@ -178,53 +178,50 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	std::string arg;
 	int port = -1;
 	bool human = false;
 	PoeState state = StateError;
+	
 	if (argc > 3)
 	{
-		std::string arg = argv[3];
+		arg = argv[3];
 		try	
 		{ 
 			port = std::stoi(arg); 
 		}
 		catch (...) {}
 
-		// If no port is defined we need to look for options in place of it.
-		int i = 0;
-		if (port == -1) i = 3;
-		else i = 4;
-
-		for (; i < argc; ++i)
+		for (int i = 3; i < argc; ++i)
 		{
 			arg = argv[i];
 			if (arg == "-h" || arg == "--human-readable")
-				human = true;
+			human = true;
 		}
+	}
 		
-		size_t index = cmd.find("=");
-		if (index != cmd.npos)
+	size_t index = cmd.find("=");
+	if (index != cmd.npos)
+	{
+		std::string val = cmd.substr(index + 1);
+		cmd = cmd.substr(0, cmd.size() - val.size());
+		state = stringToState(val);
+
+		if (state == StateError)
 		{
-			std::string val = cmd.substr(index + 1);
-			cmd = cmd.substr(0, cmd.size() - val.size());
-			state = stringToState(val);
-
-			if (state == StateError)
+			try
 			{
-				try
-				{
-					int s = std::stoi(val);
-					if (s >= 0 && s < (int)StateError)
-						state = (PoeState)s;
-				}
-				catch (...) {}
+				int s = std::stoi(val);
+				if (s >= 0 && s < (int)StateError)
+					state = (PoeState)s;
 			}
+			catch (...) {}
+		}
 
-			if (state == StateError)
-			{
-				showUsage();
-				return 1;
-			}
+		if (state == StateError)
+		{
+			showUsage();
+			return 1;
 		}
 	}
 
@@ -241,6 +238,7 @@ int main(int argc, char *argv[])
 
 	if (cmd == "s=" || cmd == "state=")
 	{
+		if (port == -1) port = 255;
 		if (setPortState(port, state) < 0)
 		{
 			printLastError();
