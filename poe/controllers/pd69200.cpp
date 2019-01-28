@@ -56,7 +56,10 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev) :
 	m_devAddr(dev),
     m_lastEcho(0)
 {
-    int devId = getDeviceId();
+    int devId;
+    try { devId = getDeviceId(); }
+    catch (PoeControllerError) { devId = getDeviceId(); }
+    
 	if (devId < 0 || devId != kDeviceId)
 		throw PoeControllerError(std::strerror(errno));
 }
