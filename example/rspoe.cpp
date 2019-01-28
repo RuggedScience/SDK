@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cctype>
 #include <string>
+#include <vector>
 #include <algorithm>
 
 static PoeState stringToState(std::string str)
@@ -39,91 +40,6 @@ static void printLastError()
 	std::cerr << getLastPoeError() << std::endl;
 }
 
-//This function goes into a loop to allow interactive control over the PoE ports
-static void interactivePoe()
-{
-	int val = getBudgetConsumed();
-	if (val >= 0) printf("\nBudget Consumed: %d\n", val);
-	else printLastError();
-
-	val = getBudgetAvailable();
-	if (val >= 0) printf("Budget Available: %d\n", val);
-	else printLastError();
-
-	val = getBudgetTotal();
-	if (val >= 0) printf("Budget Total: %d\n\n", val);
-	else printLastError();
-
-	char cmd;
-	int port, state;
-	while (1)
-	{
-		printf("Please enter a command\n");
-		printf("r = Read port state\n");
-		printf("s = Set port state\n");
-		printf("v = Read port voltage\n");
-		printf("c = Read port current\n");
-		printf("w = Read port wattage\n");
-		printf("e = Exit\n");
-		std::cin >> cmd;
-		std::cin.clear();
-		if (cmd == 'e') break;
-
-		printf("Please enter a port number\n");
-		std::cin >> port;
-		std::cin.clear();
-
-		if (cmd == 'r')
-		{
-			PoeState ps = getPortState(port);
-			if (ps != StateError)
-				printf("Port %d state: %s\n", port, stateToString((PoeState)state));
-			else 
-				printLastError();
-		}
-		else if (cmd == 's')
-		{
-			printf("Enter desired state\n");
-			printf("0 = DISABLED\n");
-			printf("1 = ENABLED\n");
-			printf("2 = AUTO\n");
-			std::cin >> state;
-			std::cin.clear();
-            if (setPortState(port, (PoeState)state) < 0) 
-				printLastError();
-		}
-		else if (cmd == 'v')
-		{
-			float v = getPortVoltage(port);
-
-			if (v < 0) 
-				printLastError();
-			else 
-				printf("Port %d voltage: %fv\n", port, v);
-		}
-		else if (cmd == 'c')
-		{
-			float c = getPortCurrent(port);
-
-			if (c < 0)
-				printLastError();
-			else 
-				printf("Port %d current: %fa\n", port, c);
-		}
-		else if (cmd == 'w')
-		{
-			float w = getPortPower(port);
-
-			if (w < 0) 
-				printLastError();
-			else 
-				printf("Port %d wattage: %fw\n", port, w);
-		}
-		else
-			printf("Invalid Command!!!\n");
-	}
-}
-
 static void showUsage()
 {
 	std::cout 	<< "Usage: rspoe FILE COMMAND [PORT] [OPTIONS]...\n"
@@ -135,7 +51,7 @@ static void showUsage()
 				<< "\t\t\t0, DISABLED\n"
 				<< "\t\t\t1, ENABLED\n"
 				<< "\t\t\t2, AUTO\n"
-				<< "\t\t\tif PORT is not supplied all ports will be set to STATE\n"
+				<< "\t\t\trequires PORT to be defined\n"
 				<< "v, voltage\t\toutput the voltage in volts of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
 				<< "c, current\t\toutput the current in amps of a port\n"
@@ -145,7 +61,6 @@ static void showUsage()
 				<< "b, budget-consumed\toutput the consumed budget in watts\n"
 				<< "a, budget-available\toutput the available budget in watts\n"
 				<< "t, budget-total\t\toutput the total budget in watts\n"
-				<< "i, interactive\t\tenter interactive control mode\n"
 				<< "help\t\t\tdisplay this help and exit\n"
 				<< "Options:\n"
 				<< "-h, --human-readable \toutput data in a human readable format\n";
@@ -153,53 +68,46 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	if (argc < 3)
+	// Create a list of args without optional switches
+	// Allows for switches to be position independent
+	bool human = false;
+	std::vector<std::string> argList;
+	for (int i = 1; i < argc; ++i)
+	{
+		std::string arg = argv[i];
+		if (arg == "help")
+		{
+			showUsage();
+			return 0;
+		}
+		else if (arg == "-h" || arg == "--human-readable")
+			human = true;
+		else
+			argList.emplace_back(arg);
+	}
+
+	if (argList.size() < 2)
 	{
 		showUsage();
 		return 1;
 	}
 
-	if (!initPoe(argv[1]))
+	if (!initPoe(argList[0].data()))
 	{
 		printLastError();
 		return 1;
 	}
 
-	std::string cmd = argv[2];
-
-	if (cmd == "i" || cmd == "interactive")
-	{
-		interactivePoe();
-		return 0;
-	}
-	else if (cmd == "help")
-	{
-		showUsage();
-		return 0;
-	}
-
-	std::string arg;
 	int port = -1;
-	bool human = false;
-	PoeState state = StateError;
-	
-	if (argc > 3)
+	if (argList.size() > 2)
 	{
-		arg = argv[3];
-		try	
-		{ 
-			port = std::stoi(arg); 
-		}
+		try { port = std::stoi(argList[2]); }
 		catch (...) {}
-
-		for (int i = 3; i < argc; ++i)
-		{
-			arg = argv[i];
-			if (arg == "-h" || arg == "--human-readable")
-			human = true;
-		}
 	}
-		
+
+	// If the command is "state=" we need to break it up into command / value.
+	PoeState state = StateError;
+	std::string& cmd = argList[1];	
 	size_t index = cmd.find("=");
 	if (index != cmd.npos)
 	{
@@ -207,6 +115,8 @@ int main(int argc, char *argv[])
 		cmd = cmd.substr(0, cmd.size() - val.size());
 		state = stringToState(val);
 
+		// stringToState returs "StateError" if it couldn't convert it.
+		// Let's check if they used a number instead of string.
 		if (state == StateError)
 		{
 			try
@@ -218,6 +128,7 @@ int main(int argc, char *argv[])
 			catch (...) {}
 		}
 
+		// Couldn't convert the state from a string or an int... give up.
 		if (state == StateError)
 		{
 			showUsage();
@@ -225,20 +136,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// The below commands REQUIRE the PORT option.
+	// So we need to quit if no PORT option was given with those commands.
 	if (port == -1 && (
-		cmd == "s" || cmd == "state" ||
-		cmd == "v" || cmd == "voltage" ||
-		cmd == "c" || cmd == "current" ||
-		cmd == "w" || cmd == "wattage"
-		))
-		{
-			showUsage();
-			return 1;
-		}
+		cmd == "s=" || cmd == "state=" 	||
+		cmd == "s" 	|| cmd == "state" 	||
+		cmd == "v" 	|| cmd == "voltage"	||
+		cmd == "c" 	|| cmd == "current" ||
+		cmd == "w" 	|| cmd == "wattage"))
+	{
+		showUsage();
+		return 1;
+	}
 
 	if (cmd == "s=" || cmd == "state=")
 	{
-		if (port == -1) port = 255;
 		if (setPortState(port, state) < 0)
 		{
 			printLastError();
