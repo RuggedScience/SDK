@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
 		// Couldn't convert the state from a string or an int... give up.
 		if (state == StateError)
 		{
+			std::cerr << "Invalid state supplied!!" << std::endl;
 			showUsage();
 			return 1;
 		}
@@ -145,6 +146,7 @@ int main(int argc, char *argv[])
 		cmd == "c" 	|| cmd == "current" ||
 		cmd == "w" 	|| cmd == "wattage"))
 	{
+		std::cerr << "Port required for '" << cmd << "' command!!" << std::endl;
 		showUsage();
 		return 1;
 	}
