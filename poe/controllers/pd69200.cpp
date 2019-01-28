@@ -197,7 +197,11 @@ Pd69200::PortStatus Pd69200::getPortStatus(uint8_t port)
     PortStatus s;
     s.enabled = ((response[2] & 0x01) == 0x01);
     s.status = response[3];
-    s.force = response[4] == 0x01;
+    s.force = (response[4] == 0x01);
+    s.latch = response[5];
+    s.classType = response[6];
+    s.mode = response[10];
+    s.fourPair = (response[11] == 0x01);
 
     return s;
 }
@@ -207,7 +211,7 @@ void Pd69200::setPortEnabled(uint8_t port, bool enable)
     msg_t response, msg = setEnabledCmd;
     msg[4] = port;
     msg[5] = enable ? 0x01 : 0x00;
-    msg[6] = enable ? 0x00 : 0x02;
+    msg[6] = enable ? 0x01 : 0x02;
     response = sendMsgToController(msg);
 
     for (size_t i = 0; i < MSG_LEN - 2; ++i)

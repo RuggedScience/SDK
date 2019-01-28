@@ -39,6 +39,10 @@ private:
 		bool enabled;
 		uint8_t status;
 		bool force;
+		uint8_t latch;
+		uint8_t classType;
+		uint8_t mode; // AF / AT / POH
+		bool fourPair;
 	};
 	PortStatus getPortStatus(uint8_t port);
 	void setPortEnabled(uint8_t port, bool enable);
