@@ -11,7 +11,7 @@ std::string s_lastError;
 AbstractPoeController *sp_controller = nullptr;
 std::map<int, uint8_t> s_portMap;
 
-bool initPoe(const char* initFile)
+bool initPoe(const char *initFile)
 {
     using namespace tinyxml2;
     s_portMap.clear();
@@ -284,7 +284,7 @@ int getBudgetTotal()
     return total;
 }
 
-const char* getLastPoeError()
+const char *getLastPoeError()
 {
     return s_lastError.c_str();
 }

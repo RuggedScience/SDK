@@ -53,7 +53,7 @@ static tinyxml2::XMLError getExternalPinInfo(tinyxml2::XMLElement *pin, int& pin
 	return XML_SUCCESS;
 }
 
-bool initDio(const char* initFile)
+bool initDio(const char *initFile)
 {
     using namespace tinyxml2;
 	s_dioMap.clear();
@@ -286,7 +286,7 @@ int setOutputMode(int dio, OutputMode mode)
     return 0;
 }
 
-const char* getLastDioError()
+const char *getLastDioError()
 {
     return s_lastError.c_str();
 }

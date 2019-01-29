@@ -17,7 +17,7 @@ RSPOE_EXPORT float getPortPower(int port);
 RSPOE_EXPORT int getBudgetConsumed();
 RSPOE_EXPORT int getBudgetAvailable();
 RSPOE_EXPORT int getBudgetTotal();
-RSPOE_EXPORT const char* getLastPoeError();
+RSPOE_EXPORT const char *getLastPoeError();
 
 #ifdef __cplusplus
 }
