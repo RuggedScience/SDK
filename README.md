@@ -63,5 +63,3 @@ Once the build process is finished, you will find a copy of the libraries and ex
 
 # Examples
 Both the DIO and POE libraries have an `init` function which must be run before any other functions. These init functions take one argument which should contain a path to the XML file that is specific to your unit. This file is supplied by Rugged Science and can be found in this repo under the 'xml' directory.
-
-# rsdio
