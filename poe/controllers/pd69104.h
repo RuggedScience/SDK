@@ -15,6 +15,10 @@ public:
 	float getPortVoltage(uint8_t port) override;
 	float getPortCurrent(uint8_t port) override;
 
+	int getBudgetConsumed() override;
+	int getBudgetAvailable() override;
+	int getBudgetTotal() override;
+
 private:
 	uint16_t m_busAddr;
 	uint8_t m_devAddr;

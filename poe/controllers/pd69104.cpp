@@ -14,6 +14,9 @@ static const uint8_t kDisenaReg = 0x13;     //Disconnect Sensing Enable register
 static const uint8_t kDetenaReg = 0x14;     //Detection and Classification Enable register
 static const uint8_t kPwrpbReg = 0x19;		//Power On/Off Pushbutton register
 static const uint8_t kDevIdReg = 0x43;		//Device ID register. Should always read 0x44
+static const uint8_t kPwrGdReg = 0x91;		//Which power bank is being used
+static const uint8_t kPwrBankBAR = 0x89;	//Base address for power banks.
+static const uint8_t kTotalPwrReg = 0x97;	//Total budget consumed based on calculation method set in reg 0x7F[1]
 
 static const float kVoltsCoef = 5.835f;
 static const uint8_t kPort1VoltReg = 0x32;
@@ -135,6 +138,35 @@ float Pd69104::getPortCurrent(uint8_t port)
 	cur |= data << 8;
 
 	return (cur * kCurCoef) / 1000000.0f; // Convert from uA to A
+}
+
+int Pd69104::getBudgetConsumed()
+{
+	int data = smbusReadRegister(m_busAddr, m_devAddr, kTotalPwrReg);
+	if (data < 0)
+		throw PoeControllerError(std::strerror(errno));
+
+	return data;
+}
+
+int Pd69104::getBudgetAvailable()
+{
+	return getBudgetTotal() - getBudgetConsumed();
+}
+
+int Pd69104::getBudgetTotal()
+{
+	int data = smbusReadRegister(m_busAddr, m_devAddr, kPwrGdReg);
+	if (data < 0)
+		throw PoeControllerError(std::strerror(errno));
+	else if (data > 7)
+		throw PoeControllerError("Invalid power bank received from controller");
+
+	data = smbusReadRegister(m_busAddr, m_devAddr, kPwrBankBAR + data);
+	if (data < 0)
+		throw PoeControllerError(std::strerror(errno));
+
+	return data;
 }
 
 int Pd69104::getDeviceId() const
