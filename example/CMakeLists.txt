@@ -1,8 +1,8 @@
 include(GNUInstallDirs)
 option(INSTALL_EXAMPLES "Installs examples" ON)
 
-add_executable(rsdioctl rsdio.cpp)
-add_executable(rspoectl rspoe.cpp)
+add_executable(rsdioctl rsdioctl.cpp)
+add_executable(rspoectl rspoectl.cpp)
 
 target_include_directories(rsdioctl PRIVATE "${PROJECT_BINARY_DIR}/dio")
 target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")

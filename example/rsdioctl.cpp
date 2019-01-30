@@ -31,7 +31,7 @@ void printLastError()
 
 static void showUsage()
 {
-	std::cout 	<< "Usage: rsdio FILE COMMAND DIO PIN [OPTIONS]...\n"
+	std::cout 	<< "Usage: rsdio FILE COMMAND DIO PIN [OPTIONS...]\n"
 				<< "Commands:\n"
 				<< "s, state\t\toutput the state of a pin\n"
 				<< "\t\t\trequires DIO and PIN to be defined\n"
