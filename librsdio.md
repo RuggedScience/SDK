@@ -4,6 +4,7 @@ The **librsdio** library is used to control the DIO on supported Rugged Science 
 
 ## Public Types
 
+### OutputMode
 ```c++
 enum OutputMode
 ```
@@ -17,6 +18,7 @@ enum OutputMode
 
 ## Public Functions
 
+### initDio
 ```c++
 bool initDio(const char *initFile)
 ```
@@ -30,6 +32,7 @@ Returns true if the dio was successfully initialized, otherwise returns false.
 
 <br>
 
+### digitalRead
 ```c++
 int digitalRead(int dio, int pin)
 ```
@@ -46,6 +49,7 @@ The state of 'pin' read from 'dio'. Negative value on error.
 
 <br>
 
+### digitalWrite
 ```c++
 int digitalWrite(int dio, int pin, bool state)
 ```
@@ -61,6 +65,7 @@ Zero on successful write. Negative value on error.
 
 <br>
 
+### setOutpuMode
 ```c++
 int setOutputMode(int dio, Output mode)
 ```
@@ -75,6 +80,7 @@ Zero on successful write. Negative value on error.
 
 <br>
 
+### getLastDioError
 ```c++
 const char *getLastDioError()
 ```

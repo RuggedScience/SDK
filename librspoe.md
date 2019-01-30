@@ -4,6 +4,7 @@ The **librspoe** library is used to control the PoE ports on supported Rugged Sc
 
 ## Public Types
 
+### PoeState
 ```c++
 enum PoeState
 ```
@@ -19,6 +20,7 @@ enum PoeState
 
 ## Public Functions
 
+### initPoe
 ```c++
 bool initPoe(const char *initFile)
 ```
@@ -32,6 +34,7 @@ Returns true if the dio was successfully initialized, otherwise returns false.
 
 <br>
 
+### getPortState
 ```c++
 PoeState getPortState(int port)
 ```
@@ -45,6 +48,7 @@ Returns the [PoeState](##Public-Types) of port.
 
 <br>
 
+### setPortState
 ```c++
 int setPortState(int port, PoeState state)
 ```
@@ -59,6 +63,7 @@ Zero if sucessfully set. Negative value on error.
 
 <br>
 
+### getPortVoltage
 ```c++
 float getPortVoltage(int port)
 ```
@@ -72,6 +77,7 @@ Voltage of port in volts. Negative value on error.
 
 <br>
 
+### getPortCurrent
 ```c++
 float getPortCurrent(int port)
 ```
@@ -85,6 +91,7 @@ Current of port in amps. Negative value on error.
 
 <br>
 
+### getPortPower
 ```c++
 float getPortPower(int port)
 ```
@@ -98,6 +105,7 @@ Power of port in watts. Negative value on error.
 
 <br>
 
+### getBudgetConsumed
 ```c++
 int getBudgetConsumed()
 ```
@@ -109,6 +117,7 @@ Total watts being consumed from all ports. Negative value on error.\
 
 <br>
 
+### getBudgetAvailable
 ```c++
 int getBudgetAvailable()
 ```
@@ -119,6 +128,7 @@ Watts available before reaching max budget. Negative value on error.
 
 <br>
 
+### getBudgetTotal
 ```c++
 int getBudgetTotal()
 ```
@@ -129,6 +139,7 @@ Total watts the unit can handle. Negative value on error.
 
 <br>
 
+### getLastPoeError
 ```c++
 const char *getLastPoeError()
 ```
