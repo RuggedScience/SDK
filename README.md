@@ -60,6 +60,3 @@ Linux: "/usr/local"
 By default the examples are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_EXAMPLES=OFF`.
 
 Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory you supplied.
-
-# Examples
-Both the DIO and POE libraries have an `init` function which must be run before any other functions. These init functions take one argument which should contain a path to the XML file that is specific to your unit. This file is supplied by Rugged Science and can be found in this repo under the 'xml' directory.
