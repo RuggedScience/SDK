@@ -206,6 +206,12 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
+	else
+	{
+		std::cerr << "Invalid command supplied!!" << std::endl;
+		showUsage();
+		return 1;
+	}
 
 	return 0;
 }
