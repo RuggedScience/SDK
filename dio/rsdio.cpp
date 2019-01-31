@@ -265,6 +265,12 @@ int setOutputMode(int dio, OutputMode mode)
         return -1;
     }
 
+    if (mode == ModeError)
+    {
+        s_lastError = "Argument Error: Invalid mode 'ModeError'";
+        return -1;
+    }
+
     pinmap_t pinMap = s_dioMap.at(dio);
     if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {

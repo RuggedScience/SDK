@@ -42,11 +42,11 @@ static void printLastError()
 
 static void showUsage()
 {
-	std::cout 	<< "Usage: rspoe FILE COMMAND [PORT] [OPTIONS]...\n"
+	std::cout 	<< "Usage: rspoectl FILE COMMAND [PORT] [OPTIONS...]\n"
 				<< "Commands:\n"
 				<< "s, state\t\toutput the state of a port\n"
 				<< "\t\t\trequires PORT to be defined\n"
-				<< "s, state=STATE\t\tsets the state of a port\n"
+				<< "s=STATE, state=STATE\t\tsets the state of a port\n"
 				<< "\t\t\tStates:\n"
 				<< "\t\t\t0, DISABLED\n"
 				<< "\t\t\t1, ENABLED\n"

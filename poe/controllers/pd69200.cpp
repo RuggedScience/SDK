@@ -98,7 +98,7 @@ void Pd69200::setPortState(uint8_t port, PoeState state)
             setPortForce(port, false);
             break;
         case StateError:
-            break;
+            throw PoeControllerError("Invalid PoeState: StateError");
     }
 }
 

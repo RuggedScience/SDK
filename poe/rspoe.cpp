@@ -121,6 +121,12 @@ int setPortState(int port, PoeState state)
         return -1;
     }
 
+    if (state == StateError)
+    {
+        s_lastError = "Argument Error: Invalid state 'StateError'";
+        return -1;
+    }
+
     try
     {
         sp_controller->setPortState(s_portMap[port], state);

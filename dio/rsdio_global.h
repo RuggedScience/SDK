@@ -3,6 +3,7 @@
 
 enum OutputMode
 {
+    ModeError = 0,
     ModePnp = -1,
     ModeNpn = -2    
 };
