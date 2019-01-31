@@ -8,9 +8,9 @@
 static int stringToState(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
-	if (str == "DISABLED" || str == "FALSE" || str == "0")
+	if (str == "LOW" || str == "FALSE" || str == "0")
 		return 0;
-	else if (str == "ENABLED" || str == "TRUE" || str == "1")
+	else if (str == "HIGH" || str == "TRUE" || str == "1")
 		return 1;
 	
 	return -1;
@@ -19,9 +19,9 @@ static int stringToState(std::string str)
 static const char *stateToString(bool state)
 {
 	if (!state)
-		return "disabled";
+		return "low";
 	else
-		return "enabled";
+		return "high";
 }
 
 static OutputMode stringToMode(std::string str)
@@ -50,8 +50,8 @@ static void showUsage()
 				<< "\n"
 				<< "s=STATE, state=STATE\tsets the state of a pin\n"
 				<< "\t\t\tStates:\n"
-				<< "\t\t\t0, DISABLED\n"
-				<< "\t\t\t1, ENABLED\n"
+				<< "\t\t\t0, LOW\n"
+				<< "\t\t\t1, HIGH\n"
 				<< "\t\t\trequires DIO and PIN to be defined\n"
 				<< "\n"
 				<< "m=MODE, mode=MODE\tsets the output mode of a specific dio port\n"
