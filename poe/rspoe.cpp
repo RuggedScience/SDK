@@ -1,6 +1,7 @@
 #include "rspoe.h"
 #include "controllers/pd69104.h"
 #include "controllers/pd69200.h"
+#include "controllers/ltc4266.h"
 #include "../utils/tinyxml2.h"
 
 #include <map>
@@ -46,6 +47,8 @@ bool initPoe(const char *initFile)
             sp_controller = new Pd69104(0xF040, 0x40);
         else if (id == "pd69200")
             sp_controller = new Pd69200(0xF040, 0x40);
+        else if (id == "ltc4266")
+            sp_controller = new Ltc4266(0xF040, 0x42);
         else
         {
             s_lastError = "XML Error: Invalid id found for poe_controller";
