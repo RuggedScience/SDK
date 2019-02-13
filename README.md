@@ -24,6 +24,7 @@ From inside of that folder run the following commands.
  `cmake ..`\
  `cmake --build .`
 
+
 For static builds add the  `-DBUILD_SHARED_LIBS=OFF` flag. *Useful when you are just looking to build the control utilities (rspoectl and rsdioctl).* 
 
 `cmake .. -DBUILD_SHARED_LIBS=OFF`
