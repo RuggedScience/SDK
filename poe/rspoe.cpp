@@ -41,14 +41,15 @@ bool initPoe(const char *initFile)
     }
 
     std::string id(poe->Attribute("id"));
+    int address = std::stoi(std::string(poe->Attribute("address")), nullptr, 0)
     try
     {
         if (id == "pd69104")
-            sp_controller = new Pd69104(0xF040, 0x40);
+            sp_controller = new Pd69104(0xF040, address);
         else if (id == "pd69200")
-            sp_controller = new Pd69200(0xF040, 0x40);
+            sp_controller = new Pd69200(0xF040, address);
         else if (id == "ltc4266")
-            sp_controller = new Ltc4266(0xF040, 0x42);
+            sp_controller = new Ltc4266(0xF040, address);
         else
         {
             s_lastError = "XML Error: Invalid id found for poe_controller";
