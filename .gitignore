@@ -30,10 +30,10 @@
 *.exe
 *.out
 *.app
-.vscode/settings.json
-.vscode/settings.json
+
 example/examplepoe
 example/exampledio
 
+.vscode/
 build/
 install/

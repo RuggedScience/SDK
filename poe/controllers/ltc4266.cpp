@@ -1,11 +1,11 @@
-#include "pd69104.h"
+#include "ltc4266.h"
 #include "../../utils/i801_smbus.h"
 
 #include <stdexcept>
 #include <fcntl.h>
 #include <cstring>
 
-static const uint8_t kDeviceId = 0x44;
+static const uint8_t kDeviceId = 0x64;
 
 //Registers as described in the datasheet for the PD69104.
 static const uint8_t kSataPwrReg = 0x10;	//Power Status register
@@ -13,10 +13,7 @@ static const uint8_t kOpmdReg = 0x12;		//Operating Mode register
 static const uint8_t kDisenaReg = 0x13;     //Disconnect Sensing Enable register
 static const uint8_t kDetenaReg = 0x14;     //Detection and Classification Enable register
 static const uint8_t kPwrpbReg = 0x19;		//Power On/Off Pushbutton register
-static const uint8_t kDevIdReg = 0x43;		//Device ID register. Should always read 0x44
-static const uint8_t kPwrGdReg = 0x91;		//Which power bank is being used
-static const uint8_t kPwrBankBAR = 0x89;	//Base address for power banks.
-static const uint8_t kTotalPwrReg = 0x97;	//Total budget consumed based on calculation method set in reg 0x7F[1]
+static const uint8_t kDevIdReg = 0x1B;		//Device ID register.
 
 static const float kVoltsCoef = 5.835f;
 static const uint8_t kPort1VoltReg = 0x32;
@@ -35,22 +32,24 @@ static const uint8_t kManualMode =	1;
 static const uint8_t kSemiAutoMode = 2;
 static const uint8_t kAutoMode = 3;
 
-Pd69104::Pd69104(uint16_t bus, uint8_t dev) :
+Ltc4266::Ltc4266(uint16_t bus, uint8_t dev) :
 	AbstractPoeController(),
 	m_busAddr(bus),
 	m_devAddr(dev)
 {
 	int devId = getDeviceId();
-	if (devId < 0 || devId != kDeviceId)
+	if (devId < 0)
 		throw PoeControllerError(std::strerror(errno));
+	else if (devId != kDeviceId)
+		throw PoeControllerError("Invalid device ID found");
 }
 
-Pd69104::~Pd69104()
+Ltc4266::~Ltc4266()
 {
 
 }
 
-PoeState Pd69104::getPortState(uint8_t port)
+PoeState Ltc4266::getPortState(uint8_t port)
 {
 	uint8_t mode = getPortMode(port);
 	if (mode == kManualMode)
@@ -63,7 +62,7 @@ PoeState Pd69104::getPortState(uint8_t port)
 		throw PoeControllerError("Unknown port mode found");
 }
 
-void Pd69104::setPortState(uint8_t port, PoeState state)
+void Ltc4266::setPortState(uint8_t port, PoeState state)
 {
 	switch (state)
 	{
@@ -88,7 +87,7 @@ void Pd69104::setPortState(uint8_t port, PoeState state)
 	}
 }
 
-float Pd69104::getPortVoltage(uint8_t port)
+float Ltc4266::getPortVoltage(uint8_t port)
 {
 	uint8_t reg = 0;
 	if (port == 0) reg = kPort1VoltReg;
@@ -114,7 +113,7 @@ float Pd69104::getPortVoltage(uint8_t port)
 	return (volts * kVoltsCoef) / 1000.0f; // Convert from mV to V
 }
 
-float Pd69104::getPortCurrent(uint8_t port)
+float Ltc4266::getPortCurrent(uint8_t port)
 {
 	uint8_t reg = 0;
 	if (port == 0) reg = kPort1CurReg;
@@ -140,41 +139,27 @@ float Pd69104::getPortCurrent(uint8_t port)
 	return (cur * kCurCoef) / 1000000.0f; // Convert from uA to A
 }
 
-int Pd69104::getBudgetConsumed()
+int Ltc4266::getBudgetConsumed()
 {
-	int data = smbusReadRegister(m_busAddr, m_devAddr, kTotalPwrReg);
-	if (data < 0)
-		throw PoeControllerError(std::strerror(errno));
+	float power, consumed = 0.0f;
+	for (uint8_t i = 0; i < 4; ++i)
+	{
+		power = getPortPower(i);
+		if (power < 0)
+			throw PoeControllerError(std::strerror(errno));
+		
+		consumed += power;
+	}
 
-	return data;
+	return (int)consumed;
 }
 
-int Pd69104::getBudgetAvailable()
-{
-	return getBudgetTotal() - getBudgetConsumed();
-}
-
-int Pd69104::getBudgetTotal()
-{
-	int data = smbusReadRegister(m_busAddr, m_devAddr, kPwrGdReg);
-	if (data < 0)
-		throw PoeControllerError(std::strerror(errno));
-	else if (data > 7)
-		throw PoeControllerError("Invalid power bank received from controller");
-
-	data = smbusReadRegister(m_busAddr, m_devAddr, kPwrBankBAR + data);
-	if (data < 0)
-		throw PoeControllerError(std::strerror(errno));
-
-	return data;
-}
-
-int Pd69104::getDeviceId() const
+int Ltc4266::getDeviceId() const
 {
 	return smbusReadRegister(m_busAddr, m_devAddr, kDevIdReg);
 }
 
-void Pd69104::setPortEnabled(uint8_t port, bool enabled)
+void Ltc4266::setPortEnabled(uint8_t port, bool enabled)
 {
 	uint8_t data = 0;
 	if (enabled) data = (1 << port);
@@ -184,7 +169,7 @@ void Pd69104::setPortEnabled(uint8_t port, bool enabled)
 		throw PoeControllerError(std::strerror(errno));
 }
 
-uint8_t Pd69104::getPortMode(uint8_t port) const
+uint8_t Ltc4266::getPortMode(uint8_t port) const
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
 	if (data < 0) 
@@ -194,7 +179,7 @@ uint8_t Pd69104::getPortMode(uint8_t port) const
 	return ((data >> (port * 2)) & 0b11);
 }
 
-void Pd69104::setPortMode(uint8_t port, uint8_t mode)
+void Ltc4266::setPortMode(uint8_t port, uint8_t mode)
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
 	if (data < 0)
@@ -207,7 +192,7 @@ void Pd69104::setPortMode(uint8_t port, uint8_t mode)
 		throw PoeControllerError(std::strerror(errno));
 }
 
-bool Pd69104::getPortSensing(uint8_t port) const
+bool Ltc4266::getPortSensing(uint8_t port) const
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
 	if (data < 0)
@@ -217,7 +202,7 @@ bool Pd69104::getPortSensing(uint8_t port) const
 	return (data & ((1 << (port + 4)) | (1 << port))) != 0;
 }
 
-void Pd69104::setPortSensing(uint8_t port, bool sense)
+void Ltc4266::setPortSensing(uint8_t port, bool sense)
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
 	if (data < 0)
@@ -232,7 +217,7 @@ void Pd69104::setPortSensing(uint8_t port, bool sense)
 		throw PoeControllerError(std::strerror(errno));
 }
 
-bool Pd69104::getPortDetection(uint8_t port) const
+bool Ltc4266::getPortDetection(uint8_t port) const
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
 	if (data < 0)
@@ -241,7 +226,7 @@ bool Pd69104::getPortDetection(uint8_t port) const
 	return (data & (1 << port)) != 0;
 }
 
-void Pd69104::setPortDetection(uint8_t port, bool detect)
+void Ltc4266::setPortDetection(uint8_t port, bool detect)
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
 	if (data < 0)
@@ -255,7 +240,7 @@ void Pd69104::setPortDetection(uint8_t port, bool detect)
 }
 
 
-bool Pd69104::getPortClassification(uint8_t port) const
+bool Ltc4266::getPortClassification(uint8_t port) const
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
 	if (data < 0)
@@ -264,7 +249,7 @@ bool Pd69104::getPortClassification(uint8_t port) const
 	return (data & (1 << (port + 4))) != 0;
 }
 
-void Pd69104::setPortClassification(uint8_t port, bool classify)
+void Ltc4266::setPortClassification(uint8_t port, bool classify)
 {
 	int data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
 	if (data < 0)

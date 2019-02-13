@@ -9,11 +9,15 @@ public:
 	Pd69104(uint16_t bus, uint8_t dev);
 	~Pd69104() override;
 
-	PoeState getPortState(uint8_t port) const override;
+	PoeState getPortState(uint8_t port) override;
 	void setPortState(uint8_t port, PoeState state) override;
 
-	float getPortVoltage(uint8_t port) const override;
-	float getPortCurrent(uint8_t port) const override;
+	float getPortVoltage(uint8_t port) override;
+	float getPortCurrent(uint8_t port) override;
+
+	int getBudgetConsumed() override;
+	int getBudgetAvailable() override;
+	int getBudgetTotal() override;
 
 private:
 	uint16_t m_busAddr;

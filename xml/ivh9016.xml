@@ -21,5 +21,22 @@
     </connector>
   </dio_controller>
   <poe_controller id="pd69200">
+    <port id="3" bit="0" />
+    <port id="4" bit="1" />
+    <port id="5" bit="2" />
+    <port id="6" bit="3" />
+    <port id="7" bit="4" />
+    <port id="8" bit="5" />
+    <port id="9" bit="6" />
+    <port id="10" bit="7" />
+    <port id="11" bit="8" />
+    <port id="12" bit="9" />
+    <port id="13" bit="10" />
+    <port id="14" bit="11" />
+    <port id="15" bit="12" />
+    <port id="16" bit="13" />
+    <port id="17" bit="14" />
+    <port id="18" bit="15" />
+    <port id="255" bit="128" />
   </poe_controller>
 </computer>

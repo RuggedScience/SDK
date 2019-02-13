@@ -2,7 +2,7 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 
-set(poesrc rspoe.cpp controllers/pd69104.cpp ../utils/tinyxml2.cpp)
+set(poesrc rspoe.cpp controllers/pd69104.cpp controllers/pd69200.cpp controllers/ltc4266.cpp ../utils/tinyxml2.cpp ../utils/i801_smbus.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -19,10 +19,13 @@ generate_export_header(rspoe)
 
 if(MSVC)
     target_compile_definitions(rspoe PUBLIC -D_CRT_SECURE_NO_WARNINGS)
-    set(CMAKE_INSTALL_LIBDIR lib)
-    set(CMAKE_INSTALL_INCLUDEDIR include)
 endif(MSVC)
 
-install(TARGETS rspoe DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES rspoe.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rspoe_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS rspoe 
+    RUNTIME DESTINATION bin COMPONENT runtime
+    LIBRARY DESTINATION lib COMPONENT devel
+    ARCHIVE DESTINATION lib COMPONENT devel
+    PUBLIC_HEADER DESTINATION include COMPONENT devel)
+
+install(FILES rspoe.h DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rspoe_export.h DESTINATION include)
