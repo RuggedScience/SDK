@@ -40,7 +40,7 @@ Windows and Linux each behave a bit different in regards to the build type. Visu
 
 To have Visual Studio build a release you will need to add the `--config release` flag as shown below.
 
-`cmake -G "Visual Studio 15 2017 Win64" ..`  
+`cmake -G "Visual Studio 15 2017 Win64" ..`\
 `cmake --build . --config release`
 
 In most other situations you will need to use the `-DCMAKE_BUILD_TYPE` switch shown below.

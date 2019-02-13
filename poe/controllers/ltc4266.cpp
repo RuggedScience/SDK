@@ -151,7 +151,7 @@ int Ltc4266::getBudgetConsumed()
 		consumed += power;
 	}
 
-	return consumed;
+	return (int)consumed;
 }
 
 int Ltc4266::getDeviceId() const
