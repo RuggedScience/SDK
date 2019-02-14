@@ -2,24 +2,36 @@
 #define POE_H
 
 #include <rspoe_export.h>
-#include "rspoe_global.h"
+#include "rspoe_interface.h"
+#include "controllers/abstractpoecontroller.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class RsPoe : public RsPoeInterface
+{
+public:
+    RsPoe();
+    ~RsPoe();
 
-RSPOE_EXPORT bool initPoe(const char *initFile);
-RSPOE_EXPORT PoeState getPortState(int port);
-RSPOE_EXPORT int setPortState(int port, PoeState state);
-RSPOE_EXPORT float getPortVoltage(int port);
-RSPOE_EXPORT float getPortCurrent(int port);
-RSPOE_EXPORT float getPortPower(int port);
-RSPOE_EXPORT int getBudgetConsumed();
-RSPOE_EXPORT int getBudgetAvailable();
-RSPOE_EXPORT int getBudgetTotal();
-RSPOE_EXPORT const char *getLastPoeError();
+    void destroy() override;
+    bool setXmlFile(const char *fileName) override;
+    PoeState getPortState(int port) override;
+    int setPortState(int port, PoeState state) override;
+    float getPortValue(int port) override;
+    float getPortCurrent(int port) override;
+    float getPortPower(int port) override;
+    int getBudgetConsumed() override;
+    int getBudgetAvailable() override;
+    int getBudgetTotal() override;
+    const char *getLastError() override;
 
-#ifdef __cplusplus
+private:
+    std::string m_lastError;
+    AbstractPoeController *mp_controller;
+    std::map<int, uint8_t> m_portMap;
+};
+
+extern "C" RSPOE_EXPORT RsPoeInterface * __cdecl createRsPoe()
+{
+    return new RsPoe;
 }
-#endif
+
 #endif

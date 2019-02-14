@@ -1,20 +1,34 @@
-#ifndef DIO_H
-#define DIO_H
+#ifndef RSDIO_H
+#define RSDIO_H
 
 #include <rsdio_export.h>
-#include "rsdio_global.h"
+#include "rsdio_interface.h"
+#include "controllers/abstractdiocontroller.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class RsDio : public RsDioInterface
+{
+public:
+    RsDio();
+    ~RsDio();
 
-RSDIO_EXPORT bool initDio(const char *initFile);
-RSDIO_EXPORT int digitalRead(int dio, int pin);
-RSDIO_EXPORT int digitalWrite(int dio, int pin, bool state);
-RSDIO_EXPORT int setOutputMode(int dio, OutputMode mode);
-RSDIO_EXPORT const char *getLastDioError();
+    void destroy() override;
+    bool setXmlFile(const char *fileName) override;
+    int digitalRead(int dio, int pin) override;
+    int digitalWrite(int dio, int pin, bool state) override;
+    int setOutputMode(int dio, OutputMode mode) override;
+    const char *getLastError() override;
 
-#ifdef __cplusplus
+private:
+    std::string m_lastError;
+    AbstractDioController *mp_controller;
+
+    typedef std::map<int, PinInfo> pinmap_t;
+    std::map<int, pinmap_t> m_dioMap;
+};
+
+extern "C" RSDIO_EXPORT RsDioInterface * __cdecl createRsDio()
+{
+    return new RsDio;
 }
-#endif
-#endif
+
+#endif //RSDIO_H

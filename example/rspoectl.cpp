@@ -35,9 +35,9 @@ static const char *stateToString(PoeState state)
 	return "error";
 }
 
-static void printLastError()
+static void printLastError(RsPoe *rspoe)
 {
-	std::cerr << getLastPoeError() << std::endl;
+	std::cerr << rspoe.getLastError() << std::endl;
 }
 
 static void showUsage()
@@ -68,6 +68,8 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
+	RsPoe *rspoe = createRsPoe();
+
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
 	bool human = false;
@@ -92,7 +94,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!initPoe(argList[0].data()))
+	if (!rspoe.setXmlFile(argList[0].data()))
 	{
 		printLastError();
 		return 1;
@@ -153,7 +155,7 @@ int main(int argc, char *argv[])
 
 	if (cmd == "s=" || cmd == "state=")
 	{
-		if (setPortState(port, state) < 0)
+		if (rsdio.setPortState(port, state) < 0)
 		{
 			printLastError();
 			return 1;
@@ -161,7 +163,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "s" || cmd == "state")
 	{
-		state = getPortState(port);
+		state = rsdio.getPortState(port);
 		if (state != StateError)
 		{
 			if (human) printf("%s\n", stateToString(state));
@@ -175,7 +177,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "v" || cmd == "voltage")
 	{
-		float voltage = getPortVoltage(port);
+		float voltage = rsdio.getPortVoltage(port);
 		if (voltage >= 0.0f)
 		{
 			if (human) printf("%fV\n", voltage);
@@ -189,7 +191,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "c" || cmd == "current")
 	{
-		float current = getPortCurrent(port);
+		float current = rsdio.getPortCurrent(port);
 		if (current >= 0.0f)
 		{
 			if (human) printf("%fA\n", current);
@@ -203,7 +205,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "w" || cmd == "wattage")
 	{
-		float watts = getPortPower(port);
+		float watts = rsdio.getPortPower(port);
 		if (watts >= 0.0f)
 		{
 			if (human) printf("%fW\n", watts);
@@ -217,7 +219,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "b" || cmd == "budget-consumed")
 	{
-		int consumed = getBudgetConsumed();
+		int consumed = rsdio.getBudgetConsumed();
 		if (consumed >= 0)
 		{
 			if (human) printf("%dW\n", consumed);
@@ -231,7 +233,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "a" || cmd == "budget-available")
 	{
-		int available = getBudgetAvailable();
+		int available = rsdio.getBudgetAvailable();
 		if (available >= 0)
 		{
 			if (human) printf("%dW\n", available);
@@ -245,7 +247,7 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "t" || cmd == "budget-total")
 	{
-		int total = getBudgetTotal();
+		int total = rsdio.getBudgetTotal();
 		if (total >= 0)
 		{
 			if (human) printf("%dW\n", total);

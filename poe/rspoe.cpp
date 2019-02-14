@@ -8,35 +8,41 @@
 #include <string>
 #include <stdint.h>
 
-std::string s_lastError;
-AbstractPoeController *sp_controller = nullptr;
-std::map<int, uint8_t> s_portMap;
+RsPoe::RsPoe() :
+    m_lastError(""),
+    mp_controller(nullptr)
+{}
 
-bool initPoe(const char *initFile)
+RsPoe::~RsPoe()
+{
+    delete mp_controller;
+}
+
+bool RsPoe::setXmlFile(const char *fileName)
 {
     using namespace tinyxml2;
-    s_portMap.clear();
-    if (sp_controller) delete sp_controller;
-    sp_controller = nullptr;
+    m_portMap.clear();
+    delete mp_controller;
+    mp_controller = nullptr;
 
     XMLDocument doc;
-    if (doc.LoadFile(initFile) != XML_SUCCESS)
+    if (doc.LoadFile(fileName) != XML_SUCCESS)
     {
-        s_lastError = "XML Error: Unable to load file";
+        m_lastError = "XML Error: Unable to load file";
         return false;
     }
 
     XMLElement *comp = doc.FirstChildElement("computer");
     if (!comp)
     {
-        s_lastError = "XML Error: Unable to find computer node";
+        m_lastError = "XML Error: Unable to find computer node";
         return false;
     }
 
     XMLElement *poe = comp->FirstChildElement("poe_controller");
     if (!poe)
     {
-        s_lastError = "XML Error: Unable to find poe_controller node";
+        m_lastError = "XML Error: Unable to find poe_controller node";
         return false;
     }
 
@@ -45,20 +51,20 @@ bool initPoe(const char *initFile)
     try
     {
         if (id == "pd69104")
-            sp_controller = new Pd69104(0xF040, address);
+            mp_controller = new Pd69104(0xF040, address);
         else if (id == "pd69200")
-            sp_controller = new Pd69200(0xF040, address);
+            mp_controller = new Pd69200(0xF040, address);
         else if (id == "ltc4266")
-            sp_controller = new Ltc4266(0xF040, address);
+            mp_controller = new Ltc4266(0xF040, address);
         else
         {
-            s_lastError = "XML Error: Invalid id found for poe_controller";
+            m_lastError = "XML Error: Invalid id found for poe_controller";
             return false;
         }
     }
     catch (std::exception &ex)
     {
-        s_lastError = "POE Controller Error: " + std::string(ex.what());
+        m_lastError = "POE Controller Error: " + std::string(ex.what());
         return false;
     }
 
@@ -72,200 +78,200 @@ bool initPoe(const char *initFile)
         if (port->QueryAttribute("bit", &bit) != XML_SUCCESS)
             continue;
 
-        s_portMap[id] = bit;
+        m_portMap[id] = bit;
     }
 
-    if (s_portMap.size() <= 0)
+    if (m_portMap.size() <= 0)
     {
-        sp_controller = nullptr;
-        s_lastError = "XML Error: No ports found";
+        mp_controller = nullptr;
+        m_lastError = "XML Error: No ports found";
         return false;
     }
 
     return true;
 }
 
-PoeState getPortState(int port)
+PoeState RsPoe::getPortState(int port)
 {
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return StateError;
     }
 
-    if (s_portMap.find(port) == s_portMap.end())
+    if (m_portMap.find(port) == m_portMap.end())
     {
-        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return StateError;
     }
 
     try 
     { 
-        return sp_controller->getPortState(s_portMap[port]); 
+        return mp_controller->getPortState(m_portMap[port]); 
     }
     catch (PoeControllerError &ex) 
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
     }
 
     return StateError;
 }
 
-int setPortState(int port, PoeState state)
+int RsPoe::setPortState(int port, PoeState state)
 {
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return -1;
     }
 
-    if (s_portMap.find(port) == s_portMap.end())
+    if (m_portMap.find(port) == m_portMap.end())
     {
-        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return -1;
     }
 
     if (state == StateError)
     {
-        s_lastError = "Argument Error: Invalid state 'StateError'";
+        m_lastError = "Argument Error: Invalid state 'StateError'";
         return -1;
     }
 
     try
     {
-        sp_controller->setPortState(s_portMap[port], state);
+        mp_controller->setPortState(m_portMap[port], state);
     }
     catch (PoeControllerError &ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return -1;
     }
 
     return 0;
 }
 
-float getPortVoltage(int port)
+float RsPoe::getPortVoltage(int port)
 {
     float volts = -1.0f;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return volts;
     }
 
-    if (s_portMap.find(port) == s_portMap.end())
+    if (m_portMap.find(port) == m_portMap.end())
     {
-        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return volts;
     }
     
     try
     {
-        volts = sp_controller->getPortVoltage(s_portMap[port]);
+        volts = mp_controller->getPortVoltage(m_portMap[port]);
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return volts;
     }
 
     return volts;
 }
 
-float getPortCurrent(int port)
+float RsPoe::getPortCurrent(int port)
 {
     float cur = -1.0f;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
         s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return cur;
     }
 
-    if (s_portMap.find(port) == s_portMap.end())
+    if (m_portMap.find(port) == m_portMap.end())
     {
-        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return cur;
     }
 
     try
     {
-        cur = sp_controller->getPortCurrent(s_portMap[port]);
+        cur = mp_controller->getPortCurrent(m_portMap[port]);
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return cur;
     }
 
     return cur;
 }
 
-float getPortPower(int port)
+float RsPoe::getPortPower(int port)
 {
     float power = -1.0f;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return power;
     }
 
-    if (s_portMap.find(port) == s_portMap.end())
+    if (m_portMap.find(port) == m_portMap.end())
     {
-        s_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
         return power;
     }
 
     try
     {
-        power = sp_controller->getPortPower(s_portMap[port]);
+        power = mp_controller->getPortPower(m_portMap[port]);
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return power;
     }
 
     return power;
 }
 
-int getBudgetConsumed()
+int RsPoe::getBudgetConsumed()
 {
     int consumed = -1;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return consumed;
     }
 
     try
     {
-        consumed = sp_controller->getBudgetConsumed();
+        consumed = mp_controller->getBudgetConsumed();
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return consumed;
     }
 
     return consumed;
 }
 
-int getBudgetAvailable()
+int RsPoe::getBudgetAvailable()
 {
     int available = -1;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return available;
     }
 
     try
     {
-        available = sp_controller->getBudgetAvailable();
+        available = mp_controller->getBudgetAvailable();
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return available;
     }
 
@@ -275,26 +281,26 @@ int getBudgetAvailable()
 int getBudgetTotal()
 {
     int total = -1;
-    if (sp_controller == nullptr)
+    if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return total;
     }
 
     try
     {
-        total = sp_controller->getBudgetTotal();
+        total = mp_controller->getBudgetTotal();
     }
     catch (PoeControllerError& ex)
     {
-        s_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = "PoE Controller Error: " + std::string(ex.what());
         return total;
     }
 
     return total;
 }
 
-const char *getLastPoeError()
+const char *RsPoe::getLastError()
 {
-    return s_lastError.c_str();
+    return m_lastError.c_str();
 }
