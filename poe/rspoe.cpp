@@ -41,7 +41,7 @@ bool initPoe(const char *initFile)
     }
 
     std::string id(poe->Attribute("id"));
-    int address = std::stoi(std::string(poe->Attribute("address")), nullptr, 0)
+    int address = std::stoi(std::string(poe->Attribute("address")), nullptr, 0);
     try
     {
         if (id == "pd69104")
