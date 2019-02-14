@@ -4,10 +4,6 @@
 #include "controllers/ltc4266.h"
 #include "../utils/tinyxml2.h"
 
-#include <map>
-#include <string>
-#include <stdint.h>
-
 RsPoe::RsPoe() :
     m_lastError(""),
     mp_controller(nullptr)
@@ -16,6 +12,11 @@ RsPoe::RsPoe() :
 RsPoe::~RsPoe()
 {
     delete mp_controller;
+}
+
+void RsPoe::destroy()
+{
+    delete this;
 }
 
 bool RsPoe::setXmlFile(const char *fileName)
@@ -183,7 +184,7 @@ float RsPoe::getPortCurrent(int port)
     float cur = -1.0f;
     if (mp_controller == nullptr)
     {
-        s_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
         return cur;
     }
 
@@ -278,7 +279,7 @@ int RsPoe::getBudgetAvailable()
     return available;
 }
 
-int getBudgetTotal()
+int RsPoe::getBudgetTotal()
 {
     int total = -1;
     if (mp_controller == nullptr)
@@ -303,4 +304,9 @@ int getBudgetTotal()
 const char *RsPoe::getLastError()
 {
     return m_lastError.c_str();
+}
+
+RsPoeInterface *createRsPoe()
+{
+    return new RsPoe;
 }

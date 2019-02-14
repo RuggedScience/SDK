@@ -10,7 +10,7 @@ public:
     virtual int digitalRead(int dio, int pin) = 0;
     virtual int digitalWrite(int dio, int pin, bool state) = 0;
     virtual int setOutputMode(int dio, OutputMode mode) = 0;
-    virtual const char *getLastError();
+    virtual const char *getLastError() = 0;
 };
 
 #endif //RSDIO_INTERFACE_H

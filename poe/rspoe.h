@@ -5,6 +5,10 @@
 #include "rspoe_interface.h"
 #include "controllers/abstractpoecontroller.h"
 
+#include <map>
+#include <string>
+#include <stdint.h>
+
 class RsPoe : public RsPoeInterface
 {
 public:
@@ -15,7 +19,7 @@ public:
     bool setXmlFile(const char *fileName) override;
     PoeState getPortState(int port) override;
     int setPortState(int port, PoeState state) override;
-    float getPortValue(int port) override;
+    float getPortVoltage(int port) override;
     float getPortCurrent(int port) override;
     float getPortPower(int port) override;
     int getBudgetConsumed() override;
@@ -29,9 +33,7 @@ private:
     std::map<int, uint8_t> m_portMap;
 };
 
-extern "C" RSPOE_EXPORT RsPoeInterface * __cdecl createRsPoe()
-{
-    return new RsPoe;
-}
+extern "C" RSPOE_EXPORT RsPoeInterface * __cdecl createRsPoe();
+
 
 #endif

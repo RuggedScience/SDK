@@ -5,6 +5,9 @@
 #include "rsdio_interface.h"
 #include "controllers/abstractdiocontroller.h"
 
+#include <map>
+#include <string>
+
 class RsDio : public RsDioInterface
 {
 public:
@@ -26,9 +29,6 @@ private:
     std::map<int, pinmap_t> m_dioMap;
 };
 
-extern "C" RSDIO_EXPORT RsDioInterface * __cdecl createRsDio()
-{
-    return new RsDio;
-}
+extern "C" RSDIO_EXPORT RsDioInterface * __cdecl createRsDio();
 
 #endif //RSDIO_H

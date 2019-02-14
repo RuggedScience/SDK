@@ -3,9 +3,6 @@
 #include "controllers/ite8786.h"
 #include "../utils/tinyxml2.h"
 
-#include <map>
-#include <string>
-
 static tinyxml2::XMLError getInternalPinInfo(tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
 {
 	using namespace tinyxml2;
@@ -72,21 +69,21 @@ bool RsDio::setXmlFile(const char *fileName)
 	XMLDocument doc;
 	if (doc.LoadFile(fileName) != XML_SUCCESS)
 	{
-        s_lastError = "XML Error: Unable to load file";
+        m_lastError = "XML Error: Unable to load file";
         return false;
     }
 
 	XMLElement *comp = doc.FirstChildElement("computer");
 	if (!comp)
 	{
-        s_lastError = "XML Error: Unable to find computer node";
+        m_lastError = "XML Error: Unable to find computer node";
         return false;
     }
 
 	XMLElement *dio = comp->FirstChildElement("dio_controller");
 	if (!dio)
 	{
-        s_lastError = "XML Error: Unable to find dio_controller node";
+        m_lastError = "XML Error: Unable to find dio_controller node";
         return false;
     }
 
@@ -94,12 +91,12 @@ bool RsDio::setXmlFile(const char *fileName)
     try
     {
 	    if (id == "ite8783")
-    		sp_controller = new Ite8783();
+    		mp_controller = new Ite8783();
     	else if (id == "ite8786")
-		    sp_controller = new Ite8786();
+		    mp_controller = new Ite8786();
 	    else
 	    {
-    		s_lastError = "XML Error: Invalid id found for dio_controller";
+    		m_lastError = "XML Error: Invalid id found for dio_controller";
 		    return false;
 	    }
     }
@@ -189,7 +186,7 @@ int RsDio::digitalRead(int dio, int pin)
 {
     if (mp_controller == nullptr)
     {
-        s_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
+        m_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
         return -1;
     }
 
@@ -304,4 +301,9 @@ int RsDio::setOutputMode(int dio, OutputMode mode)
 const char *RsDio::getLastError()
 {
     return m_lastError.c_str();
+}
+
+RsDioInterface *createRsDio()
+{
+    return new RsDio;
 }
