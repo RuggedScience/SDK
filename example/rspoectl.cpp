@@ -63,7 +63,7 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	RsPoeInterface *rspoe = createRsPoe();
+	RsPoe *rspoe = createRsPoe();
 
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent

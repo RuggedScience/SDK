@@ -1,7 +1,7 @@
 #ifndef ABSTRACTDIOCONTROLLER_H
 #define ABSTRACTDIOCONTROLLER_H
 
-#include "../rsdio_global.h"
+#include "../rsdio.h"
 
 #include <stdint.h>
 #include <exception>

@@ -1,25 +1,25 @@
-#include "rspoe.h"
+#include "rspoeimpl.h"
 #include "controllers/pd69104.h"
 #include "controllers/pd69200.h"
 #include "controllers/ltc4266.h"
 #include "../utils/tinyxml2.h"
 
-RsPoe::RsPoe() :
+RsPoeImpl::RsPoeImpl() :
     m_lastError(""),
     mp_controller(nullptr)
 {}
 
-RsPoe::~RsPoe()
+RsPoeImpl::~RsPoeImpl()
 {
     delete mp_controller;
 }
 
-void RsPoe::destroy()
+void RsPoeImpl::destroy()
 {
     delete this;
 }
 
-bool RsPoe::setXmlFile(const char *fileName)
+bool RsPoeImpl::setXmlFile(const char *fileName)
 {
     using namespace tinyxml2;
     m_portMap.clear();
@@ -92,7 +92,7 @@ bool RsPoe::setXmlFile(const char *fileName)
     return true;
 }
 
-PoeState RsPoe::getPortState(int port)
+PoeState RsPoeImpl::getPortState(int port)
 {
     if (mp_controller == nullptr)
     {
@@ -118,7 +118,7 @@ PoeState RsPoe::getPortState(int port)
     return StateError;
 }
 
-int RsPoe::setPortState(int port, PoeState state)
+int RsPoeImpl::setPortState(int port, PoeState state)
 {
     if (mp_controller == nullptr)
     {
@@ -151,7 +151,7 @@ int RsPoe::setPortState(int port, PoeState state)
     return 0;
 }
 
-float RsPoe::getPortVoltage(int port)
+float RsPoeImpl::getPortVoltage(int port)
 {
     float volts = -1.0f;
     if (mp_controller == nullptr)
@@ -179,7 +179,7 @@ float RsPoe::getPortVoltage(int port)
     return volts;
 }
 
-float RsPoe::getPortCurrent(int port)
+float RsPoeImpl::getPortCurrent(int port)
 {
     float cur = -1.0f;
     if (mp_controller == nullptr)
@@ -207,7 +207,7 @@ float RsPoe::getPortCurrent(int port)
     return cur;
 }
 
-float RsPoe::getPortPower(int port)
+float RsPoeImpl::getPortPower(int port)
 {
     float power = -1.0f;
     if (mp_controller == nullptr)
@@ -235,7 +235,7 @@ float RsPoe::getPortPower(int port)
     return power;
 }
 
-int RsPoe::getBudgetConsumed()
+int RsPoeImpl::getBudgetConsumed()
 {
     int consumed = -1;
     if (mp_controller == nullptr)
@@ -257,7 +257,7 @@ int RsPoe::getBudgetConsumed()
     return consumed;
 }
 
-int RsPoe::getBudgetAvailable()
+int RsPoeImpl::getBudgetAvailable()
 {
     int available = -1;
     if (mp_controller == nullptr)
@@ -279,7 +279,7 @@ int RsPoe::getBudgetAvailable()
     return available;
 }
 
-int RsPoe::getBudgetTotal()
+int RsPoeImpl::getBudgetTotal()
 {
     int total = -1;
     if (mp_controller == nullptr)
@@ -301,12 +301,12 @@ int RsPoe::getBudgetTotal()
     return total;
 }
 
-const char *RsPoe::getLastError()
+const char *RsPoeImpl::getLastError()
 {
     return m_lastError.c_str();
 }
 
-RsPoeInterface *createRsPoe()
+RsPoe *createRsPoe()
 {
-    return new RsPoe;
+    return new RsPoeImpl;
 }

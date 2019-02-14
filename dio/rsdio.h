@@ -2,33 +2,30 @@
 #define RSDIO_H
 
 #include <rsdio_export.h>
-#include "rsdio_interface.h"
-#include "controllers/abstractdiocontroller.h"
 
-#include <map>
-#include <string>
-
-class RsDio : public RsDioInterface
+enum OutputMode
 {
-public:
-    RsDio();
-    ~RsDio();
-
-    void destroy() override;
-    bool setXmlFile(const char *fileName) override;
-    int digitalRead(int dio, int pin) override;
-    int digitalWrite(int dio, int pin, bool state) override;
-    int setOutputMode(int dio, OutputMode mode) override;
-    const char *getLastError() override;
-
-private:
-    std::string m_lastError;
-    AbstractDioController *mp_controller;
-
-    typedef std::map<int, PinInfo> pinmap_t;
-    std::map<int, pinmap_t> m_dioMap;
+    ModeError = 0,
+    ModePnp = -1,
+    ModeNpn = -2    
 };
 
-extern "C" RSDIO_EXPORT RsDioInterface *createRsDio();
+enum PinMode
+{
+	ModeInput,
+	ModeOutput
+};
+
+class RsDio {
+public:
+    virtual void destroy() = 0;
+    virtual bool setXmlFile(const char *fileName) = 0;
+    virtual int digitalRead(int dio, int pin) = 0;
+    virtual int digitalWrite(int dio, int pin, bool state) = 0;
+    virtual int setOutputMode(int dio, OutputMode mode) = 0;
+    virtual const char *getLastError() = 0;
+};
+
+extern "C" RSDIO_EXPORT RsDio *createRsDio();
 
 #endif //RSDIO_H

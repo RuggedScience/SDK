@@ -1,39 +1,32 @@
-#ifndef POE_H
-#define POE_H
+#ifndef RSPOE_H
+#define RSPOE_H
 
 #include <rspoe_export.h>
-#include "rspoe_interface.h"
-#include "controllers/abstractpoecontroller.h"
 
-#include <map>
-#include <string>
-#include <stdint.h>
-
-class RsPoe : public RsPoeInterface
+enum PoeState
 {
-public:
-    RsPoe();
-    ~RsPoe();
-
-    void destroy() override;
-    bool setXmlFile(const char *fileName) override;
-    PoeState getPortState(int port) override;
-    int setPortState(int port, PoeState state) override;
-    float getPortVoltage(int port) override;
-    float getPortCurrent(int port) override;
-    float getPortPower(int port) override;
-    int getBudgetConsumed() override;
-    int getBudgetAvailable() override;
-    int getBudgetTotal() override;
-    const char *getLastError() override;
-
-private:
-    std::string m_lastError;
-    AbstractPoeController *mp_controller;
-    std::map<int, uint8_t> m_portMap;
+    StateDisabled,		//No power regardless of attached device.
+    StateEnabled,		//Power always applied regardless of attached device.
+    StateAuto,			//Normal PoE operation.
+    StateError          //Error retreiving state. Use getLastError and getLastErrorString for more details.
 };
 
-extern "C" RSPOE_EXPORT RsPoeInterface *createRsPoe();
 
+class RsPoe {
+public:
+    virtual void destroy() = 0;
+    virtual bool setXmlFile(const char *fileName) = 0;
+    virtual PoeState getPortState(int port) = 0;
+    virtual int setPortState(int port, PoeState state) = 0;
+    virtual float getPortVoltage(int port) = 0;
+    virtual float getPortCurrent(int port) = 0;
+    virtual float getPortPower(int port) = 0;
+    virtual int getBudgetConsumed() = 0;
+    virtual int getBudgetAvailable() = 0;
+    virtual int getBudgetTotal() = 0;
+    virtual const char *getLastError() = 0;
+};
 
-#endif
+extern "C" RSPOE_EXPORT RsPoe *createRsPoe();
+
+#endif //RSPOE_H

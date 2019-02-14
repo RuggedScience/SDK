@@ -1,4 +1,4 @@
-#include "rsdio.h"
+#include "rsdioimpl.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
 #include "../utils/tinyxml2.h"
@@ -44,22 +44,22 @@ static tinyxml2::XMLError getExternalPinInfo(tinyxml2::XMLElement *pin, int& pin
 	return XML_SUCCESS;
 }
 
-RsDio::RsDio() :
+RsDioImpl::RsDioImpl() :
     m_lastError(""),
     mp_controller(nullptr)
 {}
 
-RsDio::~RsDio()
+RsDioImpl::~RsDioImpl()
 {
     delete mp_controller;
 }
 
-void RsDio::destroy()
+void RsDioImpl::destroy()
 {
     delete this;
 }
 
-bool RsDio::setXmlFile(const char *fileName)
+bool RsDioImpl::setXmlFile(const char *fileName)
 {
     using namespace tinyxml2;
 	m_dioMap.clear();
@@ -182,7 +182,7 @@ bool RsDio::setXmlFile(const char *fileName)
     return true;
 }
 
-int RsDio::digitalRead(int dio, int pin)
+int RsDioImpl::digitalRead(int dio, int pin)
 {
     if (mp_controller == nullptr)
     {
@@ -216,7 +216,7 @@ int RsDio::digitalRead(int dio, int pin)
     }
 }
 
-int RsDio::digitalWrite(int dio, int pin, bool state)
+int RsDioImpl::digitalWrite(int dio, int pin, bool state)
 {
     if (mp_controller == nullptr)
     {
@@ -257,7 +257,7 @@ int RsDio::digitalWrite(int dio, int pin, bool state)
     return 0;
 }
 
-int RsDio::setOutputMode(int dio, OutputMode mode)
+int RsDioImpl::setOutputMode(int dio, OutputMode mode)
 {
     if (mp_controller == nullptr)
     {
@@ -298,12 +298,12 @@ int RsDio::setOutputMode(int dio, OutputMode mode)
     return 0;
 }
 
-const char *RsDio::getLastError()
+const char *RsDioImpl::getLastError()
 {
     return m_lastError.c_str();
 }
 
-RsDioInterface *createRsDio()
+RsDio *createRsDio()
 {
-    return new RsDio;
+    return new RsDioImpl;
 }

@@ -67,7 +67,7 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	RsDioInterface *rsdio = createRsDio();
+	RsDio *rsdio = createRsDio();
 
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
