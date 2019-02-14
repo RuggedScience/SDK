@@ -35,11 +35,6 @@ static OutputMode stringToMode(std::string str)
 	return ModeError;
 }
 
-void printLastError(RsDio *rsdio)
-{
-	std::cerr << rsdio.getLastError() << std::endl;
-}
-
 static void showUsage()
 {
 	std::cout 	<< "Usage: rsdioctl FILE COMMAND [OPTIONS...]\n"
@@ -72,7 +67,7 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	RsDio *rsdio = createRsDio();
+	RsDioInterface *rsdio = createRsDio();
 
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
@@ -137,9 +132,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!rsdio.setXmlFile(argList[0].data()))
+	if (!rsdio->setXmlFile(argList[0].data()))
 	{
-		printLastError();
+		std::cerr << rsdio->getLastError() << std::endl;
 		return 1;
 	}
 
@@ -164,9 +159,9 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		if (digitalWrite(dio, pin, state) < 0)
+		if (rsdio->digitalWrite(dio, pin, state) < 0)
 		{
-			printLastError();
+			std::cerr << rsdio->getLastError() << std::endl;
 			return 1;
 		}
 	}
@@ -179,7 +174,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		int state = rsdio.digitalRead(dio, pin);
+		int state = rsdio->digitalRead(dio, pin);
 		if (state >= 0)
 		{
 			if (human) printf("%s\n", stateToString(state));
@@ -187,13 +182,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rsdio->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "m=" || cmd == "mode=")
 	{
-		OutputMode mode = rsdio.stringToMode(val);
+		OutputMode mode = stringToMode(val);
 		//stringToMode returns 0 on error.
 		if (mode == ModeError)
 		{
@@ -202,9 +197,9 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		if (setOutputMode(dio, mode) < 0)
+		if (rsdio->setOutputMode(dio, mode) < 0)
 		{
-			printLastError();
+			std::cerr << rsdio->getLastError() << std::endl;
 			return 1;
 		}
 	}
