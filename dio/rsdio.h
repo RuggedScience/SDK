@@ -29,6 +29,6 @@ private:
     std::map<int, pinmap_t> m_dioMap;
 };
 
-extern "C" RSDIO_EXPORT RsDioInterface * __cdecl createRsDio();
+extern "C" RSDIO_EXPORT RsDioInterface *createRsDio();
 
 #endif //RSDIO_H

@@ -33,7 +33,7 @@ private:
     std::map<int, uint8_t> m_portMap;
 };
 
-extern "C" RSPOE_EXPORT RsPoeInterface * __cdecl createRsPoe();
+extern "C" RSPOE_EXPORT RsPoeInterface *createRsPoe();
 
 
 #endif
