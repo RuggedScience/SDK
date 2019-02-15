@@ -10,12 +10,6 @@ enum OutputMode
     ModeNpn = -2    
 };
 
-enum PinMode
-{
-	ModeInput,
-	ModeOutput
-};
-
 class RsDio {
 public:
     virtual void destroy() = 0;

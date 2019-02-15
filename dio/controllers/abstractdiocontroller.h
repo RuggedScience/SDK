@@ -6,6 +6,12 @@
 #include <stdint.h>
 #include <exception>
 
+enum PinMode
+{
+	ModeInput,
+	ModeOutput
+};
+
 struct PinInfo
 {
 	uint8_t bitmask;
