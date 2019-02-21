@@ -1,6 +1,30 @@
 # librspoe
 
-The **librspoe** library is used to control the PoE ports on supported Rugged Science units. Before using any of the PoE functions, the `initPoe` function must be called with the correct initialization file. If this is not done, all of the library functions will return an error without performing their task. All library functions return a negative value on error. If this happens it is best to use the `getLastPoeError` function to see what caused the error.
+The **librspoe** library is used to control the PoE ports on supported Rugged Science units. All library functions return a negative value on error except [`setXmlFile`](###setXmlFile) which returns false on error. If this happens it is best to use the [`getLastError`](###getLastError) function to see what caused the error.
+
+## Basic Usage
+
+```c++
+
+RsPoe *poe = createRsPoe();
+if (!poe->setXmlFile('ecs9000.xml'))
+{
+    std::cerr << poe->getLastError() << std::endl;
+    poe->destroy();
+    return 1;
+}
+
+poe->setPortState(3, StateEnabled);
+float power = poe->getPortPower(3);
+if (power < 0)
+    std::cerr << poe->getLastError() << std::endl;
+else
+    std::cout << "Port 3 power usage: " << power << std::endl;
+
+poe->destroy();
+```
+
+One important thing to note is that the RsPoe class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
 
 ## Public Types
 
@@ -20,14 +44,14 @@ enum PoeState
 
 ## Public Functions
 
-### initPoe
+### setXmlFile
 ```c++
-bool initPoe(const char *initFile)
+bool setXmlFile(const char *fileName)
 ```
 ---
 
 ### Parameters
-initFile - This should be a path to the XML file specific to your model.
+fileName - This should be a path to the XML file specific to your model.
 
 ### Return value
 Returns true if the dio was successfully initialized, otherwise returns false.
@@ -139,9 +163,9 @@ Total watts the unit can handle. Negative value on error.
 
 <br>
 
-### getLastPoeError
+### getLastError
 ```c++
-const char *getLastPoeError()
+const char *getLastError()
 ```
 ---
 

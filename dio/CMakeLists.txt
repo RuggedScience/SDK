@@ -2,7 +2,7 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 
-set(diosrc rsdio.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
+set(diosrc rsdioimpl.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
