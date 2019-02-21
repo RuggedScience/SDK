@@ -1,4 +1,4 @@
-#include "../poe/rspoe.h"
+#include "./poe/rspoe.h"
 #include <iostream>
 #include <cstdio>
 #include <cctype>
