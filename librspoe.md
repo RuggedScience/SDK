@@ -26,6 +26,15 @@ poe->destroy();
 
 One important thing to note is that the RsPoe class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
 
+```c++
+std::shared_ptr<RsPoe> poe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+if (!poe)
+{
+    std::cerr << "Failed to create instance of RsPoe" << std::endl;
+    return 1;
+}
+```
+
 ## Public Types
 
 ### PoeState

@@ -20,6 +20,15 @@ dio->destroy();
 
 One important thing to note is that the RsDio class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
 
+```c++
+std::shared_ptr<RsDio> dio(createRsDio(), std::mem_fn(&RsDio::destroy));
+if (!dio)
+{
+    std::cerr << "Failed to create instance of RsDio" << std::endl;
+    return 1;
+}
+```
+
 ## Public Types
 
 ### OutputMode
