@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
+#include <functional>
 
 static PoeState stringToState(std::string str)
 {
@@ -63,7 +65,11 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	RsPoe *rspoe = createRsPoe();
+	std::shared_ptr<RsPoe> rspoe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+	if (!rspoe)
+	{
+		std::cerr << "Failed to create instance of RsPoe" << std::endl;
+	}
 
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
@@ -74,7 +80,6 @@ int main(int argc, char *argv[])
 		std::string arg = argv[i];
 		if (arg == "help")
 		{
-			rspoe->destroy();
 			showUsage();
 			return 0;
 		}
@@ -86,7 +91,6 @@ int main(int argc, char *argv[])
 
 	if (argList.size() < 2)
 	{
-		rspoe->destroy();
 		showUsage();
 		return 1;
 	}
@@ -94,7 +98,6 @@ int main(int argc, char *argv[])
 	if (!rspoe->setXmlFile(argList[0].data()))
 	{
 		std::cerr << rspoe->getLastError() << std::endl;
-		rspoe->destroy();
 		return 1;
 	}
 
@@ -132,7 +135,6 @@ int main(int argc, char *argv[])
 		if (state == StateError)
 		{
 			std::cerr << "Invalid state supplied!!" << std::endl;
-			rspoe->destroy();
 			showUsage();
 			return 1;
 		}
@@ -148,7 +150,6 @@ int main(int argc, char *argv[])
 		cmd == "w" 	|| cmd == "wattage"))
 	{
 		std::cerr << "Port required for '" << cmd << "' command!!" << std::endl;
-		rspoe->destroy();
 		showUsage();
 		return 1;
 	}
@@ -158,7 +159,6 @@ int main(int argc, char *argv[])
 		if (rspoe->setPortState(port, state) < 0)
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -173,7 +173,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -188,7 +187,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -203,7 +201,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -218,7 +215,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -233,7 +229,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -248,7 +243,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
@@ -263,17 +257,14 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rspoe->getLastError() << std::endl;
-			rspoe->destroy();
 			return 1;
 		}
 	}
 	else
 	{
-		rspoe->destroy();
 		showUsage();
 		return 1;
 	}
 
-	rspoe->destroy();
 	return 0;
 }

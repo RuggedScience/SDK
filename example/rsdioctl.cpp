@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
+#include <functional>
 
 static int stringToState(std::string str)
 {
@@ -67,7 +69,12 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	RsDio *rsdio = createRsDio();
+	std::shared_ptr<RsDio> rsdio(createRsDio(), std::mem_fn(&RsDio::destroy));
+	if (!rsdio)
+	{
+		std::cerr << "Failed to create instance of RsDio" << std::endl;
+		return 1;
+	}
 
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
@@ -79,7 +86,6 @@ int main(int argc, char *argv[])
 		std::string arg = argv[i];
 		if (arg == "--help")
 		{
-			rsdio->destroy();
 			showUsage();
 			return 0;
 		}
@@ -91,7 +97,6 @@ int main(int argc, char *argv[])
 				catch (...) 
 				{
 					std::cerr << "Pin must be a number!" << std::endl;
-					rsdio->destroy();
 					showUsage();
 					return 1;
 				}
@@ -99,7 +104,6 @@ int main(int argc, char *argv[])
 			else
 			{
 				std::cerr << "Missing pin number!" << std::endl;
-				rsdio->destroy();
 				showUsage();
 				return 1;
 			}
@@ -112,7 +116,6 @@ int main(int argc, char *argv[])
 				catch (...)
 				{
 					std::cerr << "Dio must be a number!" << std::endl;
-					rsdio->destroy();
 					showUsage();
 					return 1;
 				}
@@ -120,7 +123,6 @@ int main(int argc, char *argv[])
 			else
 			{
 				std::cerr << "Missing dio number!" << std::endl;
-				rsdio->destroy();
 				showUsage();
 				return 1;
 			}
@@ -133,7 +135,6 @@ int main(int argc, char *argv[])
 
 	if (argList.size() < 2)
 	{
-		rsdio->destroy();
 		showUsage();
 		return 1;
 	}
@@ -141,7 +142,6 @@ int main(int argc, char *argv[])
 	if (!rsdio->setXmlFile(argList[0].data()))
 	{
 		std::cerr << rsdio->getLastError() << std::endl;
-		rsdio->destroy();
 		return 1;
 	}
 
@@ -162,7 +162,6 @@ int main(int argc, char *argv[])
 		if (state == -1)
 		{
 			std::cerr << "Invalid state supplied!!" << std::endl;
-			rsdio->destroy();
 			showUsage();
 			return 1;
 		}
@@ -170,7 +169,6 @@ int main(int argc, char *argv[])
 		if (rsdio->digitalWrite(dio, pin, state) < 0)
 		{
 			std::cerr << rsdio->getLastError() << std::endl;
-			rsdio->destroy();
 			return 1;
 		}
 	}
@@ -179,7 +177,6 @@ int main(int argc, char *argv[])
 		if (pin < 0)
 		{
 			std::cerr << "Pin argument must be supplied!!" << std::endl;
-			rsdio->destroy();
 			showUsage();
 			return 1;
 		}
@@ -193,7 +190,6 @@ int main(int argc, char *argv[])
 		else
 		{
 			std::cerr << rsdio->getLastError() << std::endl;
-			rsdio->destroy();
 			return 1;
 		}
 	}
@@ -204,7 +200,6 @@ int main(int argc, char *argv[])
 		if (mode == ModeError)
 		{
 			std::cerr << "Invalid mode supplied!!" << std::endl;
-			rsdio->destroy();
 			showUsage();
 			return 1;
 		}
@@ -212,18 +207,15 @@ int main(int argc, char *argv[])
 		if (rsdio->setOutputMode(dio, mode) < 0)
 		{
 			std::cerr << rsdio->getLastError() << std::endl;
-			rsdio->destroy();
 			return 1;
 		}
 	}
 	else
 	{
 		std::cerr << "Invalid command supplied!!" << std::endl;
-		rsdio->destroy();
 		showUsage();
 		return 1;
 	}
 
-	rsdio->destroy();
 	return 0;
 }
