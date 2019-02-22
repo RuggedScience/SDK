@@ -4,16 +4,21 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 
 *Passing the incorrect XML file will result in undefined behaviour and may harm the PC!*
 
+**The latest prebuilt release can be found [HERE](../../releases/latest).**
+
 ## API References
 * [DIO Library - librsdio](./librsdio.md)
 * [PoE Library - librspoe](./librspoe.md)
 * [DIO Utility - rsdioctl](./rsdioctl.md)
 * [PoE Utility - rspoectl](./rspoectl.md)
 
-
-*For pre-built libraries please see the "releases" tab above.*
-
 # Building
+
+## Prerequesites
+The build process relies on the [CMake](https://cmake.org/) utility. This can be easily installed on most Linux distributions using `sudo apt install cmake` or `sudo yum install cmake`. For Windows, you can find the latest downloads [HERE](https://cmake.org/download/). Be sure to add the CMake directory to your PATH or use the full path when calling the cmake command.
+
+## Getting Started
+
 For best results, create a seperate build folder inside the root of this SDK.
 
 `mkdir build`\
