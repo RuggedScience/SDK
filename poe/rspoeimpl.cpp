@@ -301,9 +301,11 @@ int RsPoeImpl::getBudgetTotal()
     return total;
 }
 
-const char *RsPoeImpl::getLastError()
+std::string RsPoeImpl::getLastError()
 {
-    return m_lastError.c_str();
+    std::string ret = m_lastError;
+    m_lastError.clear();
+    return ret;
 }
 
 RsPoe *createRsPoe()

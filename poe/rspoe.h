@@ -1,6 +1,7 @@
 #ifndef RSPOE_H
 #define RSPOE_H
 
+#include <string>
 #include <rspoe_export.h>
 
 enum PoeState
@@ -24,7 +25,7 @@ public:
     virtual int getBudgetConsumed() = 0;
     virtual int getBudgetAvailable() = 0;
     virtual int getBudgetTotal() = 0;
-    virtual const char *getLastError() = 0;
+    virtual std::string getLastError() = 0;
 };
 
 extern "C" RSPOE_EXPORT RsPoe *createRsPoe();

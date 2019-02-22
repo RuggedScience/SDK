@@ -24,7 +24,7 @@ public:
     int getBudgetConsumed() override;
     int getBudgetAvailable() override;
     int getBudgetTotal() override;
-    const char *getLastError() override;
+    std::string getLastError() override;
 
 private:
     std::string m_lastError;

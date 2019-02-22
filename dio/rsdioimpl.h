@@ -18,7 +18,7 @@ public:
     int digitalRead(int dio, int pin) override;
     int digitalWrite(int dio, int pin, bool state) override;
     int setOutputMode(int dio, OutputMode mode) override;
-    const char *getLastError() override;
+    std::string getLastError() override;
 
 private:
     std::string m_lastError;

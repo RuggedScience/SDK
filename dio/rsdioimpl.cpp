@@ -298,9 +298,11 @@ int RsDioImpl::setOutputMode(int dio, OutputMode mode)
     return 0;
 }
 
-const char *RsDioImpl::getLastError()
+std::string RsDioImpl::getLastError()
 {
-    return m_lastError.c_str();
+    std::string ret = m_lastError;
+    m_lastError.clear();
+    return ret;
 }
 
 RsDio *createRsDio()
