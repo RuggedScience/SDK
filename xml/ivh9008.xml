@@ -20,6 +20,14 @@
       <external_pin id="18" bit="7" gpio="7" invert="0" input="0" output="1" />
     </connector>
   </dio_controller>
-  <poe_controller id="pd69200">
+  <poe_controller id="pd69200" address="0x40">
+    <port id="3" bit="0" />
+    <port id="4" bit="1" />
+    <port id="5" bit="2" />
+    <port id="6" bit="3" />
+    <port id="7" bit="4" />
+    <port id="8" bit="5" />
+    <port id="9" bit="6" />
+    <port id="10" bit="7" />
   </poe_controller>
 </computer>

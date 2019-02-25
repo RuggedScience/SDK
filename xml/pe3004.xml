@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <computer id="pe3004">
-  <poe_controller id="ltc4266">
+  <poe_controller id="ltc4266" address="0x42">
     <port id="1" bit="0" />
     <port id="2" bit="1" />
     <port id="3" bit="2" />

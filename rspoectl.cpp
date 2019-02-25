@@ -1,10 +1,12 @@
-#include "../poe/rspoe.h"
+#include "./poe/rspoe.h"
 #include <iostream>
 #include <cstdio>
 #include <cctype>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
+#include <functional>
 
 static PoeState stringToState(std::string str)
 {
@@ -35,11 +37,6 @@ static const char *stateToString(PoeState state)
 	return "error";
 }
 
-static void printLastError()
-{
-	std::cerr << getLastPoeError() << std::endl;
-}
-
 static void showUsage()
 {
 	std::cout 	<< "Usage: rspoectl FILE COMMAND [PORT] [OPTIONS...]\n"
@@ -68,6 +65,12 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
+	std::shared_ptr<RsPoe> rspoe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+	if (!rspoe)
+	{
+		std::cerr << "Failed to create instance of RsPoe" << std::endl;
+	}
+
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
 	bool human = false;
@@ -92,9 +95,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!initPoe(argList[0].data()))
+	if (!rspoe->setXmlFile(argList[0].data()))
 	{
-		printLastError();
+		std::cerr << rspoe->getLastError() << std::endl;
 		return 1;
 	}
 
@@ -153,15 +156,15 @@ int main(int argc, char *argv[])
 
 	if (cmd == "s=" || cmd == "state=")
 	{
-		if (setPortState(port, state) < 0)
+		if (rspoe->setPortState(port, state) < 0)
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "s" || cmd == "state")
 	{
-		state = getPortState(port);
+		state = rspoe->getPortState(port);
 		if (state != StateError)
 		{
 			if (human) printf("%s\n", stateToString(state));
@@ -169,13 +172,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "v" || cmd == "voltage")
 	{
-		float voltage = getPortVoltage(port);
+		float voltage = rspoe->getPortVoltage(port);
 		if (voltage >= 0.0f)
 		{
 			if (human) printf("%fV\n", voltage);
@@ -183,13 +186,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "c" || cmd == "current")
 	{
-		float current = getPortCurrent(port);
+		float current = rspoe->getPortCurrent(port);
 		if (current >= 0.0f)
 		{
 			if (human) printf("%fA\n", current);
@@ -197,13 +200,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "w" || cmd == "wattage")
 	{
-		float watts = getPortPower(port);
+		float watts = rspoe->getPortPower(port);
 		if (watts >= 0.0f)
 		{
 			if (human) printf("%fW\n", watts);
@@ -211,13 +214,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "b" || cmd == "budget-consumed")
 	{
-		int consumed = getBudgetConsumed();
+		int consumed = rspoe->getBudgetConsumed();
 		if (consumed >= 0)
 		{
 			if (human) printf("%dW\n", consumed);
@@ -225,13 +228,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "a" || cmd == "budget-available")
 	{
-		int available = getBudgetAvailable();
+		int available = rspoe->getBudgetAvailable();
 		if (available >= 0)
 		{
 			if (human) printf("%dW\n", available);
@@ -239,13 +242,13 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}
 	else if (cmd == "t" || cmd == "budget-total")
 	{
-		int total = getBudgetTotal();
+		int total = rspoe->getBudgetTotal();
 		if (total >= 0)
 		{
 			if (human) printf("%dW\n", total);
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			printLastError();
+			std::cerr << rspoe->getLastError() << std::endl;
 			return 1;
 		}
 	}

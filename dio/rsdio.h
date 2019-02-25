@@ -1,20 +1,26 @@
-#ifndef DIO_H
-#define DIO_H
+#ifndef RSDIO_H
+#define RSDIO_H
 
+#include <string>
 #include <rsdio_export.h>
-#include "rsdio_global.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum OutputMode
+{
+    ModeError = 0,
+    ModePnp = -1,
+    ModeNpn = -2    
+};
 
-RSDIO_EXPORT bool initDio(const char *initFile);
-RSDIO_EXPORT int digitalRead(int dio, int pin);
-RSDIO_EXPORT int digitalWrite(int dio, int pin, bool state);
-RSDIO_EXPORT int setOutputMode(int dio, OutputMode mode);
-RSDIO_EXPORT const char *getLastDioError();
+class RsDio {
+public:
+    virtual void destroy() = 0;
+    virtual bool setXmlFile(const char *fileName) = 0;
+    virtual int digitalRead(int dio, int pin) = 0;
+    virtual int digitalWrite(int dio, int pin, bool state) = 0;
+    virtual int setOutputMode(int dio, OutputMode mode) = 0;
+    virtual std::string getLastError() = 0;
+};
 
-#ifdef __cplusplus
-}
-#endif
-#endif
+extern "C" RSDIO_EXPORT RsDio *createRsDio();
+
+#endif //RSDIO_H

@@ -1,6 +1,33 @@
 # librsdio
 
-The **librsdio** library is used to control the DIO on supported Rugged Science units. Before using any of the DIO functions, the `initDio` function must be called with the correct initialization file. If this is not done, all of the library functions will return an error without performing their task. All library functions return a negative value on error. If this happens it is best to use the `getLastDioError` function to see what caused the error.
+The **librsdio** library is used to control the DIO on supported Rugged Science units. All library functions return a negative value on error except [`setXmlFile`](###setXmlFile) which returns false on error. If this happens it is best to use the [`getLastError`](###getLastError) function to see what caused the error.
+
+## Basic Usage
+
+```c++
+RsDio *dio = createRsDio();
+if (!dio->setXmlFile('ecs9000.xml'))
+{
+    std::cerr << dio->getLastError() << std::endl;
+    dio->destroy();
+    return 1;
+}
+
+dio->setOutputMode(1, ModePnp);
+dio->digitalWrite(1, 11, true);
+dio->destroy();
+```
+
+One important thing to note is that the RsDio class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
+
+```c++
+std::shared_ptr<RsDio> dio(createRsDio(), std::mem_fn(&RsDio::destroy));
+if (!dio)
+{
+    std::cerr << "Failed to create instance of RsDio" << std::endl;
+    return 1;
+}
+```
 
 ## Public Types
 
@@ -18,14 +45,14 @@ enum OutputMode
 
 ## Public Functions
 
-### initDio
+### setXmlFile
 ```c++
-bool initDio(const char *initFile)
+bool setXmlFile(const char *fileName)
 ```
 ---
 
 ### Parameters
-initFile - This should be a path to the XML file specific to your model.
+fileName - This should be a path to the XML file specific to your model.
 
 ### Return value
 Returns true if the dio was successfully initialized, otherwise returns false.
@@ -80,9 +107,9 @@ Zero on successful write. Negative value on error.
 
 <br>
 
-### getLastDioError
+### getLastError
 ```c++
-const char *getLastDioError()
+const char *getLastError()
 ```
 ---
 
