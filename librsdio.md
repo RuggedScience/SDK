@@ -92,7 +92,7 @@ Zero on successful write. Negative value on error.
 
 <br>
 
-### setOutpuMode
+### setOutputMode
 ```c++
 int setOutputMode(int dio, Output mode)
 ```
