@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<computer id="ecs7000">
+  <dio_controller id="ite8783">
+    <connector id="1">
+      <external_pin id="1" bit="0" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="2" bit="1" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="3" bit="2" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="4" bit="3" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="5" bit="4" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="6" bit="5" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="7" bit="6" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="8" bit="7" gpio="5" invert="1" input="1" output="0" />
+      <external_pin id="11" bit="0" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="12" bit="1" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="13" bit="2" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="14" bit="3" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="15" bit="4" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="16" bit="5" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="17" bit="6" gpio="2" invert="1" input="0" output="1" />
+      <external_pin id="18" bit="7" gpio="2" invert="1" input="0" output="1" />
+    </connector>
+  </dio_controller>
+</computer>
