@@ -174,9 +174,20 @@ Total watts the unit can handle. Negative value on error.
 
 ### getLastError
 ```c++
-const char *getLastError()
+std::string *getLastError()
 ```
 ---
 
 ### Return value
-Text containing the last error encountered by the library.
+String containing the last error encountered by the library.
+
+<br>
+
+### version
+```c++
+std::string version()
+```
+---
+
+### Return value
+String containing the current library version

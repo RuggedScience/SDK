@@ -64,7 +64,8 @@ static void showUsage()
 				<< "\n"
 				<< "-h, --human-readable \toutput data in a human readable format\n"
 				<< "\n"
-				<< "--help \t\t\tdisplay this help text and exit\n";
+				<< "--help \t\t\tdisplay this help text and exit\n"
+				<< "--version \t\tdisplay library version information\n";
 }
 
 int main(int argc, char *argv[])

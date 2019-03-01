@@ -60,7 +60,8 @@ static void showUsage()
 				<< "t, budget-total\t\toutput the total budget in watts\n"
 				<< "help\t\t\tdisplay this help and exit\n"
 				<< "Options:\n"
-				<< "-h, --human-readable \toutput data in a human readable format\n";
+				<< "-h, --human-readable \toutput data in a human readable format\n"
+				<< "--version\t\tdisplay library version information\n";
 }
 
 int main(int argc, char *argv[])
