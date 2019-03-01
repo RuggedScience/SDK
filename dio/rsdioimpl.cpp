@@ -3,24 +3,27 @@
 #include "controllers/ite8786.h"
 #include "../utils/tinyxml2.h"
 
-static tinyxml2::XMLError getInternalPinInfo(tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
 {
 	using namespace tinyxml2;
 
 	int id, bit, gpio;
+    bool pullup = false;
 	XMLError e = pin->QueryAttribute("id", &id);
 	if (e != XML_SUCCESS) return e;
 	e = pin->QueryAttribute("bit", &bit);
 	if (e != XML_SUCCESS) return e;
 	e = pin->QueryAttribute("gpio", &gpio);
 	if (e != XML_SUCCESS) return e;
+    e = pin->QueryAttribute("pullup", &pullup);
+    if (e != XML_SUCCESS && e != XML_NO_ATTRIBUTE) return e;
 	
 	pinId = id;
-	info = PinInfo(bit, gpio, false, false, true);
+	info = PinInfo(bit, gpio, false, pullup, false, true);
 	return XML_SUCCESS;
 }
 
-static tinyxml2::XMLError getExternalPinInfo(tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+static tinyxml2::XMLError getExternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
 {
 	using namespace tinyxml2;
 
@@ -40,8 +43,31 @@ static tinyxml2::XMLError getExternalPinInfo(tinyxml2::XMLElement *pin, int& pin
 	if (e != XML_SUCCESS) return e;
 
 	pinId = id;
-	info = PinInfo(bit, gpio, invert, input, output);
+	info = PinInfo(bit, gpio, invert, false, input, output);
 	return XML_SUCCESS;
+}
+
+static tinyxml2::XMLError get8786RegData(const tinyxml2::XMLElement *reg, Ite8786::RegisterData& data)
+{
+    using namespace tinyxml2;
+
+    const char* tmp = reg->Attribute("id");
+    if (!tmp) return XML_NO_ATTRIBUTE;
+    data.addr = std::stoi(std::string(tmp), nullptr, 0);
+
+    tmp = reg->Attribute("ldn");
+    if (tmp) data.ldn = std::stoi(std::string(tmp), nullptr, 0);
+    else data.ldn = 0;
+
+    tmp = reg->Attribute("onBits");
+    if (tmp) data.onBits = std::stoi(std::string(tmp), nullptr, 0);
+    else data.onBits = 0;
+                
+    tmp = reg->Attribute("offBits");
+    if (tmp) data.offBits = std::stoi(std::string(tmp), nullptr, 0);
+    else data.offBits = 0;
+
+    return XML_SUCCESS;
 }
 
 RsDioImpl::RsDioImpl() :
@@ -91,9 +117,21 @@ bool RsDioImpl::setXmlFile(const char *fileName)
     try
     {
 	    if (id == "ite8783")
+        {
     		mp_controller = new Ite8783();
+        }
     	else if (id == "ite8786")
-		    mp_controller = new Ite8786();
+        {
+            Ite8786::RegisterList_t list;
+            XMLElement *reg = dio->FirstChildElement("register");
+            for (; reg; reg = reg->NextSiblingElement("register"))
+            {
+                Ite8786::RegisterData data;
+                if (get8786RegData(reg, data) == XML_SUCCESS)
+                    list.emplace_back(data);
+            }
+		    mp_controller = new Ite8786(list);
+        }
 	    else
 	    {
     		m_lastError = "XML Error: Invalid id found for dio_controller";
