@@ -13,6 +13,15 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_library(rsdio ${diosrc})
 
+set(RSDIO_VERSION_MAJOR 2)
+set(RSDIO_VERSION_MINOR 1)
+set(RSDIO_VERSION_PATCH 0)
+set(RSDIO_VERSION_STRING ${RSDIO_VERSION_MAJOR}.${RSDIO_VERSION_MINOR}.${RSDIO_VERSION_PATCH})
+set_target_properties(rsdio PROPERTIES COMPILE_DEFINITIONS "RSDIO_VERSION_STRING=\"${RSDIO_VERSION_STRING}\"")
+
+set_target_properties(rsdio PROPERTIES VERSION ${RSDIO_VERSION_STRING}
+                                        SOVERSION ${RSDIO_VERSION_MAJOR})
+
 target_include_directories(rsdio PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 generate_export_header(rsdio)

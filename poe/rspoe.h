@@ -26,6 +26,7 @@ public:
     virtual int getBudgetAvailable() = 0;
     virtual int getBudgetTotal() = 0;
     virtual std::string getLastError() = 0;
+    virtual std::string version() = 0;
 };
 
 extern "C" RSPOE_EXPORT RsPoe *createRsPoe();
