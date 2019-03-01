@@ -19,6 +19,7 @@ public:
     virtual int digitalWrite(int dio, int pin, bool state) = 0;
     virtual int setOutputMode(int dio, OutputMode mode) = 0;
     virtual std::string getLastError() = 0;
+    virtual std::string version() = 0;
 };
 
 extern "C" RSDIO_EXPORT RsDio *createRsDio();

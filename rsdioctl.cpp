@@ -89,6 +89,11 @@ int main(int argc, char *argv[])
 			showUsage();
 			return 0;
 		}
+		else if (arg == "--version")
+		{
+			std::cout << rsdio->version() << std::endl;
+			return 0;
+		}
 		else if (arg == "-p" || arg == "--pin")
 		{
 			if (i < argc - 1)

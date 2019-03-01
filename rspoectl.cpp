@@ -83,6 +83,11 @@ int main(int argc, char *argv[])
 			showUsage();
 			return 0;
 		}
+		else if (arg == "--version")
+		{
+			std::cout << rspoe->version() << std::endl;
+			return 0;
+		}
 		else if (arg == "-h" || arg == "--human-readable")
 			human = true;
 		else
