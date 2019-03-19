@@ -14,7 +14,7 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_library(rsdio ${diosrc})
 
-
+set_property(TARGET rsdio PROPERTY CXX_STANDARD 11)
 set_target_properties(rsdio PROPERTIES COMPILE_DEFINITIONS "RSDIO_VERSION_STRING=\"${PROJECT_VERSION}\"")
 set_target_properties(rsdio PROPERTIES  VERSION ${PROJECT_VERSION}
                                         SOVERSION ${PROJECT_VERSION_MAJOR})

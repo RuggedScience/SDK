@@ -9,6 +9,9 @@ option(INSTALL_UTILITIES "Installs utilities" ON)
 add_executable(rsdioctl rsdioctl.cpp)
 add_executable(rspoectl rspoectl.cpp)
 
+set_property(TARGET rsdioctl PROPERTY CXX_STANDARD 11)
+set_property(TARGET rspoectl PROPERTY CXX_STANDARD 11)
+
 target_include_directories(rsdioctl PRIVATE "${PROJECT_BINARY_DIR}/dio")
 target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")
 
