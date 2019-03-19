@@ -25,6 +25,7 @@ public:
     int getBudgetAvailable() override;
     int getBudgetTotal() override;
     std::string getLastError() override;
+    std::string version() override { return std::string(RSPOE_VERSION_STRING); }
 
 private:
     std::string m_lastError;

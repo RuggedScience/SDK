@@ -38,8 +38,11 @@ Ite8783::Ite8783() :
 		setSioLdn(kGpioLdn);
 
 		uint16_t chipId = getChipId();
-		if (chipId == 0x8783)
-			m_baseAddress = getBaseAddressRegister();
+
+		if (chipId != 0x8783)
+			throw DioControllerError("Controller sent invalid chip ID");
+		
+		m_baseAddress = getBaseAddressRegister();
 	}
 	catch (std::exception)
 	{

@@ -1,6 +1,7 @@
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
+project(rspoe VERSION 3.0.0 DESCRIPTION "Rugged Science PoE LIBRARY")
 
 set(poesrc rspoeimpl.cpp controllers/pd69104.cpp controllers/pd69200.cpp controllers/ltc4266.cpp ../utils/tinyxml2.cpp ../utils/i801_smbus.cpp)
 

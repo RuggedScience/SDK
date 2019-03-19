@@ -19,6 +19,7 @@ public:
     int digitalWrite(int dio, int pin, bool state) override;
     int setOutputMode(int dio, OutputMode mode) override;
     std::string getLastError() override;
+    std::string version() override { return std::string(RSDIO_VERSION_STRING); }
 
 private:
     std::string m_lastError;

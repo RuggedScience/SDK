@@ -60,7 +60,8 @@ static void showUsage()
 				<< "t, budget-total\t\toutput the total budget in watts\n"
 				<< "help\t\t\tdisplay this help and exit\n"
 				<< "Options:\n"
-				<< "-h, --human-readable \toutput data in a human readable format\n";
+				<< "-h, --human-readable \toutput data in a human readable format\n"
+				<< "--version\t\tdisplay library version information\n";
 }
 
 int main(int argc, char *argv[])
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 	// Allows for switches to be position independent
 	bool human = false;
 	std::vector<std::string> argList;
+	std::vector<std::string> ignoredArgs;
 	for (int i = 1; i < argc; ++i)
 	{
 		std::string arg = argv[i];
@@ -83,8 +85,15 @@ int main(int argc, char *argv[])
 			showUsage();
 			return 0;
 		}
+		else if (arg == "--version")
+		{
+			std::cout << rspoe->version() << std::endl;
+			return 0;
+		}
 		else if (arg == "-h" || arg == "--human-readable")
 			human = true;
+		else if (arg.find("-") != arg.npos)
+			ignoredArgs.emplace_back(arg);
 		else
 			argList.emplace_back(arg);
 	}
@@ -93,6 +102,21 @@ int main(int argc, char *argv[])
 	{
 		showUsage();
 		return 1;
+	}
+
+	if (size_t s = ignoredArgs.size())
+	{
+		std::cerr << "Ignoring unknown argument";
+		if (s == 1) std::cerr << ": ";
+		else if (s > 1) std::cerr << "s: ";
+		for (size_t i = 0; i < ignoredArgs.size(); ++i)
+		{
+			const std::string& arg = ignoredArgs[i];
+			std::cerr << arg;
+			if (i < ignoredArgs.size() - 1)
+				std::cerr << ", ";
+		}
+		std::cerr << std::endl;
 	}
 
 	if (!rspoe->setXmlFile(argList[0].data()))

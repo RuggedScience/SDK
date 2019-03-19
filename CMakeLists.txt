@@ -1,7 +1,7 @@
-cmake_minimum_required (VERSION 3.10.2)
-project(rssdk VERSION 1.0.1 DESCRIPTION "Rugged Science SDK")
-add_subdirectory (dio)
-add_subdirectory (poe)
+cmake_minimum_required(VERSION 3.10.2)
+project(rssdk DESCRIPTION "Rugged Science SDK")
+add_subdirectory(dio)
+add_subdirectory(poe)
 
 include(GNUInstallDirs)
 option(INSTALL_UTILITIES "Installs utilities" ON)
@@ -15,8 +15,8 @@ set_property(TARGET rspoectl PROPERTY CXX_STANDARD 11)
 target_include_directories(rsdioctl PRIVATE "${PROJECT_BINARY_DIR}/dio")
 target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")
 
-target_link_libraries (rsdioctl rsdio)
-target_link_libraries (rspoectl rspoe)
+target_link_libraries(rsdioctl rsdio)
+target_link_libraries(rspoectl rspoe)
 
 SET_TARGET_PROPERTIES(rsdioctl rspoectl
     PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")

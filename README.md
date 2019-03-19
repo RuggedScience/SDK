@@ -63,6 +63,6 @@ Linux: "/usr/local"
 `cmake .. -DCMAKE_INSTALL_PREFIX=../install`  
 `cmake --build . --target install`
 
-By default the examples are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_EXAMPLES=OFF`.
+By default the control utilities are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_UTILITIES=OFF`.
 
 Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory you supplied.
