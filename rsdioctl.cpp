@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 	bool human = false;
 	int dio = 1, pin = -1;
 	std::vector<std::string> argList;
+	std::vector<std::string> ignoredArgs;
 	for (int i = 1; i < argc; ++i)
 	{
 		std::string arg = argv[i];
@@ -135,6 +136,8 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "-h" || arg == "--human-readable")
 			human = true;
+		else if (arg.find("-") != arg.npos)
+			ignoredArgs.emplace_back(arg);
 		else
 			argList.emplace_back(arg);
 	}
@@ -143,6 +146,21 @@ int main(int argc, char *argv[])
 	{
 		showUsage();
 		return 1;
+	}
+
+	if (size_t s = ignoredArgs.size())
+	{
+		std::cerr << "Ignoring unknown argument";
+		if (s == 1) std::cerr << ": ";
+		else if (s > 1) std::cerr << "s: ";
+		for (size_t i = 0; i < ignoredArgs.size(); ++i)
+		{
+			const std::string& arg = ignoredArgs[i];
+			std::cerr << arg;
+			if (i < ignoredArgs.size() - 1)
+				std::cerr << ", ";
+		}
+		std::cerr << std::endl;
 	}
 
 	if (!rsdio->setXmlFile(argList[0].data()))
