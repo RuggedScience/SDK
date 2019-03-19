@@ -1,6 +1,7 @@
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
+project(rspoe VERSION 3.0.0 DESCRIPTION "Rugged Science PoE LIBRARY")
 
 set(poesrc rspoeimpl.cpp controllers/pd69104.cpp controllers/pd69200.cpp controllers/ltc4266.cpp ../utils/tinyxml2.cpp ../utils/i801_smbus.cpp)
 
@@ -13,14 +14,9 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_library(rspoe ${poesrc})
 
-set(RSPOE_VERSION_MAJOR 2)
-set(RSPOE_VERSION_MINOR 1)
-set(RSPOE_VERSION_PATCH 0)
-set(RSPOE_VERSION_STRING ${RSPOE_VERSION_MAJOR}.${RSPOE_VERSION_MINOR}.${RSPOE_VERSION_PATCH})
-set_target_properties(rspoe PROPERTIES COMPILE_DEFINITIONS "RSPOE_VERSION_STRING=\"${RSPOE_VERSION_STRING}\"")
-
-set_target_properties(rspoe PROPERTIES VERSION ${RSPOE_VERSION_STRING}
-                                        SOVERSION ${RSPOE_VERSION_MAJOR})
+set_target_properties(rspoe PROPERTIES COMPILE_DEFINITIONS "RSPOE_VERSION_STRING=\"${PROJECT_VERSION}\"")
+set_target_properties(rspoe PROPERTIES  VERSION ${PROJECT_VERSION}
+                                        SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(rspoe PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
