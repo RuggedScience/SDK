@@ -13,6 +13,11 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_library(rspoe ${poesrc})
 
+set_property(TARGET rspoe PROPERTY CXX_STANDARD 11)
+set_target_properties(rspoe PROPERTIES COMPILE_DEFINITIONS "RSPOE_VERSION_STRING=\"${PROJECT_VERSION}\"")
+set_target_properties(rspoe PROPERTIES  VERSION ${PROJECT_VERSION}
+                                        SOVERSION ${PROJECT_VERSION_MAJOR})
+
 target_include_directories(rspoe PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 generate_export_header(rspoe)
