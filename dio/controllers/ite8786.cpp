@@ -2,6 +2,8 @@
 
 #include <exception>
 
+#include <iostream>
+
 #ifdef __linux__
 #include <sys/io.h>
 #elif _WIN32
@@ -12,6 +14,7 @@ static const uint16_t	kSpecialAddress = 0x002E;				//MMIO of the SuperIO's addre
 static const uint16_t	kSpecialData = 0x002F;					//MMIO of the SuperIO's data port. Use the register to read / set the data for whatever value SPECIAL_ADDRESS was set to.
 static const uint8_t	kLdnRegister = 0x07;					//SuperIo register that holds the current logical device number in the SuperIO.
 static const uint8_t	kGpioLdn = 0x07;						//The logical device number for most GPIO registers.
+static const uint8_t	kParallelPortLdn = 0x03;
 
 static const uint8_t	kChipIdRegisterH = 0x20;				//SuperIO register that holds the high byte of the chip ID.
 static const uint8_t	kChipIdRegisterL = 0x21;				//SuperIO register that holds the low byte of the chip ID.
@@ -29,6 +32,7 @@ static const uint8_t	kOutputEnableMax = 0xCF;
 
 Ite8786::Ite8786() : 
 	AbstractDioController(),
+	m_currentLdn(0),
 	m_baseAddress(0)
 {
 	enterSio();
@@ -46,11 +50,52 @@ Ite8786::Ite8786() :
 			chipId = getChipId();
 		}
 
-		if (chipId == 0x8786)
-		{		
-			m_baseAddress = getBaseAddressRegister();
-			writeSioRegister(0x2B, 0x48);
-			writeSioRegister(0x2C, readSioRegister(0x2C) & ~0x01);
+		if (chipId != 0x8786)
+			throw DioControllerError("Controller sent invalid chip ID");
+	
+		setSioLdn(kGpioLdn);		
+		m_baseAddress = getBaseAddressRegister();
+	}
+	catch (std::exception)
+	{
+		exitSio();
+		throw;
+	}
+}
+
+Ite8786::Ite8786(const Ite8786::RegisterList_t& list) : 
+	AbstractDioController(),
+	m_currentLdn(0),
+	m_baseAddress(0)
+{
+	enterSio();
+
+	try
+	{
+		setSioLdn(kGpioLdn);
+
+		uint16_t chipId = getChipId();
+		//On units with an FSM-100 installed, two SuperIo chips will be present.
+		//The FSM-100 uses an IT8783. We don't want to talk to that chip...
+		if (chipId == 0x8783)
+		{
+			writeSioRegister(0x22, 0x80); //Writing 0x80 to register 0x22 will cause the SuperIo on the FSM to exit config mode and should allow us to talk to the SuperIo on the MB.
+			chipId = getChipId();
+		}
+
+		if (chipId != 0x8786)
+			throw DioControllerError("Controller sent invalid chip ID");
+	
+		setSioLdn(kGpioLdn);		
+		m_baseAddress = getBaseAddressRegister();
+	
+		for (const RegisterData& reg : list)
+		{
+			setSioLdn(reg.ldn);
+			uint8_t data = readSioRegister(reg.addr);
+			data |= reg.onBits;
+			data &= ~reg.offBits;
+			writeSioRegister(reg.addr, data);
 		}
 	}
 	catch (std::exception)
@@ -75,6 +120,14 @@ void Ite8786::initPin(PinInfo info)
 	reg = kSimpleIoBar + info.offset;
 	if (reg <= kSimpleIoMax)
 		writeSioRegister(reg, readSioRegister(reg) | info.bitmask);		//Set pin as "Simple I/O" instead of "Alternate function"
+
+	reg = kPullUpBar + info.offset;
+	if (reg <= kPullupMax)
+	{
+		uint8_t val = readSioRegister(reg);
+		if (info.enablePullup) writeSioRegister(reg, val | info.bitmask);
+		else writeSioRegister(reg, val & ~info.bitmask);
+	}
 
 	if (info.supportsInput)
 		setPinMode(info, ModeInput);
@@ -172,6 +225,18 @@ void Ite8786::exitSio()
 	ioperm(kSpecialAddress, 2, 0);
 }
 
+//The SuperIo uses logical device numbers (LDN) to "multiplex" registers.
+//The correct LDN must be set to access certain registers.
+//Really just here for readability.
+void Ite8786::setSioLdn(uint8_t ldn)
+{
+	if (ldn != m_currentLdn)
+	{
+		writeSioRegister(kLdnRegister, ldn);
+		m_currentLdn = ldn;
+	}
+}
+
 uint8_t Ite8786::readSioRegister(uint8_t reg)
 {
 	if (ioperm(kSpecialAddress, 2, 1))
@@ -192,14 +257,6 @@ void Ite8786::writeSioRegister(uint8_t reg, uint8_t data)
 	outb(data, kSpecialData);
 
 	ioperm(kSpecialAddress, 2, 0);
-}
-
-//The SuperIo uses logical device numbers (LDN) to "multiplex" registers.
-//The correct LDN must be set to access certain registers.
-//Really just here for readability.
-void Ite8786::setSioLdn(uint8_t ldn)
-{
-	writeSioRegister(kLdnRegister, ldn);
 }
 
 uint16_t Ite8786::getChipId()
