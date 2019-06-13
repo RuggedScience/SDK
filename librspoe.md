@@ -5,7 +5,8 @@ The **librspoe** library is used to control the PoE ports on supported Rugged Sc
 ## Basic Usage
 
 ```c++
-
+#include <rspoe.h>
+...
 RsPoe *poe = createRsPoe();
 if (!poe->setXmlFile('ecs9000.xml'))
 {
