@@ -5,6 +5,8 @@ The **librsdio** library is used to control the DIO on supported Rugged Science 
 ## Basic Usage
 
 ```c++
+#include <rsdio.h>
+...
 RsDio *dio = createRsDio();
 if (!dio->setXmlFile('ecs9000.xml'))
 {
