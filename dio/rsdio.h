@@ -2,7 +2,7 @@
 #define RSDIO_H
 
 #include <string>
-#include <rsdio_export.h>
+#include "rsdio_export.h"
 
 enum OutputMode
 {

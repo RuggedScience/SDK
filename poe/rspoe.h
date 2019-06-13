@@ -2,7 +2,7 @@
 #define RSPOE_H
 
 #include <string>
-#include <rspoe_export.h>
+#include "rspoe_export.h"
 
 enum PoeState
 {
