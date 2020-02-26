@@ -1,7 +1,13 @@
+if (CMAKE_VERSION VERSION_LESS "3.0")
+    project(rsdio)
+	set(PROJECT_VERSION 3.0.0)
+else()
+    project(rsdio VERSION 3.0.0 DESCRIPTION "Rugged Science DIO Library")
+endif()
+
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
-project(rsdio VERSION 3.0.0 DESCRIPTION "Rugged Science DIO LIBRARY")
 
 set(diosrc rsdioimpl.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
 
@@ -14,10 +20,8 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_library(rsdio ${diosrc})
 
-set_property(TARGET rsdio PROPERTY CXX_STANDARD 11)
 set_target_properties(rsdio PROPERTIES COMPILE_DEFINITIONS "RSDIO_VERSION_STRING=\"${PROJECT_VERSION}\"")
-set_target_properties(rsdio PROPERTIES  VERSION ${PROJECT_VERSION}
-                                        SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(rsdio PROPERTIES VERSION ${PROJECT_VERSION})
 
 target_include_directories(rsdio PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
