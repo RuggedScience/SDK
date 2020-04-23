@@ -40,8 +40,8 @@ enum OutputMode
 ---
 | Constant  | Value     | Description                       |
 |-----------|-----------|-----------------------------------|
-| ModePnp   | -1        | Pin state LOW = Open, HIGH = DC-  |
-| ModeNpn   | -2        | Pin state LOW = Open, HIGH = DC+  |
+| ModePnp   | -1        | Pin state LOW = Open, HIGH = DC+  |
+| ModeNpn   | -2        | Pin state LOW = Open, HIGH = DC-  |
 
 <br>
 
