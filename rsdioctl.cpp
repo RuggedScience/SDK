@@ -65,7 +65,8 @@ static void showUsage()
 				<< "-h, --human-readable \toutput data in a human readable format\n"
 				<< "\n"
 				<< "--help \t\t\tdisplay this help text and exit\n"
-				<< "--version \t\tdisplay library version information\n";
+				<< "--version \t\tdisplay library version information\n"
+				<< "--debug \t\tprint debug information\n";
 }
 
 int main(int argc, char *argv[])
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
 	bool human = false;
+	bool debug = false;
 	int dio = 1, pin = -1;
 	std::vector<std::string> argList;
 	std::vector<std::string> ignoredArgs;
@@ -136,6 +138,8 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "-h" || arg == "--human-readable")
 			human = true;
+		else if (arg == "--debug")
+			debug = true;
 		else if (arg.find("-") != arg.npos)
 			ignoredArgs.emplace_back(arg);
 		else
@@ -163,7 +167,7 @@ int main(int argc, char *argv[])
 		std::cerr << std::endl;
 	}
 
-	if (!rsdio->setXmlFile(argList[0].data()))
+	if (!rsdio->setXmlFile(argList[0].data(), debug))
 	{
 		std::cerr << rsdio->getLastError() << std::endl;
 		return 1;

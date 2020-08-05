@@ -14,7 +14,7 @@ enum OutputMode
 class RsDio {
 public:
     virtual void destroy() = 0;
-    virtual bool setXmlFile(const char *fileName) = 0;
+    virtual bool setXmlFile(const char *fileName, bool debug=false) = 0;
     virtual int digitalRead(int dio, int pin) = 0;
     virtual int digitalWrite(int dio, int pin, bool state) = 0;
     virtual int setOutputMode(int dio, OutputMode mode) = 0;

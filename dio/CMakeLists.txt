@@ -1,7 +1,7 @@
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
-project(rsdio VERSION 3.0.0 DESCRIPTION "Rugged Science DIO LIBRARY")
+project(rsdio VERSION 3.0.1 DESCRIPTION "Rugged Science DIO LIBRARY")
 
 set(diosrc rsdioimpl.cpp controllers/ite8783.cpp controllers/ite8786.cpp ../utils/tinyxml2.cpp)
 

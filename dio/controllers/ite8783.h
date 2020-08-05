@@ -6,15 +6,17 @@
 class Ite8783 : public AbstractDioController
 {
 public:
-	Ite8783();
+	Ite8783(bool debug=false);
 	~Ite8783();
 	
-	void initPin(PinInfo) override;
+	void initPin(PinInfo info) override;
 	PinMode getPinMode(PinInfo info) override;
 	void setPinMode(PinInfo info, PinMode mode) override;
 
 	bool getPinState(PinInfo info) override;
 	void setPinState(PinInfo info, bool state) override;
+
+	void printRegs() override;
 
 private:
 	uint16_t m_baseAddress;
