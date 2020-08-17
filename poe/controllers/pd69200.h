@@ -11,7 +11,7 @@ typedef std::array<uint8_t, MSG_LEN> msg_t;
 class Pd69200 : public AbstractPoeController
 {
 public:
-	Pd69200(uint16_t bus, uint8_t dev);
+	Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget=160);
 	~Pd69200() override;
 
 	PoeState getPortState(uint8_t port) override;
@@ -65,6 +65,25 @@ private:
 
 	};
 	SystemMeasurements getSystemMeasuerments();
+
+	enum PowerBankSourceType
+	{
+		SourceTypeUnknow = 0,
+		SourceTypePrimary,
+		SourceTypeBackup,
+		SourceTypeReserved
+	};
+
+	struct PowerBankSettings
+	{
+		int powerLimit;
+		float maxShutdownVoltage;
+		float minShutdownVoltage;
+		uint8_t guardBand;
+		PowerBankSourceType sourceType;
+	};
+	PowerBankSettings getPowerBankSettings(uint8_t bank);
+	void setPowerBankSettings(uint8_t bank, const PowerBankSettings &settings);
 };
 
 #endif // PD69200_H

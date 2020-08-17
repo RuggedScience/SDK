@@ -6,8 +6,14 @@
 #include <fcntl.h>
 #include <cstring>
 
-#define CHKSUM_L    MSG_LEN - 1
-#define CHKSUM_H    MSG_LEN - 2
+#define COMMAND_KEY     0x00
+#define PROGRAM_KEY     0x01
+#define REQUEST_KEY     0x02
+#define TELEMETRY_KEY   0x03
+#define REPORT_KEY      0x52
+
+#define CHKSUM_L        MSG_LEN - 1
+#define CHKSUM_H        MSG_LEN - 2
 
 static const uint8_t kDeviceId = 0x16;
 
@@ -37,6 +43,14 @@ static const msg_t getTotalPowerCmd = {
     0x02, 0x00, 0x07, 0x0B, 0x60, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E
 };
 
+static const msg_t setPowerBanksCmd = {
+    0x00, 0x00, 0x07, 0x0B, 0x57, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+static const msg_t getPowerBanksCmd = {
+    0x02, 0x00, 0x07, 0x0B, 0x57, 0x00, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E
+};
+
 static const msg_t commandAccepted = {
     0x52, 0x00, 0x00, 0x00, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E, 0x4E
 };
@@ -50,7 +64,7 @@ static uint16_t calcCheckSum(const uint8_t *msg, size_t size)
     return sum;
 }
 
-Pd69200::Pd69200(uint16_t bus, uint8_t dev) :
+Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
 	AbstractPoeController(),
 	m_busAddr(bus),
 	m_devAddr(dev),
@@ -62,6 +76,10 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev) :
     
 	if (devId < 0 || devId != kDeviceId)
 		throw PoeControllerError(std::strerror(errno));
+
+    PowerBankSettings s = getPowerBankSettings(0);
+    s.powerLimit = totalBudget;
+    setPowerBankSettings(0, s);
 }
 
 Pd69200::~Pd69200()
@@ -170,6 +188,24 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
 
     if (msg[1] != response[1])
         throw PoeControllerError("Invalid echo received from controller");
+
+    // If the msg is a command or program we should expect a success response from the controller.
+    if (msg[0] == COMMAND_KEY || msg[0] == PROGRAM_KEY)
+    {
+        for (size_t i = 0; i < MSG_LEN - 2; ++i)
+        {
+            if (i == 1) continue; // Ignore echo byte.
+
+            if (response[i] != commandAccepted[i])
+                throw PoeControllerError("Invalid response received from controller");
+        }
+    }
+    // If the msg is a request we should expect a telemetry response from the controller.
+    else if (msg[0] == REQUEST_KEY)
+    {
+        if (response[0] != TELEMETRY_KEY)
+            throw PoeControllerError("Invalid response received from controller");
+    }
     
     return response;
 }
@@ -178,9 +214,6 @@ int Pd69200::getDeviceId()
 {
     msg_t response, msg = softwareVersionCmd;
     response = sendMsgToController(msg);
-
-    if (response[0] != 0x03)
-        throw PoeControllerError("Invalid response received from controller");
         
     return response[4];
 }
@@ -190,9 +223,6 @@ Pd69200::PortStatus Pd69200::getPortStatus(uint8_t port)
     msg_t response, msg = getStatusCmd;
     msg[4] = port;
     response = sendMsgToController(msg);
-
-    if (response[0] != 0x03)
-        throw PoeControllerError("Invalid response received from controller");
     
     PortStatus s;
     s.enabled = ((response[2] & 0x01) == 0x01);
@@ -208,35 +238,19 @@ Pd69200::PortStatus Pd69200::getPortStatus(uint8_t port)
 
 void Pd69200::setPortEnabled(uint8_t port, bool enable)
 {
-    msg_t response, msg = setEnabledCmd;
+    msg_t msg = setEnabledCmd;
     msg[4] = port;
     msg[5] = enable ? 0x01 : 0x00;
     msg[6] = enable ? 0x01 : 0x02;
-    response = sendMsgToController(msg);
-
-    for (size_t i = 0; i < MSG_LEN - 2; ++i)
-    {
-        if (i == 1) continue; // Ignore echo byte.
-
-        if (response[i] != commandAccepted[i])
-            throw PoeControllerError("Invalid response received from controller");
-    }
+    sendMsgToController(msg);
 }
 
 void Pd69200::setPortForce(uint8_t port, bool force)
 {
-    msg_t response, msg = setForceCmd;
+    msg_t msg = setForceCmd;
     msg[4] = port;
     msg[5] = force ? 0x01 : 0x00;
-    response = sendMsgToController(msg);
-
-    for (size_t i = 0; i < MSG_LEN - 2; ++i)
-    {
-        if (i == 1) continue; // Ignore echo byte.
-        
-        if (response[i] != commandAccepted[i])
-            throw PoeControllerError("Invalid response received from controller");
-    }
+    sendMsgToController(msg);
 }
 
 Pd69200::PortMeasurements Pd69200::getPortMeasurements(uint8_t port)
@@ -244,9 +258,6 @@ Pd69200::PortMeasurements Pd69200::getPortMeasurements(uint8_t port)
     msg_t response, msg = getMeasurementsCmd;
     msg[4] = port;
     response = sendMsgToController(msg);
-
-    if (response[0] != 0x03)
-        throw PoeControllerError("Invalid response received from controller");
 
     uint16_t val;
     PortMeasurements m;
@@ -268,9 +279,6 @@ Pd69200::SystemMeasurements Pd69200::getSystemMeasuerments()
     msg_t response, msg = getTotalPowerCmd;
     response = sendMsgToController(msg);
 
-    if (response[0] != 0x03)
-        throw PoeControllerError("Invalid response received from controller");
-
     uint16_t val;
     SystemMeasurements m;
 
@@ -287,4 +295,54 @@ Pd69200::SystemMeasurements Pd69200::getSystemMeasuerments()
     m.budgetedWatts = (int)val;
 
     return m;
+}
+
+Pd69200::PowerBankSettings Pd69200::getPowerBankSettings(uint8_t bank)
+{
+    msg_t response, msg = getTotalPowerCmd;
+    msg[5] = bank;
+    response = sendMsgToController(msg);
+
+    uint16_t val;
+    PowerBankSettings s;
+
+    val = (response[2] << 8) | response[3];
+    s.powerLimit = (int)val;
+
+    val = (response[4] << 8) | response[5];
+    s.maxShutdownVoltage = val / 10.0f;
+
+    val = (response[6] << 8) | response[7];
+    s.minShutdownVoltage = val / 10.0f;
+
+    s.guardBand = response[8];
+    if (msg[9] >= 0x03)
+        s.sourceType = SourceTypeReserved;
+    else
+        s.sourceType = (PowerBankSourceType)(msg[9] & 0x03);
+    
+    return s;
+}
+
+void Pd69200::setPowerBankSettings(uint8_t bank, const Pd69200::PowerBankSettings &settings)
+{
+    msg_t msg = setPowerBanksCmd;
+    msg[5] = bank;
+
+    uint16_t val;
+
+    msg[6] = (uint8_t)(settings.powerLimit >> 8);
+    msg[7] = (uint8_t)settings.powerLimit;
+
+    val = (uint16_t)settings.maxShutdownVoltage * 10;
+    msg[8] = (uint8_t)(val >> 8);
+    msg[9] = (uint8_t)val;
+
+    val = (uint16_t)settings.minShutdownVoltage * 10;
+    msg[10] = (uint8_t)(val >> 8);
+    msg[11] = (uint8_t)val;
+
+    msg[12] = settings.guardBand;
+
+    sendMsgToController(msg);
 }
