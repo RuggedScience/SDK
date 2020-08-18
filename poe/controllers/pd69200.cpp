@@ -84,8 +84,11 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
 		throw PoeControllerError(std::strerror(errno));
 
     PowerBankSettings s = getPowerBankSettings(0);
-    s.powerLimit = totalBudget;
-    setPowerBankSettings(0, s);
+    if (s.powerLimit != totalBudget)
+    {
+        s.powerLimit = totalBudget;
+        setPowerBankSettings(0, s);
+    }
 }
 
 Pd69200::~Pd69200()
