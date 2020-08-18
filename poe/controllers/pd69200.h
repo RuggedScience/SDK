@@ -11,7 +11,7 @@ typedef std::array<uint8_t, MSG_LEN> msg_t;
 class Pd69200 : public AbstractPoeController
 {
 public:
-	Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget=160);
+	Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget=170);
 	~Pd69200() override;
 
 	PoeState getPortState(uint8_t port) override;
