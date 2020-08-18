@@ -299,7 +299,7 @@ Pd69200::SystemMeasurements Pd69200::getSystemMeasuerments()
 
 Pd69200::PowerBankSettings Pd69200::getPowerBankSettings(uint8_t bank)
 {
-    msg_t response, msg = getTotalPowerCmd;
+    msg_t response, msg = getPowerBanksCmd;
     msg[5] = bank;
     response = sendMsgToController(msg);
 
