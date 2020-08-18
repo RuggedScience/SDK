@@ -6,6 +6,12 @@
 #include <fcntl.h>
 #include <cstring>
 
+//#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#endif // DEBUG
+
 #define COMMAND_KEY     0x00
 #define PROGRAM_KEY     0x01
 #define REQUEST_KEY     0x02
@@ -171,6 +177,18 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
     msg[CHKSUM_H] = chksum_h;
     msg[CHKSUM_L] = chksum_l;
 
+#ifdef DEBUG
+    std::cout << "Sending message to controller" << std::endl;
+    for (size_t i = 0; i < MSG_LEN; ++i)
+    {
+        std::cout << std::hex << "0x" << (int)msg[i];
+        if (i < MSG_LEN - 1)
+            std::cout << ", ";
+        else
+            std::cout << std::endl;
+    }
+#endif // DEBUG
+    
     for (size_t i = 0; i < MSG_LEN - 1; ++i)    // Send everything but the last byte.
     {
         if (smbusWriteByte(m_busAddr, m_devAddr, msg[i]) < 0)
@@ -181,6 +199,18 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
     msg_t response;
     if (smbusI2CRead(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()) < 0) // Now we can send the last byte
         throw PoeControllerError(std::strerror(errno));
+
+#ifdef DEBUG
+    std::cout << "Received message from controller" << std::endl;
+    for (size_t i = 0; i < MSG_LEN; ++i)
+    {
+        std::cout << std::hex << "0x" << (int)response[i];
+        if (i < MSG_LEN - 1)
+            std::cout << ", ";
+        else
+            std::cout << std::endl;
+    }
+#endif // DEBUG
 
     chksum = (response[MSG_LEN - 2] << 8) | response[MSG_LEN - 1];
     if (chksum != calcCheckSum(response.data(), MSG_LEN - 2))
