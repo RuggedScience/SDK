@@ -14,7 +14,7 @@ public:
     ~RsDioImpl();
 
     void destroy() override;
-    bool setXmlFile(const char *fileName) override;
+    bool setXmlFile(const char *fileName, bool debug=false) override;
     int digitalRead(int dio, int pin) override;
     int digitalWrite(int dio, int pin, bool state) override;
     int setOutputMode(int dio, OutputMode mode) override;

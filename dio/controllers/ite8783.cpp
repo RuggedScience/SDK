@@ -1,6 +1,7 @@
 #include "ite8783.h"
 
 #include <exception>
+#include <iostream>
 
 #ifdef __linux__
 #include <sys/io.h>
@@ -27,7 +28,7 @@ static const uint8_t	kSimpleIoMax = 0xC4;
 static const uint8_t	kOutputEnableBar = 0xC8;
 static const uint8_t	kOutputEnableMax = 0xCD;
 
-Ite8783::Ite8783() : 
+Ite8783::Ite8783(bool debug) : 
     AbstractDioController(),
     m_baseAddress(0)
 {
@@ -39,10 +40,16 @@ Ite8783::Ite8783() :
 
 		uint16_t chipId = getChipId();
 
+		if (debug)
+			std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId << std::endl;
+
 		if (chipId != 0x8783)
 			throw DioControllerError("Controller sent invalid chip ID");
 		
 		m_baseAddress = getBaseAddressRegister();
+		
+		if (debug)
+			std::cout << "Found base address register of 0x" << std::hex << (int)m_baseAddress << std::endl;
 	}
 	catch (std::exception)
 	{
@@ -136,6 +143,11 @@ void Ite8783::setPinState(PinInfo info, bool state)
 
 	outb(data, reg);
 	ioperm(reg, 1, 0);
+}
+
+void Ite8783::printRegs()
+{
+
 }
 
 //Special series of data that must be written to a specific memory address to enable access to the SuperIo's configuration registers.

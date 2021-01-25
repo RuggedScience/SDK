@@ -1,7 +1,6 @@
 #include "ite8786.h"
 
 #include <exception>
-
 #include <iostream>
 
 #ifdef __linux__
@@ -30,7 +29,7 @@ static const uint8_t	kSimpleIoMax = 0xC4;
 static const uint8_t	kOutputEnableBar = 0xC8;
 static const uint8_t	kOutputEnableMax = 0xCF;
 
-Ite8786::Ite8786() : 
+Ite8786::Ite8786(bool debug) : 
 	AbstractDioController(),
 	m_currentLdn(0),
 	m_baseAddress(0)
@@ -55,6 +54,9 @@ Ite8786::Ite8786() :
 	
 		setSioLdn(kGpioLdn);		
 		m_baseAddress = getBaseAddressRegister();
+
+		if (debug)
+			std::cout << "Found base address register of 0x" << std::hex << m_baseAddress << std::endl;
 	}
 	catch (std::exception)
 	{
@@ -63,7 +65,7 @@ Ite8786::Ite8786() :
 	}
 }
 
-Ite8786::Ite8786(const Ite8786::RegisterList_t& list) : 
+Ite8786::Ite8786(const Ite8786::RegisterList_t& list, bool debug) : 
 	AbstractDioController(),
 	m_currentLdn(0),
 	m_baseAddress(0)
@@ -83,19 +85,33 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t& list) :
 			chipId = getChipId();
 		}
 
+		if (debug)
+			std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId << std::endl;
+
 		if (chipId != 0x8786)
 			throw DioControllerError("Controller sent invalid chip ID");
 	
 		setSioLdn(kGpioLdn);		
 		m_baseAddress = getBaseAddressRegister();
+
+		if (debug)
+			std::cout << "Found base address register of 0x" << std::hex << (int)m_baseAddress << std::endl;
 	
 		for (const RegisterData& reg : list)
 		{
 			setSioLdn(reg.ldn);
-			uint8_t data = readSioRegister(reg.addr);
-			data |= reg.onBits;
-			data &= ~reg.offBits;
-			writeSioRegister(reg.addr, data);
+			uint8_t oldData = readSioRegister(reg.addr);
+			uint8_t newData = oldData | reg.onBits;
+			newData &= ~reg.offBits;
+			writeSioRegister(reg.addr, newData);
+
+			if (debug)
+			{
+				std::cout << std::endl;
+				std::cout << "Setting register 0x" << std::hex << (int)reg.addr << std::endl;
+				std::cout << "Old Value:\t0x" << std::hex << (int)oldData << std::endl;
+				std::cout << "New Value:\t0x" << std::hex << (int)newData << std::endl;
+			}
 		}
 	}
 	catch (std::exception)
@@ -198,6 +214,32 @@ void Ite8786::setPinState(PinInfo info, bool state)
 
 	outb(data, reg);
 	ioperm(reg, 1, 0);
+}
+
+void Ite8786::printRegs()
+{
+	setSioLdn(kGpioLdn);
+
+	std::cout << std::endl << "Polarity Registers" << std::endl;
+	for (int reg = kPolarityBar; reg <= kPolarityMax; ++reg)
+	{
+		int gpio = (reg - kPolarityBar) + 1;
+		std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x" << (int)readSioRegister(reg) << std::endl;
+	}
+
+	std::cout << std::endl << "Simple I/O Registers" << std::endl;
+	for (int reg = kSimpleIoBar; reg <= kSimpleIoMax; ++reg)
+	{
+		int gpio = (reg - kSimpleIoBar) + 1;
+		std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x" << (int)readSioRegister(reg) << std::endl;
+	}
+
+	std::cout << std::endl << "Pullup Enable Registers" << std::endl;
+	for (int reg = kPullUpBar; reg <= kPullupMax; ++reg)
+	{
+		int gpio = (reg - kPullUpBar) + 1;
+		std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x" << (int)readSioRegister(reg) << std::endl;
+	}
 }
 
 //Special series of data that must be written to a specific memory address to enable access to the SuperIo's configuration registers.

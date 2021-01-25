@@ -2,7 +2,7 @@ if (CMAKE_VERSION VERSION_LESS "3.0")
     project(rsdio)
 	set(PROJECT_VERSION 3.0.0)
 else()
-    project(rsdio VERSION 3.0.0 DESCRIPTION "Rugged Science DIO Library")
+    project(rsdio VERSION 3.0.2 DESCRIPTION "Rugged Science DIO Library")
 endif()
 
 include(GNUInstallDirs)

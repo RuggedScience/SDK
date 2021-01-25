@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "rsdioimpl.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
@@ -85,7 +87,7 @@ void RsDioImpl::destroy()
     delete this;
 }
 
-bool RsDioImpl::setXmlFile(const char *fileName)
+bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 {
     using namespace tinyxml2;
 	m_dioMap.clear();
@@ -116,9 +118,12 @@ bool RsDioImpl::setXmlFile(const char *fileName)
 	std::string id(dio->Attribute("id"));
     try
     {
+        if (debug)
+            std::cout << "XML DIO Controller ID: " << id << std::endl;
+            
 	    if (id == "ite8783")
         {
-    		mp_controller = new Ite8783();
+    		mp_controller = new Ite8783(debug);
         }
     	else if (id == "ite8786")
         {
@@ -130,7 +135,7 @@ bool RsDioImpl::setXmlFile(const char *fileName)
                 if (get8786RegData(reg, data) == XML_SUCCESS)
                     list.emplace_back(data);
             }
-		    mp_controller = new Ite8786(list);
+		    mp_controller = new Ite8786(list, debug);
         }
 	    else
 	    {
@@ -143,6 +148,10 @@ bool RsDioImpl::setXmlFile(const char *fileName)
         m_lastError = "DIO Controller Error: " + std::string(ex.what());
         return false;
     }
+
+    // Print the registers before we initialize all the pins.
+    if (debug)
+        mp_controller->printRegs();
 
 	XMLElement *con = dio->FirstChildElement("connector");
 	if (!con)
@@ -181,6 +190,10 @@ bool RsDioImpl::setXmlFile(const char *fileName)
 			}
 		}
 	}
+
+    // Print the registers again after all the pins have been initialized.
+    if (debug)
+        mp_controller->printRegs();
     
     if (m_dioMap.size() <= 0)
     {
