@@ -2,7 +2,7 @@ if (CMAKE_VERSION VERSION_LESS "3.0")
     project(rspoe)
 	set(PROJECT_VERSION 3.0.0)
 else()
-    project(rspoe VERSION 3.0.0 DESCRIPTION "Rugged Science PoE Library")
+    project(rspoe VERSION 3.0.3 DESCRIPTION "Rugged Science PoE Library")
 endif()
 
 include(GNUInstallDirs)
