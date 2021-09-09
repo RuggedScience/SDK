@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<computer id="rcx10xx">
+  <dio_controller id="ite8786">
+    <connector id="1">
+      <internal_pin id="-1" name="pnp" bit="1" gpio="6" pullup="1" />
+      <internal_pin id="-2" name="npn" bit="0" gpio="6" pullup="1" />
+      <external_pin id="1" gpio="8" bit="0" invert="1" input="1" output="0" />
+      <external_pin id="2" gpio="8" bit="1" invert="1" input="1" output="0" />
+      <external_pin id="3" gpio="8" bit="2" invert="1" input="1" output="0" />
+      <external_pin id="4" gpio="8" bit="3" invert="1" input="1" output="0" />
+      <external_pin id="5" gpio="8" bit="4" invert="1" input="1" output="0" />
+      <external_pin id="6" gpio="8" bit="5" invert="1" input="1" output="0" />
+      <external_pin id="7" gpio="8" bit="6" invert="1" input="1" output="0" />
+      <external_pin id="8" gpio="8" bit="7" invert="1" input="1" output="0" />
+      <external_pin id="11" gpio="7" bit="0" invert="0" input="0" output="1" />
+      <external_pin id="12" gpio="7" bit="1" invert="0" input="0" output="1" />
+      <external_pin id="13" gpio="7" bit="2" invert="0" input="0" output="1" />
+      <external_pin id="14" gpio="7" bit="3" invert="0" input="0" output="1" />
+      <external_pin id="15" gpio="7" bit="4" invert="0" input="0" output="1" />
+      <external_pin id="16" gpio="7" bit="5" invert="0" input="0" output="1" />
+      <external_pin id="17" gpio="7" bit="6" invert="0" input="0" output="1" />
+      <external_pin id="18" gpio="7" bit="7" invert="0" input="0" output="1" />
+    </connector>
+    <connector id="2">
+      <internal_pin id="-1" name="pnp" gpio="6" bit="2" />
+      <internal_pin id="-2" name="npn" gpio="4" bit="7" />
+      <external_pin id="1" gpio="3" bit="7" invert="1" input="1" output="0" />
+      <external_pin id="2" gpio="5" bit="6" invert="1" input="1" output="0" />
+      <external_pin id="3" gpio="5" bit="7" invert="1" input="1" output="0" />
+      <external_pin id="4" gpio="1" bit="5" invert="1" input="1" output="0" />
+      <external_pin id="5" gpio="1" bit="6" invert="1" input="1" output="0" />
+      <external_pin id="6" gpio="3" bit="5" invert="1" input="1" output="0" />
+      <external_pin id="7" gpio="4" bit="6" invert="1" input="1" output="0" />
+      <external_pin id="8" gpio="1" bit="1" invert="1" input="1" output="0" />
+      <external_pin id="11" gpio="2" bit="2" invert="0" input="0" output="1" />
+      <external_pin id="12" gpio="2" bit="6" invert="0" input="0" output="1" />
+      <external_pin id="13" gpio="6" bit="4" invert="0" input="0" output="1" />
+      <external_pin id="14" gpio="6" bit="5" invert="0" input="0" output="1" />
+      <external_pin id="15" gpio="4" bit="1" invert="0" input="0" output="1" />
+      <external_pin id="16" gpio="4" bit="0" invert="0" input="0" output="1" />
+      <external_pin id="17" gpio="5" bit="2" invert="0" input="0" output="1" />
+      <external_pin id="18" gpio="2" bit="7" invert="0" input="0" output="1" />
+    </connector>
+  </dio_controller>
+</computer>
