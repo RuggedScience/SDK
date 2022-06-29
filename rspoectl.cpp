@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "-h" || arg == "--human-readable")
 			human = true;
-		else if (arg.find("-") != arg.npos)
+		else if (arg.find("-") == 0)
 			ignoredArgs.emplace_back(arg);
 		else
 			argList.emplace_back(arg);
