@@ -44,7 +44,7 @@
       <external_pin id="18" bit="7" gpio="2" invert="0" input="0" output="1" />
     </connector>
   </dio_controller>
-  <poe_controller id="pd69104" address="0x40">
+  <poe_controller id="pd69104" bus_address="0xF040" chip_address="0x40">
     <port id="3" bit="0" />
     <port id="4" bit="1" />
     <port id="5" bit="3" />

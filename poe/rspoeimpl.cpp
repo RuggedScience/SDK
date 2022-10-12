@@ -48,15 +48,16 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     }
 
     std::string id(poe->Attribute("id"));
-    int address = std::stoi(std::string(poe->Attribute("address")), nullptr, 0);
+    int busAddress = std::stoi(std::string(poe->Attribute("bus_address")), nullptr, 0);
+    int chipAddress = std::stoi(std::string(poe->Attribute("chip_address")), nullptr, 0);
     try
     {
         if (id == "pd69104")
-            mp_controller = new Pd69104(0xF040, address);
+            mp_controller = new Pd69104(busAddress, chipAddress);
         else if (id == "pd69200")
-            mp_controller = new Pd69200(0xF040, address);
+            mp_controller = new Pd69200(busAddress, chipAddress);
         else if (id == "ltc4266")
-            mp_controller = new Ltc4266(0xF040, address);
+            mp_controller = new Ltc4266(busAddress, chipAddress);
         else
         {
             m_lastError = "XML Error: Invalid id found for poe_controller";
