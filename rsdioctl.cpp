@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 			human = true;
 		else if (arg == "--debug")
 			debug = true;
-		else if (arg.find("-") != arg.npos)
+		else if (arg.find("-") == 0)
 			ignoredArgs.emplace_back(arg);
 		else
 			argList.emplace_back(arg);
