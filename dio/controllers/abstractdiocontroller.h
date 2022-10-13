@@ -68,6 +68,8 @@ public:
 
 	virtual bool getPinState(PinInfo info) = 0;
 	virtual void setPinState(PinInfo info, bool state) = 0;
+
+	virtual void printRegs() = 0;
 };
 
 #endif

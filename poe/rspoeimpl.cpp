@@ -48,15 +48,39 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     }
 
     std::string id(poe->Attribute("id"));
-    int address = std::stoi(std::string(poe->Attribute("address")), nullptr, 0);
+
+    // Try to load the new XML version with the chip_address attribute
+    const char * chipAddressStr = poe->Attribute("chip_address");
+    if (!chipAddressStr)
+    {
+        // If it doesn't work try the old XML version.
+        chipAddressStr = poe->Attribute("address");
+        if (!chipAddressStr)
+        {
+            m_lastError = "XML Error: Missing chip address attribute for poe_controller";
+            return false;
+        }
+    }
+    int chipAddress = std::stoi(std::string(chipAddressStr), nullptr, 0);
+    
+    // Default to the old bus address
+    // We don't throw an error when the bus address is missing.
+    // This is to keep old XML files working.
+    int busAddress = 0xF040;
+    const char * busAddressStr = poe->Attribute("bus_address");
+    if (busAddress)
+    {
+        busAddress = std::stoi(std::string(poe->Attribute("bus_address")), nullptr, 0);
+    }
+
     try
     {
         if (id == "pd69104")
-            mp_controller = new Pd69104(0xF040, address);
+            mp_controller = new Pd69104(busAddress, chipAddress);
         else if (id == "pd69200")
-            mp_controller = new Pd69200(0xF040, address);
+            mp_controller = new Pd69200(busAddress, chipAddress);
         else if (id == "ltc4266")
-            mp_controller = new Ltc4266(0xF040, address);
+            mp_controller = new Ltc4266(busAddress, chipAddress);
         else
         {
             m_lastError = "XML Error: Invalid id found for poe_controller";

@@ -17,16 +17,18 @@ public:
 
 	typedef std::vector<RegisterData> RegisterList_t;
 
-	Ite8786();
-	Ite8786(const RegisterList_t& list);
+	Ite8786(bool debug=false);
+	Ite8786(const RegisterList_t& list, bool debug=false);
 	~Ite8786();
 	
-	void initPin(PinInfo) override;
+	void initPin(PinInfo info) override;
 	PinMode getPinMode(PinInfo info) override;
 	void setPinMode(PinInfo info, PinMode mode) override;
 
 	bool getPinState(PinInfo info) override;
 	void setPinState(PinInfo info, bool state) override;
+
+	void printRegs() override;
 
 private:
 	uint8_t m_currentLdn;
