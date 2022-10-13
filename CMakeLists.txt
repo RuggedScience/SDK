@@ -30,7 +30,7 @@ SET_TARGET_PROPERTIES(rsdioctl rspoectl
 add_custom_target(xml ALL)
 add_custom_command(TARGET xml POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${CMAKE_SOURCE_DIR}/xml/ ${CMAKE_CURRENT_BINARY_DIR}/xml/)
+                    ${PROJECT_SOURCE_DIR}/xml/ ${CMAKE_CURRENT_BINARY_DIR}/xml/)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
     set (CMAKE_INSTALL_SYSCONFDIR /etc)
