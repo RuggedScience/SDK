@@ -4,7 +4,7 @@ else()
     project(rspoe DESCRIPTION "Rugged Science PoE Library")
 endif()
 
-set(PROJECT_VERSION 3.0.4)
+set(PROJECT_VERSION 3.0.5)
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
