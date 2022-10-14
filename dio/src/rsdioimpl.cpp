@@ -3,7 +3,7 @@
 #include "rsdioimpl.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
-#include "../utils/tinyxml2.h"
+#include <tinyxml2.h>
 
 static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
 {

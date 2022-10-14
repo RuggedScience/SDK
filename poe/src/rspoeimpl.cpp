@@ -2,7 +2,8 @@
 #include "controllers/pd69104.h"
 #include "controllers/pd69200.h"
 #include "controllers/ltc4266.h"
-#include "../utils/tinyxml2.h"
+
+#include <tinyxml2.h>
 
 RsPoeImpl::RsPoeImpl() :
     m_lastError(""),

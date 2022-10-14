@@ -1,4 +1,4 @@
-#include "./dio/rsdio.h"
+#include <rsdio.h>
 #include <iostream>
 #include <cstdio>
 #include <string>
