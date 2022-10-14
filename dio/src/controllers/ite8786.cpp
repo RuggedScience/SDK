@@ -126,91 +126,91 @@ Ite8786::~Ite8786()
 	exitSio();
 }
 
-void Ite8786::initPin(PinInfo info)
+void Ite8786::initPin(PinConfig config)
 {
 	setSioLdn(kGpioLdn);
-	uint8_t reg = kPolarityBar + info.offset;
+	uint8_t reg = kPolarityBar + config.offset;
 	if (reg <= kPolarityMax)
-		writeSioRegister(reg, readSioRegister(reg) & ~info.bitmask);	//Set polarity to non-inverting
+		writeSioRegister(reg, readSioRegister(reg) & ~config.bitmask);	//Set polarity to non-inverting
 
-	reg = kSimpleIoBar + info.offset;
+	reg = kSimpleIoBar + config.offset;
 	if (reg <= kSimpleIoMax)
-		writeSioRegister(reg, readSioRegister(reg) | info.bitmask);		//Set pin as "Simple I/O" instead of "Alternate function"
+		writeSioRegister(reg, readSioRegister(reg) | config.bitmask);		//Set pin as "Simple I/O" instead of "Alternate function"
 
-	reg = kPullUpBar + info.offset;
+	reg = kPullUpBar + config.offset;
 	if (reg <= kPullupMax)
 	{
 		uint8_t val = readSioRegister(reg);
-		if (info.enablePullup) writeSioRegister(reg, val | info.bitmask);
-		else writeSioRegister(reg, val & ~info.bitmask);
+		if (config.enablePullup) writeSioRegister(reg, val | config.bitmask);
+		else writeSioRegister(reg, val & ~config.bitmask);
 	}
 
-	if (info.supportsInput)
-		setPinMode(info, ModeInput);
+	if (config.supportsInput)
+		setPinMode(config, ModeInput);
 	else
-		setPinMode(info, ModeOutput);
+		setPinMode(config, ModeOutput);
 }
 
-PinMode Ite8786::getPinMode(PinInfo info)
+PinMode Ite8786::getPinMode(PinConfig config)
 {
 	setSioLdn(kGpioLdn);
-	uint8_t reg = kOutputEnableBar + info.offset;
+	uint8_t reg = kOutputEnableBar + config.offset;
 	uint8_t data = readSioRegister(reg);
-	if ((data & info.bitmask) == info.bitmask) 
+	if ((data & config.bitmask) == config.bitmask) 
 		return ModeOutput;
 	else 
 		return ModeInput;
 }
 
-void Ite8786::setPinMode(PinInfo info, PinMode mode)
+void Ite8786::setPinMode(PinConfig config, PinMode mode)
 {
-	if (mode == ModeInput && !info.supportsInput)
+	if (mode == ModeInput && !config.supportsInput)
 		throw DioControllerError("Input mode not supported on pin");
 
-	if (mode == ModeOutput && !info.supportsOutput)
+	if (mode == ModeOutput && !config.supportsOutput)
 		throw DioControllerError("Output mode not supported on pin");
 
 	setSioLdn(kGpioLdn);
-	uint8_t reg = kOutputEnableBar + info.offset;
+	uint8_t reg = kOutputEnableBar + config.offset;
 	uint8_t data = readSioRegister(reg);
-	if (mode == ModeInput) data &= ~info.bitmask;
-	else if (mode == ModeOutput) data |= info.bitmask;
+	if (mode == ModeInput) data &= ~config.bitmask;
+	else if (mode == ModeOutput) data |= config.bitmask;
 	writeSioRegister(reg, data);
 }
 
-bool Ite8786::getPinState(PinInfo info)
+bool Ite8786::getPinState(PinConfig config)
 {
-	uint16_t reg = m_baseAddress + info.offset;
+	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
 		throw DioControllerError("Permission denied");
 
 	bool state = false;
 	uint8_t data = inb(reg);
 	ioperm(reg, 1, 0);
-	if ((data & info.bitmask) == info.bitmask) state = true;
+	if ((data & config.bitmask) == config.bitmask) state = true;
 	else state = false;
 
-	if (info.invert) state = !state;
+	if (config.invert) state = !state;
 
 	return state;
 }
 
-void Ite8786::setPinState(PinInfo info, bool state)
+void Ite8786::setPinState(PinConfig config, bool state)
 {
-	if (!info.supportsOutput)
+	if (!config.supportsOutput)
 		throw DioControllerError("Output mode not supported on pin");
 
-	if (getPinMode(info) != ModeOutput)
+	if (getPinMode(config) != ModeOutput)
 		throw DioControllerError("Can't change state of pin in input mode");
 
-	if (info.invert) state = !state;
-	uint16_t reg = m_baseAddress + info.offset;
+	if (config.invert) state = !state;
+	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
 		throw DioControllerError("Permission denied");
 
 	uint8_t data = inb(reg);
-	if (state) data |= info.bitmask;
-	else data &= ~info.bitmask;
+	if (state) data |= config.bitmask;
+	else data &= ~config.bitmask;
 
 	outb(data, reg);
 	ioperm(reg, 1, 0);

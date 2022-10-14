@@ -12,31 +12,27 @@ enum PinMode
 	ModeOutput
 };
 
-struct PinInfo
+struct PinConfig : public PinInfo
 {
 	uint8_t bitmask;
 	uint8_t offset;
 	bool invert;
 	bool enablePullup;
-	bool supportsInput;
-	bool supportsOutput;
 
-	PinInfo() :
-		bitmask(0),
-		offset(0),
-		invert(0),
-		enablePullup(false),
-		supportsInput(false),
-		supportsOutput(false)
+	PinConfig() 
+		: PinInfo()
+		, bitmask(0)
+		, offset(0)
+		, invert(0)
+		, enablePullup(false)
 	{}
 
-	PinInfo(uint8_t bit, uint8_t gpio, bool inv, bool pullup, bool input, bool output) :
-		bitmask(1 << bit),
-		offset(gpio - 1),
-		invert(inv),
-		enablePullup(pullup),
-		supportsInput(input),
-		supportsOutput(output)
+	PinConfig(uint8_t bit, uint8_t gpio, bool inv, bool pullup, bool input, bool output) 
+		: PinInfo(input, output)
+		, bitmask(1 << bit)
+		,  offset(gpio - 1)
+		, invert(inv)
+		, enablePullup(pullup)
     {}
 };
 
@@ -62,12 +58,12 @@ class AbstractDioController
 public:
 	virtual ~AbstractDioController() {}
 
-    virtual void initPin(PinInfo) = 0;
-	virtual PinMode getPinMode(PinInfo info) = 0;
-	virtual void setPinMode(PinInfo info, PinMode mode) = 0;
+    virtual void initPin(PinConfig) = 0;
+	virtual PinMode getPinMode(PinConfig info) = 0;
+	virtual void setPinMode(PinConfig info, PinMode mode) = 0;
 
-	virtual bool getPinState(PinInfo info) = 0;
-	virtual void setPinState(PinInfo info, bool state) = 0;
+	virtual bool getPinState(PinConfig info) = 0;
+	virtual void setPinState(PinConfig info, bool state) = 0;
 
 	virtual void printRegs() = 0;
 };

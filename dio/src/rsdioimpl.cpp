@@ -21,7 +21,7 @@ static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, in
     if (e != XML_SUCCESS && e != XML_NO_ATTRIBUTE) return e;
 	
 	pinId = id;
-	info = PinInfo(bit, gpio, false, pullup, false, true);
+	info = PinConfig(bit, gpio, false, pullup, false, true);
 	return XML_SUCCESS;
 }
 
@@ -45,7 +45,7 @@ static tinyxml2::XMLError getExternalPinInfo(const tinyxml2::XMLElement *pin, in
 	if (e != XML_SUCCESS) return e;
 
 	pinId = id;
-	info = PinInfo(bit, gpio, invert, false, input, output);
+	info = PinConfig(bit, gpio, invert, false, input, output);
 	return XML_SUCCESS;
 }
 
@@ -169,7 +169,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 			for (; ip; ip = ip->NextSiblingElement("internal_pin"))
 			{
 				int pinId;
-				PinInfo info;
+				PinConfig info;
 				if (getInternalPinInfo(ip, pinId, info) == XML_SUCCESS)
 				{
 					mp_controller->initPin(info);
@@ -181,7 +181,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 			for (; ep; ep = ep->NextSiblingElement("external_pin"))
 			{
 				int pinId;
-				PinInfo info;
+				PinConfig info;
 				if (getExternalPinInfo(ep, pinId, info) == XML_SUCCESS)
 				{
 					mp_controller->initPin(info);
@@ -203,15 +203,15 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     }
 
     //Set the output mode of each dio if it's not already a valid mode.
-    std::map<int, pinmap_t>::iterator it;
+    dioconfigmap_t::iterator it;
     for (it = m_dioMap.begin(); it != m_dioMap.end(); ++it)
     {
-        pinmap_t pinMap = it->second;
+        pinconfigmap_t pinMap = it->second;
         //Not all units support programmable NPN/PNP modes so if these pins don't exist we don't really care.
         if (pinMap.find(ModeNpn) != pinMap.end() && pinMap.find(ModePnp) != pinMap.end())
         {
-            PinInfo npn = pinMap[ModeNpn];
-            PinInfo pnp = pinMap[ModePnp];
+            PinConfig npn = pinMap[ModeNpn];
+            PinConfig pnp = pinMap[ModePnp];
 
             try
             {
@@ -233,79 +233,40 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     return true;
 }
 
-int RsDioImpl::digitalRead(int dio, int pin)
+diomap_t RsDioImpl::getPinList() const
 {
-    if (mp_controller == nullptr)
+    diomap_t dios;
+    dioconfigmap_t::const_iterator dioIt;
+    for (dioIt = m_dioMap.begin(); dioIt != m_dioMap.end(); ++dioIt)
     {
-        m_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
-        return -1;
+        pinmap_t pins;
+        pinconfigmap_t::const_iterator pinIt;
+        for (pinIt = dioIt->second.begin(); pinIt != dioIt->second.end(); ++pinIt)
+        {
+            pins[pinIt->first] = (PinInfo)pinIt->second;
+        }
+
+        dios[dioIt->first] = pins;
     }
 
-    if (m_dioMap.find(dio) == m_dioMap.end())
-    {
-        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
-        return -1;
-    }
-
-    pinmap_t pinMap = m_dioMap.at(dio);
-    if (pinMap.find(pin) == pinMap.end())
-    {
-        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
-        return -1;
-    }
-
-    PinInfo info = pinMap.at(pin);
-
-    try 
-    { 
-        return mp_controller->getPinState(info);
-    }
-    catch (DioControllerError &ex)
-    {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
-        return -1;
-    }
+    return dios;
 }
 
-int RsDioImpl::digitalWrite(int dio, int pin, bool state)
+int RsDioImpl::canSetOutputMode(int dio)
 {
-    if (mp_controller == nullptr)
-    {
-        m_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
-        return -1;
-    }
-
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
         m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
         return -1;
     }
 
-    pinmap_t pinMap = m_dioMap.at(dio);
-    if (pinMap.find(pin) == pinMap.end())
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {
-        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
-        return -1;
+        return 0;
     }
 
-    PinInfo info = pinMap.at(pin);
-    if (!info.supportsOutput)
-    {
-        m_lastError = "Argument Error: Output mode not supported for pin " + std::to_string(pin);
-        return -1;
-    }
-
-    try
-    {
-        mp_controller->setPinState(info, state);
-    }
-    catch (DioControllerError &ex)
-    {
-        m_lastError = "DIO Controller Error: " + std::string(ex.what());
-        return -1;
-    }
-
-    return 0;
+    return 1;
 }
 
 int RsDioImpl::setOutputMode(int dio, OutputMode mode)
@@ -328,7 +289,7 @@ int RsDioImpl::setOutputMode(int dio, OutputMode mode)
         return -1;
     }
 
-    pinmap_t pinMap = m_dioMap.at(dio);
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {
         m_lastError = "Argument Error: Function not supported by dio " + std::to_string(dio);
@@ -339,6 +300,81 @@ int RsDioImpl::setOutputMode(int dio, OutputMode mode)
     {
         mp_controller->setPinState(pinMap.at(ModeNpn), (mode == ModeNpn));
         mp_controller->setPinState(pinMap.at(ModePnp), (mode == ModePnp));
+    }
+    catch (DioControllerError &ex)
+    {
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        return -1;
+    }
+
+    return 0;
+}
+
+int RsDioImpl::digitalRead(int dio, int pin)
+{
+    if (mp_controller == nullptr)
+    {
+        m_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
+        return -1;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end())
+    {
+        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
+        return -1;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    if (pinMap.find(pin) == pinMap.end())
+    {
+        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
+        return -1;
+    }
+
+    PinConfig config = pinMap.at(pin);
+
+    try 
+    { 
+        return mp_controller->getPinState(config);
+    }
+    catch (DioControllerError &ex)
+    {
+        m_lastError = "DIO Controller Error: " + std::string(ex.what());
+        return -1;
+    }
+}
+
+int RsDioImpl::digitalWrite(int dio, int pin, bool state)
+{
+    if (mp_controller == nullptr)
+    {
+        m_lastError = "DIO Controller Error: Not initialized. Please run 'setXmlFile' first";
+        return -1;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end())
+    {
+        m_lastError = "Argument Error: Invalid dio " + std::to_string(dio);
+        return -1;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    if (pinMap.find(pin) == pinMap.end())
+    {
+        m_lastError = "Argument Error: Invalid pin " + std::to_string(pin);
+        return -1;
+    }
+
+    PinConfig config = pinMap.at(pin);
+    if (!config.supportsOutput)
+    {
+        m_lastError = "Argument Error: Output mode not supported for pin " + std::to_string(pin);
+        return -1;
+    }
+
+    try
+    {
+        mp_controller->setPinState(config, state);
     }
     catch (DioControllerError &ex)
     {
