@@ -18,7 +18,7 @@ cdef extern from "rspoe.h":
         string getLastError()
         string version()
 
-    CRsPoe* createRsPoe()
+    CRsPoe* createRsPoe() except +
 
 
 class PoeState(Enum):

@@ -29,7 +29,7 @@ From inside of that folder run the following commands.
  `cmake ..`\
  `cmake --build .`
 
-
+### Static Builds
 For static builds add the  `-DBUILD_SHARED_LIBS=OFF` flag. *Useful when you are just looking to build the control utilities (rspoectl and rsdioctl).* 
 
 `cmake .. -DBUILD_SHARED_LIBS=OFF`
@@ -54,7 +54,7 @@ In most other situations you will need to use the `-DCMAKE_BUILD_TYPE` switch sh
 `cmake -DCMAKE_BUILD_TYPE=Debug ..`  
 `cmake --build .`
 
-# Intalling
+# Installing
 Use the `-DCMAKE_INSTALL_PREFIX=` option in the first command to set the installation location. Then use `--target install` during the build command.
 Default locations:  
 Windows: "C:\Program Files\rssdk\"  
@@ -63,6 +63,23 @@ Linux: "/usr/local"
 `cmake .. -DCMAKE_INSTALL_PREFIX=../install`  
 `cmake --build . --target install`
 
+***NOTE:*** On Linux you should run `sudo ldconfig` after installing the libraries to update the shared library cache.
+
 By default the control utilities are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_UTILITIES=OFF`.
 
-Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory you supplied.
+Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory.
+
+# Python Bindings
+A Python package for this SDK can be built by setting the `BUILD_PYTHON_BINDINGS` flag when running the cmake config command.
+
+`cmake .. -DBUILD_PYTHON_BINDINGS=ON`
+`cmake --build .`
+
+This requires that the current Python environment has the build package installed. This can be done using `python -m pip install build`.
+
+This should result in an `rssdk-*.whl` file in the build folder which can be installed using `python -m pip install ./rssdk-*.whl`
+
+For examples showing how to use the Python bindings see the [documentation](./extras/python-bindings/README.md).
+
+## Troubleshooting
+If you get an error about not being able to find the shared library when you try to import the module there are two things you can do. Either [install](#installing) the libraries or do a [static](#static-builds) build.

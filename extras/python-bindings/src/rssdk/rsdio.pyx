@@ -19,7 +19,7 @@ cdef extern from "rsdio.h":
         string getLastError()
         string version()
 
-    CRsDio* createRsDio()
+    CRsDio* createRsDio() except +
 
 
 class OutputMode(Enum):

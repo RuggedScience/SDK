@@ -1,4 +1,4 @@
-__all__ = ['RsDio', 'RsPoe']
+__all__ = ['RsDio', 'OutputMode', 'RsPoe', 'PoeState']
 
-from .rsdio import RsDio
-from .rspoe import RsPoe
+from .rsdio import RsDio, OutputMode
+from .rspoe import RsPoe, PoeState
