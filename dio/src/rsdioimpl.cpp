@@ -5,7 +5,7 @@
 #include "controllers/ite8786.h"
 #include <tinyxml2.h>
 
-static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinConfig& info)
 {
 	using namespace tinyxml2;
 
@@ -25,7 +25,7 @@ static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, in
 	return XML_SUCCESS;
 }
 
-static tinyxml2::XMLError getExternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinInfo& info)
+static tinyxml2::XMLError getExternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinConfig& info)
 {
 	using namespace tinyxml2;
 
