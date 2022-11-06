@@ -72,8 +72,8 @@ Once the build process is finished, you will find a copy of the libraries and ex
 # Python Bindings
 A Python package for this SDK can be built by setting the `BUILD_PYTHON_BINDINGS` flag when running the cmake config command.
 
-`cmake .. -DBUILD_PYTHON_BINDINGS=ON`
-`cmake --build .`
+`cmake .. -DBUILD_PYTHON_BINDINGS=ON`  
+`cmake --build .`  
 
 This requires that the current Python environment has the build package installed. This can be done using `python -m pip install build`.
 
