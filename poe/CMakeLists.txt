@@ -8,6 +8,8 @@ endif()
 
 set(PROJECT_VERSION 3.0.5)
 
+cmake_policy(SET CMP0063 NEW)
+
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 
 set(includedir ${PROJECT_SOURCE_DIR}/include)
