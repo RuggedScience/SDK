@@ -75,6 +75,11 @@ A Python package for this SDK can be built by setting the `BUILD_PYTHON_BINDINGS
 `cmake .. -DBUILD_PYTHON_BINDINGS=ON`  
 `cmake --build .`  
 
+On Windows you need to specify a single configuration when building the Python bindings.
+
+`cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_PYTHON_BINDINGS=ON -DCMAKE_CONFIGURATION_TYPES:STRING=Release ..`
+`cmaek --build . --config release`
+
 This requires that the current Python environment has the build package installed. This can be done using `python -m pip install build`.
 
 This should result in an `rssdk-*.whl` file in the build folder which can be installed using `python -m pip install ./rssdk-*.whl`

@@ -9,8 +9,8 @@ rsdio_extension = Extension(
     language='c++',
     sources=['src/rssdk/rsdio.pyx'],
     libraries=['rsdio'],
-    library_dirs=["C:/Users/rugged/Documents/GitHub/SDK/build/dio/Release"],
-    include_dirs=["C:/Users/rugged/Documents/GitHub/SDK/utils", "C:/Users/rugged/Documents/GitHub/SDK/dio/include", "C:/Users/rugged/Documents/GitHub/SDK/build/dio/exports"]
+    library_dirs=["$<TARGET_FILE_DIR:rsdio>"],
+    include_dirs=[$<JOIN:"$<TARGET_PROPERTY:rsdio,INCLUDE_DIRECTORIES>,"$<COMMA> ">"]
 )
 
 rspoe_extension = Extension(
@@ -18,8 +18,8 @@ rspoe_extension = Extension(
     language='c++',
     sources=['src/rssdk/rspoe.pyx'],
     libraries=['rspoe'],
-    library_dirs=["C:/Users/rugged/Documents/GitHub/SDK/build/poe/Release"],
-    include_dirs=["C:/Users/rugged/Documents/GitHub/SDK/utils", "C:/Users/rugged/Documents/GitHub/SDK/poe/include", "C:/Users/rugged/Documents/GitHub/SDK/build/poe/exports"]
+    library_dirs=["$<TARGET_FILE_DIR:rspoe>"],
+    include_dirs=[$<JOIN:"$<TARGET_PROPERTY:rspoe,INCLUDE_DIRECTORIES>,"$<COMMA> ">"]
 )
 
 

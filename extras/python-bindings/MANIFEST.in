@@ -1,3 +1,2 @@
 global-include *.pyx
-global-include *.pxd
 global-include version.txt

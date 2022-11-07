@@ -36,13 +36,9 @@ if(BUILD_PYTHON_BINDINGS)
 
   # Prepare Python's setup.cfg
   file(GENERATE
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.cfg
-    CONTENT
-"
-[build_ext]
-library_dirs=$<TARGET_FILE_DIR:rsdio>:$<TARGET_FILE_DIR:rspoe>
-include_dirs=$<JOIN:$<TARGET_PROPERTY:rsdio,INCLUDE_DIRECTORIES>,:>:$<JOIN:$<TARGET_PROPERTY:rspoe,INCLUDE_DIRECTORIES>,:>
-")
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.py
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.py.in
+)
 
   # Create version file for python package
   file(GENERATE
@@ -57,12 +53,12 @@ include_dirs=$<JOIN:$<TARGET_PROPERTY:rsdio,INCLUDE_DIRECTORIES>,:>:$<JOIN:$<TAR
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings
     DEPENDS
       ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.py
-      ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.cfg
       ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/version.txt
       ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/rssdk/__init__.py
       ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/rssdk/rsdio.pyx
       ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/rssdk/rspoe.pyx
       rsdio
+      rspoe
     COMMENT "Building python bindings"
   )
   add_custom_target(rssdk-python-bindings ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/python.stamp)
