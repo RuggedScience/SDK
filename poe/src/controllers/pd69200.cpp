@@ -78,7 +78,7 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
 {
     int devId;
     try { devId = getDeviceId(); }
-    catch (PoeControllerError) { devId = getDeviceId(); }
+    catch (PoeControllerError const&) { devId = getDeviceId(); }
     
 	if (devId < 0 || devId != kDeviceId)
 		throw PoeControllerError(std::strerror(errno));
@@ -198,7 +198,6 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
             throw PoeControllerError(std::strerror(errno));
     }
 
-    uint16_t len = 0;
     msg_t response;
     if (smbusI2CRead(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()) < 0) // Now we can send the last byte
         throw PoeControllerError(std::strerror(errno));

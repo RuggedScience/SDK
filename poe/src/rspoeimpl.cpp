@@ -68,7 +68,6 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     // We don't throw an error when the bus address is missing.
     // This is to keep old XML files working.
     int busAddress = 0xF040;
-    const char * busAddressStr = poe->Attribute("bus_address");
     if (busAddress)
     {
         busAddress = std::stoi(std::string(poe->Attribute("bus_address")), nullptr, 0);

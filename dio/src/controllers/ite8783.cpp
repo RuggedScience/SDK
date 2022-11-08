@@ -51,7 +51,7 @@ Ite8783::Ite8783(bool debug) :
 		if (debug)
 			std::cout << "Found base address register of 0x" << std::hex << (int)m_baseAddress << std::endl;
 	}
-	catch (std::exception)
+	catch (std::exception const&)
 	{
 		exitSio();
 		throw;

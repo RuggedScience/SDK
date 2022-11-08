@@ -34,6 +34,8 @@ enum OutputMode
 
 class RsDio {
 public:
+    virtual ~RsDio(){};
+
     virtual void destroy() = 0;
     virtual bool setXmlFile(const char *fileName, bool debug=false) = 0;
 

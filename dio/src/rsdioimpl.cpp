@@ -119,7 +119,9 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     try
     {
         if (debug)
+        {
             std::cout << "XML DIO Controller ID: " << id << std::endl;
+        }
             
 	    if (id == "ite8783")
         {
@@ -151,7 +153,9 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 
     // Print the registers before we initialize all the pins.
     if (debug)
+    {
         mp_controller->printRegs();
+    }
 
 	XMLElement *con = dio->FirstChildElement("connector");
 	if (!con)

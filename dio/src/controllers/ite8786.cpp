@@ -58,7 +58,7 @@ Ite8786::Ite8786(bool debug) :
 		if (debug)
 			std::cout << "Found base address register of 0x" << std::hex << m_baseAddress << std::endl;
 	}
-	catch (std::exception)
+	catch (std::exception const&)
 	{
 		exitSio();
 		throw;
@@ -114,7 +114,7 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t& list, bool debug) :
 			}
 		}
 	}
-	catch (std::exception)
+	catch (std::exception const&)
 	{
 		exitSio();
 		throw;

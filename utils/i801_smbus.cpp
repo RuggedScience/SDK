@@ -363,7 +363,7 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 		if (isBitSet(status, kStsDevErr)) 
 			clearStatusBits(bus, kStsDevErr);
 
-		if (isBitSet(status, kStsDevErr) || (status & 0xC0) == 0xC0 && status & 0x3) 
+		if (isBitSet(status, kStsDevErr) || ((status & 0xC0) == 0xC0 && status & 0x3))
 			break;
 	}
 
@@ -387,7 +387,7 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 			if (isBitSet(status, kStsDevErr)) 
 				clearStatusBits(bus, kStsDevErr);
 
-			if (isBitSet(status, kStsDevErr) || (status & 0xC0) == 0xC0 && status & 0x3) 
+			if (isBitSet(status, kStsDevErr) || ((status & 0xC0) == 0xC0 && status & 0x3))
 				break;
 		}
 
@@ -409,7 +409,7 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 		}
 	}
 
-	if (!j || j % size || data || i <= kMaxRetry && k <= size + 1) 
+	if (!j || j % size || data || (i <= kMaxRetry && k <= size + 1))
 		outb(0x3A, bus + 0x02);
 
 	ioperm(bus, 8, 0);

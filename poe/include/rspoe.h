@@ -15,6 +15,8 @@ enum PoeState
 
 class RsPoe {
 public:
+    virtual ~RsPoe(){};
+    
     virtual void destroy() = 0;
     virtual bool setXmlFile(const char *fileName) = 0;
     virtual PoeState getPortState(int port) = 0;
