@@ -1,4 +1,0 @@
-global-include *.pyx
-global-include version.txt
-
-include src/rssdk/drv.dll

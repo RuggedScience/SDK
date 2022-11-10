@@ -4,7 +4,8 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 
 *Passing the incorrect XML file will result in undefined behaviour and may harm the PC!*
 
-**The latest prebuilt release can be found [HERE](../../releases/latest).**
+**The latest prebuilt release can be found [HERE](../../releases/latest).**  
+**Looking for a Python package? Check [HERE](https://github.com/ruggedscience/SDK-python).**
 
 ## API References
 * [DIO Library - librsdio](./librsdio.md)
@@ -68,23 +69,3 @@ Linux: "/usr/local"
 By default the control utilities are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_UTILITIES=OFF`.
 
 Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory.
-
-# Python Bindings
-A Python package for this SDK can be built by setting the `BUILD_PYTHON_BINDINGS` flag when running the cmake config command.
-
-`cmake .. -DBUILD_PYTHON_BINDINGS=ON`  
-`cmake --build .`  
-
-On Windows you need to specify a single configuration when building the Python bindings.
-
-`cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_PYTHON_BINDINGS=ON -DCMAKE_CONFIGURATION_TYPES:STRING=Release ..`  
-`cmake --build . --config release`  
-
-This requires that the current Python environment has the build package installed. This can be done using `python -m pip install build`.
-
-This should result in an `rssdk-*.whl` file in the build folder which can be installed using `python -m pip install ./rssdk-*.whl`
-
-For examples showing how to use the Python bindings see the [documentation](./extras/python-bindings/README.md).
-
-## Troubleshooting
-If you get an error about not being able to find the shared library when you try to import the module there are two things you can do. Either [install](#installing) the libraries or do a [static](#static-builds) build.
