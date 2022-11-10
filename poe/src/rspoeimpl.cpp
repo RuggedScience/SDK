@@ -5,9 +5,12 @@
 
 #include <tinyxml2.h>
 
-RsPoeImpl::RsPoeImpl() :
-    m_lastError(""),
-    mp_controller(nullptr)
+#include <system_error>
+
+RsPoeImpl::RsPoeImpl() 
+    : m_lastError()
+    , m_lastErrorString()
+    , mp_controller(nullptr)
 {}
 
 RsPoeImpl::~RsPoeImpl()
@@ -30,21 +33,33 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     XMLDocument doc;
     if (doc.LoadFile(fileName) != XML_SUCCESS)
     {
-        m_lastError = "XML Error: Unable to load file";
+        if (doc.ErrorID() == XML_ERROR_FILE_NOT_FOUND)
+        {
+            m_lastError = std::make_error_code(std::errc::no_such_file_or_directory);
+            m_lastErrorString = fileName;
+        }
+        else
+        {
+            m_lastError = RsSdkError::XmlParseError;
+            m_lastErrorString = doc.ErrorStr();
+        }
+        
         return false;
     }
 
     XMLElement *comp = doc.FirstChildElement("computer");
     if (!comp)
     {
-        m_lastError = "XML Error: Unable to find computer node";
+        m_lastError = RsSdkError::XmlParseError;
+        m_lastErrorString = "Missing computer node";
         return false;
     }
 
     XMLElement *poe = comp->FirstChildElement("poe_controller");
     if (!poe)
     {
-        m_lastError = "XML Error: Unable to find poe_controller node";
+        m_lastError = RsSdkError::XmlParseError;
+        m_lastErrorString = "Missing poe_controller node";
         return false;
     }
 
@@ -58,7 +73,8 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
         chipAddressStr = poe->Attribute("address");
         if (!chipAddressStr)
         {
-            m_lastError = "XML Error: Missing chip address attribute for poe_controller";
+            m_lastError = RsSdkError::XmlParseError;
+            m_lastErrorString = "Missing address attribute for poe_controller";
             return false;
         }
     }
@@ -83,13 +99,24 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
             mp_controller = new Ltc4266(busAddress, chipAddress);
         else
         {
-            m_lastError = "XML Error: Invalid id found for poe_controller";
+            m_lastError = RsSdkError::XmlParseError;
+            m_lastErrorString = "Invalid PoE controller ID";
             return false;
         }
     }
-    catch (std::exception &ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "POE Controller Error: " + std::string(ex.what());
+        m_lastError = ex.code();
+        if (ex.code() == RsSdkError::PermissionDenied)
+            m_lastErrorString = "Must be run as root";
+        else
+            m_lastErrorString = ex.what();        
+        return false;
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
         return false;
     }
 
@@ -108,8 +135,8 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
 
     if (m_portMap.size() <= 0)
     {
-        mp_controller = nullptr;
-        m_lastError = "XML Error: No ports found";
+        m_lastError = RsSdkError::FunctionNotSupported;
+        m_lastErrorString = "PoE function not supported";
         return false;
     }
 
@@ -120,13 +147,15 @@ PoeState RsPoeImpl::getPortState(int port)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
         return StateError;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid port";
         return StateError;
     }
 
@@ -134,9 +163,15 @@ PoeState RsPoeImpl::getPortState(int port)
     { 
         return mp_controller->getPortState(m_portMap[port]); 
     }
-    catch (PoeControllerError &ex) 
+    catch (const std::system_error &ex) 
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
     return StateError;
@@ -146,193 +181,246 @@ int RsPoeImpl::setPortState(int port, PoeState state)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
         return -1;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
-        return -1;
-    }
-
-    if (state == StateError)
-    {
-        m_lastError = "Argument Error: Invalid state 'StateError'";
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid port";
         return -1;
     }
 
     try
     {
         mp_controller->setPortState(m_portMap[port], state);
+        return 0;
     }
-    catch (PoeControllerError &ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return -1;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return 0;
+    return -1;
 }
 
 float RsPoeImpl::getPortVoltage(int port)
 {
-    float volts = -1.0f;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return volts;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
-        return volts;
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid port";
+        return -1.0f;
     }
     
     try
     {
-        volts = mp_controller->getPortVoltage(m_portMap[port]);
+        return mp_controller->getPortVoltage(m_portMap[port]);
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return volts;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return volts;
+    return -1.0f;
 }
 
 float RsPoeImpl::getPortCurrent(int port)
 {
-    float cur = -1.0f;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return cur;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
-        return cur;
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid port";
+        return -1.0f;
     }
 
     try
     {
-        cur = mp_controller->getPortCurrent(m_portMap[port]);
+        return mp_controller->getPortCurrent(m_portMap[port]);
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return cur;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return cur;
+    return -1.0f;
 }
 
 float RsPoeImpl::getPortPower(int port)
 {
-    float power = -1.0f;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return power;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = "Argument Error: Invalid port " + std::to_string(port);
-        return power;
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid port";
+        return -1.0f;
     }
 
     try
     {
-        power = mp_controller->getPortPower(m_portMap[port]);
+        return mp_controller->getPortPower(m_portMap[port]);
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return power;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return power;
+    return -1.0f;
 }
 
 int RsPoeImpl::getBudgetConsumed()
 {
-    int consumed = -1;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return consumed;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1;
     }
 
     try
     {
-        consumed = mp_controller->getBudgetConsumed();
+        return mp_controller->getBudgetConsumed();
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return consumed;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return consumed;
+    return -1;
 }
 
 int RsPoeImpl::getBudgetAvailable()
 {
-    int available = -1;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return available;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1;
     }
 
     try
     {
-        available = mp_controller->getBudgetAvailable();
+        return mp_controller->getBudgetAvailable();
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return available;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return available;
+    return -1;
 }
 
 int RsPoeImpl::getBudgetTotal()
 {
-    int total = -1;
     if (mp_controller == nullptr)
     {
-        m_lastError = "POE Controller Error: Not initialized. Please run 'initPoe' first";
-        return total;
+        m_lastError = RsSdkError::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return -1;
     }
 
     try
     {
-        total = mp_controller->getBudgetTotal();
+        return mp_controller->getBudgetTotal();
     }
-    catch (PoeControllerError& ex)
+    catch (const std::system_error &ex)
     {
-        m_lastError = "PoE Controller Error: " + std::string(ex.what());
-        return total;
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (...)
+    {
+        m_lastError = RsSdkError::UnknownError;
+        m_lastErrorString = "Unknown exception occurred";
     }
 
-    return total;
+    return -1;
 }
 
-std::string RsPoeImpl::getLastError()
+std::error_code RsPoeImpl::getLastError() const
 {
-    std::string ret = m_lastError;
-    m_lastError.clear();
-    return ret;
+    return m_lastError;
+}
+
+std::string RsPoeImpl::getLastErrorString() const
+{
+    std::string lastError;
+
+    if (m_lastError)
+    {
+        lastError += m_lastError.message();
+        if (!m_lastErrorString.empty())
+        {
+            lastError += ": " + m_lastErrorString;
+        }
+    }
+    return lastError;
 }
 
 RsPoe *createRsPoe()
 {
     return new RsPoeImpl;
+}
+
+const char *rsPoeVersion()
+{ 
+    return RSPOE_VERSION_STRING;
 }

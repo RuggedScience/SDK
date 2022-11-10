@@ -66,12 +66,6 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	std::shared_ptr<RsPoe> rspoe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
-	if (!rspoe)
-	{
-		std::cerr << "Failed to create instance of RsPoe" << std::endl;
-	}
-
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
 	bool human = false;
@@ -87,7 +81,7 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "--version")
 		{
-			std::cout << rspoe->version() << std::endl;
+			std::cout << rsPoeVersion() << std::endl;
 			return 0;
 		}
 		else if (arg == "-h" || arg == "--human-readable")
@@ -119,9 +113,15 @@ int main(int argc, char *argv[])
 		std::cerr << std::endl;
 	}
 
+	std::shared_ptr<RsPoe> rspoe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+	if (!rspoe)
+	{
+		std::cerr << "Failed to create instance of RsPoe" << std::endl;
+	}
+
 	if (!rspoe->setXmlFile(argList[0].data()))
 	{
-		std::cerr << rspoe->getLastError() << std::endl;
+		std::cerr << rspoe->getLastErrorString() << std::endl;
 		return 1;
 	}
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 		// Couldn't convert the state from a string or an int... give up.
 		if (state == StateError)
 		{
-			std::cerr << "Invalid state supplied!!" << std::endl;
+			std::cerr << "Invalid state supplied" << std::endl;
 			showUsage();
 			return 1;
 		}
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 	{
 		if (rspoe->setPortState(port, state) < 0)
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			std::cerr << rspoe->getLastError() << std::endl;
+			std::cerr << rspoe->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}

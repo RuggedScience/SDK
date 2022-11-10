@@ -26,7 +26,7 @@ static const char *stateToString(bool state)
 		return "high";
 }
 
-static OutputMode stringToMode(std::string str)
+static std::optional<OutputMode> stringToMode(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
 	if (str == "PNP" || str == "0")
@@ -34,7 +34,7 @@ static OutputMode stringToMode(std::string str)
 	else if (str == "NPN" || str == "1")
 		return ModeNpn;
 
-	return ModeError;
+	return {};
 }
 
 static void showUsage()
@@ -71,13 +71,6 @@ static void showUsage()
 
 int main(int argc, char *argv[])
 {
-	std::shared_ptr<RsDio> rsdio(createRsDio(), std::mem_fn(&RsDio::destroy));
-	if (!rsdio)
-	{
-		std::cerr << "Failed to create instance of RsDio" << std::endl;
-		return 1;
-	}
-
 	// Create a list of args without optional switches
 	// Allows for switches to be position independent
 	bool human = false;
@@ -95,7 +88,7 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "--version")
 		{
-			std::cout << rsdio->version() << std::endl;
+			std::cout << rsDioVersion() << std::endl;
 			return 0;
 		}
 		else if (arg == "-p" || arg == "--pin")
@@ -167,9 +160,16 @@ int main(int argc, char *argv[])
 		std::cerr << std::endl;
 	}
 
+	std::shared_ptr<RsDio> rsdio(createRsDio(), std::mem_fn(&RsDio::destroy));
+	if (!rsdio)
+	{
+		std::cerr << "Failed to create instance of RsDio" << std::endl;
+		return 1;
+	}
+
 	if (!rsdio->setXmlFile(argList[0].data(), debug))
 	{
-		std::cerr << rsdio->getLastError() << std::endl;
+		std::cerr << rsdio->getLastErrorString() << std::endl;
 		return 1;
 	}
 
@@ -194,9 +194,9 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		if (rsdio->digitalWrite(dio, pin, state) < 0)
+		if (!rsdio->digitalWrite(dio, pin, state))
 		{
-			std::cerr << rsdio->getLastError() << std::endl;
+			std::cerr << rsdio->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}
@@ -209,32 +209,32 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		int state = rsdio->digitalRead(dio, pin);
-		if (state >= 0)
+		auto state = rsdio->digitalRead(dio, pin);
+		if (!state)
 		{
-			if (human) printf("%s\n", stateToString(state));
-			else printf("%d", state);
+			std::cerr << rsdio->getLastErrorString() << std::endl;
+			return 1;
 		}
 		else
 		{
-			std::cerr << rsdio->getLastError() << std::endl;
-			return 1;
+			if (human) printf("%s\n", stateToString(*state));
+			else printf("%i", *state);
 		}
 	}
 	else if (cmd == "m=" || cmd == "mode=")
 	{
-		OutputMode mode = stringToMode(val);
+		auto mode = stringToMode(val);
 		//stringToMode returns 0 on error.
-		if (mode == ModeError)
+		if (!mode)
 		{
-			std::cerr << "Invalid mode supplied!!" << std::endl;
+			std::cerr << "Invalid mode supplied" << std::endl;
 			showUsage();
 			return 1;
 		}
 
-		if (rsdio->setOutputMode(dio, mode) < 0)
+		if (!rsdio->setOutputMode(dio, *mode))
 		{
-			std::cerr << rsdio->getLastError() << std::endl;
+			std::cerr << rsdio->getLastErrorString() << std::endl;
 			return 1;
 		}
 	}

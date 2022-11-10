@@ -1,6 +1,6 @@
 #include "ite8783.h"
+#include "rssdk_errors.hpp"
 
-#include <exception>
 #include <iostream>
 
 #ifdef __linux__
@@ -44,14 +44,14 @@ Ite8783::Ite8783(bool debug) :
 			std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId << std::endl;
 
 		if (chipId != 0x8783)
-			throw DioControllerError("Controller sent invalid chip ID");
+			throw std::system_error(RsSdkError::DeviceNotFound);
 		
 		m_baseAddress = getBaseAddressRegister();
 		
 		if (debug)
 			std::cout << "Found base address register of 0x" << std::hex << (int)m_baseAddress << std::endl;
 	}
-	catch (std::exception const&)
+	catch (...)
 	{
 		exitSio();
 		throw;
@@ -94,10 +94,10 @@ PinMode Ite8783::getPinMode(PinConfig config)
 void Ite8783::setPinMode(PinConfig config, PinMode mode)
 {
 	if (mode == ModeInput && !config.supportsInput)
-		throw DioControllerError("Input mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Input mode not supported on pin");
 
 	if (mode == ModeOutput && !config.supportsOutput)
-		throw DioControllerError("Output mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
 
 	setSioLdn(kGpioLdn);
 	uint8_t reg = kOutputEnableBar + config.offset;
@@ -111,7 +111,7 @@ bool Ite8783::getPinState(PinConfig config)
 {
 	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	bool state = false;
 	uint8_t data = inb(reg);
@@ -127,15 +127,15 @@ bool Ite8783::getPinState(PinConfig config)
 void Ite8783::setPinState(PinConfig config, bool state)
 {
 	if (!config.supportsOutput)
-		throw DioControllerError("Output mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
 	
 	if (getPinMode(config) != ModeOutput)
-		throw DioControllerError("Can't change state of pin in input mode");
+		throw std::system_error(RsSdkError::InvalidArgument, "Can't set state of pin in input mode");
 
 	if (config.invert) state = !state;
 	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t data = inb(reg);
 	if (state) data |= config.bitmask;
@@ -154,7 +154,7 @@ void Ite8783::printRegs()
 void Ite8783::enterSio()
 {
 	if (ioperm(0x2E, 1, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(0x87, 0x2E);
 	outb(0x01, 0x2E);
@@ -167,7 +167,7 @@ void Ite8783::enterSio()
 void Ite8783::exitSio()
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(0x02, kSpecialAddress);
 	outb(0x02, kSpecialData);
@@ -178,7 +178,7 @@ void Ite8783::exitSio()
 uint8_t Ite8783::readSioRegister(uint8_t reg)
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(reg, kSpecialAddress);
 	return inb(kSpecialData);
@@ -189,7 +189,7 @@ uint8_t Ite8783::readSioRegister(uint8_t reg)
 void Ite8783::writeSioRegister(uint8_t reg, uint8_t data)
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw DioControllerError("Permission denied");
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(reg, kSpecialAddress);
 	outb(data, kSpecialData);

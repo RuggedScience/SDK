@@ -1,8 +1,8 @@
 #include <assert.h>
-#include <stdexcept>
 
 #include <iostream>
 
+#include "rssdk_errors.hpp"
 #include "i801_smbus.h"
 
 #ifdef __linux__
@@ -62,13 +62,10 @@ static bool isBitSet(uint8_t val, uint8_t bits)
 }
 
 // Function supplied by manufacturer. Only altered for readability.
-int smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
+uint8_t smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
 {
 	if (ioperm(bus, 8, 1))
-	{
-		errno = EACCES;
-		return -1;
-	}
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t status = inb(HST_STS(bus));
 	if (isBitSet(status, kStsDone | kStsFailed))
@@ -94,8 +91,7 @@ int smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	outb(dev + 1, HST_XMIT(bus));
@@ -116,8 +112,7 @@ int smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	uint8_t data = inb(HST_DATA0(bus));
@@ -126,13 +121,10 @@ int smbusReadRegister(uint16_t bus, uint8_t dev, uint8_t reg)
 }
 
 // Function supplied by manufacturer. Only altered for readability.
-int smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
+void smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
 {
 	if (ioperm(bus, 8, 1))
-	{
-		errno = EACCES;
-		return -1;
-	}
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t status = inb(HST_STS(bus));
 	if (isBitSet(status, kStsDone | kStsFailed))
@@ -157,8 +149,7 @@ int smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	outb(dev, HST_XMIT(bus));
@@ -177,25 +168,16 @@ int smbusWriteRegister(uint16_t bus, uint8_t dev, uint8_t reg, uint8_t val)
 			break;
 	}
 
-	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
-	{
-		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
-	}
-
 	ioperm(bus, 8, 0);
-	return 0;
+	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)	
+		throw std::system_error(RsSdkError::DeviceBusy);
 }
 
 // Function supplied by manufacturer. Only altered for readability.
-int smbusReadByte(uint16_t bus, uint8_t dev)
+uint8_t smbusReadByte(uint16_t bus, uint8_t dev)
 {
 	if (ioperm(bus, 8, 1))
-	{
-		errno = EACCES;
-		return -1;
-	}
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t status = inb(HST_STS(bus));
 	if (isBitSet(status, kStsDone | kStsFailed))
@@ -221,8 +203,7 @@ int smbusReadByte(uint16_t bus, uint8_t dev)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	outb(dev + 1, HST_XMIT(bus));
@@ -242,8 +223,7 @@ int smbusReadByte(uint16_t bus, uint8_t dev)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	uint8_t data = inb(HST_CMD(bus));
@@ -251,13 +231,10 @@ int smbusReadByte(uint16_t bus, uint8_t dev)
 	return data;
 }
 
-int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
+void smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
 {
 	if (ioperm(bus, 8, 1))
-	{
-		errno = EACCES;
-		return -1;
-	}
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t status = inb(HST_STS(bus));
 	if (isBitSet(status, kStsDone | kStsFailed))
@@ -282,8 +259,7 @@ int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	outb(dev, HST_XMIT(bus));
@@ -304,15 +280,13 @@ int smbusWriteByte(uint16_t bus, uint8_t dev, uint8_t val)
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	ioperm(bus, 8, 0);
-	return 0;
 }
 
-int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t size)
+void smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t size)
 {
 	uint16_t i, j, k;
 
@@ -320,10 +294,7 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 	assert(size > 0);
 
 	if (ioperm(bus, 8, 1))
-	{
-		errno = EACCES;
-		return -1;
-	}
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t status = inb(HST_STS(bus));
 	if (isBitSet(status, kStsDone | kStsFailed))
@@ -348,8 +319,7 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	outb(dev, HST_XMIT(bus));
@@ -369,10 +339,8 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 
 	if (isBitSet(status, kStsDevErr) || i >= kMaxRetry)
 	{
-		std::cout << i << std::endl;
 		ioperm(bus, 8, 0);
-		errno = EBUSY;
-		return -1;
+		throw std::system_error(RsSdkError::DeviceBusy);
 	}
 
 	uint8_t data = 0;
@@ -413,5 +381,4 @@ int smbusI2CRead(uint16_t bus, uint8_t dev, uint8_t cmd, uint8_t *buf, size_t si
 		outb(0x3A, bus + 0x02);
 
 	ioperm(bus, 8, 0);
-	return 1;
 }

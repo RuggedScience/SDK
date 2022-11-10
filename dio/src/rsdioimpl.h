@@ -5,6 +5,7 @@
 #include "controllers/abstractdiocontroller.h"
 
 #include <string>
+#include <optional>
 
 class RsDioImpl : public RsDio
 {
@@ -17,17 +18,18 @@ public:
 
     diomap_t getPinList() const override;
 
-    int canSetOutputMode(int dio) override;
-    int setOutputMode(int dio, OutputMode mode) override;
+    std::optional<bool> canSetOutputMode(int dio) override;
+    bool setOutputMode(int dio, OutputMode mode) override;
 
-    int digitalRead(int dio, int pin) override;
-    int digitalWrite(int dio, int pin, bool state) override;
-    
-    std::string getLastError() override;
-    std::string version() const override { return std::string(RSDIO_VERSION_STRING); }
+    std::optional<bool> digitalRead(int dio, int pin) override;
+    bool digitalWrite(int dio, int pin, bool state) override;
+
+    std::error_code getLastError() const;
+    std::string getLastErrorString() const;
 
 private:
-    std::string m_lastError;
+    std::error_code m_lastError;
+    std::string m_lastErrorString;
     AbstractDioController *mp_controller;
 
     typedef std::map<int, PinConfig> pinconfigmap_t;

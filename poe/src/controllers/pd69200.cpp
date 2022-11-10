@@ -2,9 +2,9 @@
 
 #include "../../utils/i801_smbus.h"
 
-#include <stdexcept>
 #include <fcntl.h>
 #include <cstring>
+#include <system_error>
 
 //#define DEBUG
 
@@ -77,11 +77,12 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
     m_lastEcho(0)
 {
     int devId;
+    // Fixes a bug causing an "invalid echo".
     try { devId = getDeviceId(); }
-    catch (PoeControllerError const&) { devId = getDeviceId(); }
+    catch (const std::system_error&) { devId = getDeviceId(); }
     
-	if (devId < 0 || devId != kDeviceId)
-		throw PoeControllerError(std::strerror(errno));
+	if (devId != kDeviceId)
+		throw std::system_error(RsSdkError::DeviceNotFound);
 
     PowerBankSettings s = getPowerBankSettings(0);
     if (s.powerLimit != totalBudget)
@@ -99,7 +100,7 @@ Pd69200::~Pd69200()
 PoeState Pd69200::getPortState(uint8_t port)
 {
     if (port == 0x80)
-        throw PoeControllerError("Can't get state for all ports");
+        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
     PortStatus status = getPortStatus(port);
 
@@ -125,14 +126,14 @@ void Pd69200::setPortState(uint8_t port, PoeState state)
             setPortForce(port, false);
             break;
         case StateError:
-            throw PoeControllerError("Invalid PoeState: StateError");
+            throw std::system_error(RsSdkError::InvalidArgument, "Invalid PoE state");
     }
 }
 
 float Pd69200::getPortVoltage(uint8_t port)
 {
     if (port == 0x80)
-        throw PoeControllerError("Can't get voltage for all ports");
+        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).voltage;
 }
@@ -140,7 +141,7 @@ float Pd69200::getPortVoltage(uint8_t port)
 float Pd69200::getPortCurrent(uint8_t port)
 {
     if (port == 0x80)
-        throw PoeControllerError("Can't get current of all ports");
+        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).current;
 }
@@ -148,7 +149,7 @@ float Pd69200::getPortCurrent(uint8_t port)
 float Pd69200::getPortPower(uint8_t port)
 {
     if (port == 0x80)
-        throw PoeControllerError("Use getBudgetConsumed for total power");
+        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).wattage;
 }
@@ -194,13 +195,11 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
     
     for (size_t i = 0; i < MSG_LEN - 1; ++i)    // Send everything but the last byte.
     {
-        if (smbusWriteByte(m_busAddr, m_devAddr, msg[i]) < 0)
-            throw PoeControllerError(std::strerror(errno));
+        smbusWriteByte(m_busAddr, m_devAddr, msg[i]);
     }
 
     msg_t response;
-    if (smbusI2CRead(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()) < 0) // Now we can send the last byte
-        throw PoeControllerError(std::strerror(errno));
+    smbusI2CRead(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()); // Now we can send the last byte
 
 #ifdef DEBUG
     std::cout << "Received message from controller" << std::endl;
@@ -216,10 +215,10 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
 
     chksum = (response[MSG_LEN - 2] << 8) | response[MSG_LEN - 1];
     if (chksum != calcCheckSum(response.data(), MSG_LEN - 2))
-        throw PoeControllerError("Invalid checksum received from controller");
+        throw std::system_error(RsSdkError::CommunicationError, "Invalid checksum");
 
     if (msg[1] != response[1])
-        throw PoeControllerError("Invalid echo received from controller");
+        throw std::system_error(RsSdkError::CommunicationError, "Invalid echo");
 
     // If the msg is a command or program we should expect a success response from the controller.
     if (msg[0] == COMMAND_KEY || msg[0] == PROGRAM_KEY)
@@ -229,14 +228,14 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
             if (i == 1) continue; // Ignore echo byte.
 
             if (response[i] != commandAccepted[i])
-                throw PoeControllerError("Invalid response received from controller");
+                throw std::system_error(RsSdkError::CommunicationError, "Command unsuccessful");
         }
     }
     // If the msg is a request we should expect a telemetry response from the controller.
     else if (msg[0] == REQUEST_KEY)
     {
         if (response[0] != TELEMETRY_KEY)
-            throw PoeControllerError("Invalid response received from controller");
+            throw std::system_error(RsSdkError::CommunicationError, "Invalid telemetry key");
     }
     
     return response;

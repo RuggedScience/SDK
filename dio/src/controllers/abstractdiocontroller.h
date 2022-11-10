@@ -4,7 +4,7 @@
 #include <rsdio.h>
 
 #include <stdint.h>
-#include <exception>
+#include <system_error>  
 
 enum PinMode
 {
@@ -36,22 +36,6 @@ struct PinConfig : public PinInfo
     {}
 };
 
-class DioControllerError: public std::exception
-{
-public:
-    DioControllerError(const char *what) : 
-		m_what(what)
-    {
-    }
-
-    virtual const char *what() const throw()
-    {
-        return m_what;
-    }
-
-private:  
-    const char *m_what;
-};
 
 class AbstractDioController
 {
