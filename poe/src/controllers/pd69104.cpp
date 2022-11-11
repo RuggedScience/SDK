@@ -42,7 +42,7 @@ Pd69104::Pd69104(uint16_t bus, uint8_t dev) :
 {
 	int devId = getDeviceId();
 	if (devId != kDeviceId)
-		throw std::system_error(rs::RsSdkError::DeviceNotFound);
+		throw std::system_error(RsSdkError::DeviceNotFound);
 }
 
 Pd69104::~Pd69104()
@@ -60,7 +60,7 @@ rs::PoeState Pd69104::getPortState(uint8_t port)
 	else if (mode == kAutoMode)
 		return rs::PoeState::Auto;
 	else
-		throw std::system_error(rs::RsSdkError::CommunicationError, "Received invalid data from controller");
+		throw std::system_error(RsSdkError::CommunicationError, "Received invalid data from controller");
 }
 
 void Pd69104::setPortState(uint8_t port, rs::PoeState state)
@@ -84,7 +84,7 @@ void Pd69104::setPortState(uint8_t port, rs::PoeState state)
 			setPortSensing(port, true);
 			break;
 		case rs::PoeState::Error:
-			throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid PoE state");
+			throw std::system_error(RsSdkError::InvalidArgument, "Invalid PoE state");
 	}
 }
 
@@ -97,7 +97,7 @@ float Pd69104::getPortVoltage(uint8_t port)
 	else if (port == 3) reg = kPort4VoltReg;
 
 	if (reg == 0)
-		throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t volts = 0x00FF & data;
@@ -115,7 +115,7 @@ float Pd69104::getPortCurrent(uint8_t port)
 	else if (port == 3) reg = kPort4CurReg;
 
 	if (reg == 0)
-		throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t cur = 0x00FF & data;
@@ -140,7 +140,7 @@ int Pd69104::getBudgetTotal()
 {
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kPwrGdReg);
 	if (data > 7)
-		throw std::system_error(rs::RsSdkError::CommunicationError, "Received invalid power bank");
+		throw std::system_error(RsSdkError::CommunicationError, "Received invalid power bank");
 
 	data = smbusReadRegister(m_busAddr, m_devAddr, kPwrBankBAR + data);
 	return data;

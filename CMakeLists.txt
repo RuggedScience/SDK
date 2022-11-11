@@ -24,6 +24,15 @@ target_link_libraries(rspoectl rspoe)
 SET_TARGET_PROPERTIES(rsdioctl rspoectl
     PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
 
+add_executable(rsdio_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp)
+target_link_libraries(rsdio_test rsdio)
+target_include_directories(rsdio_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
+
+# enable testing functionality
+enable_testing()
+
+add_test(NAME rsdio_test COMMAND $<TARGET_FILE:rsdio_test> WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
 add_custom_target(xml ALL)
 add_custom_command(TARGET xml POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -47,4 +56,4 @@ if (INSTALL_XML)
     install(DIRECTORY xml/ DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${CMAKE_PROJECT_NAME})
 endif(INSTALL_XML)
 
-install(FILES utils/rssdk_errors.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})
+install(FILES utils/rssdk_errors.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})

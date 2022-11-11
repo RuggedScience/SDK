@@ -1,5 +1,5 @@
 #include "ite8786.h"
-#include "rssdk_errors.hpp"
+#include "rssdk_errors.h"
 
 #include <iostream>
 
@@ -50,7 +50,7 @@ Ite8786::Ite8786(bool debug) :
 		}
 
 		if (chipId != 0x8786)
-			throw std::system_error(rs::RsSdkError::DeviceNotFound);
+			throw std::system_error(RsSdkError::DeviceNotFound);
 	
 		setSioLdn(kGpioLdn);		
 		m_baseAddress = getBaseAddressRegister();
@@ -89,7 +89,7 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t& list, bool debug) :
 			std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId << std::endl;
 
 		if (chipId != 0x8786)
-			throw std::system_error(rs::RsSdkError::DeviceNotFound);
+			throw std::system_error(RsSdkError::DeviceNotFound);
 	
 		setSioLdn(kGpioLdn);		
 		m_baseAddress = getBaseAddressRegister();
@@ -165,10 +165,10 @@ PinMode Ite8786::getPinMode(PinConfig config)
 void Ite8786::setPinMode(PinConfig config, PinMode mode)
 {
 	if (mode == ModeInput && !config.supportsInput)
-		throw std::system_error(rs::RsSdkError::FunctionNotSupported, "Input mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Input mode not supported on pin");
 
 	if (mode == ModeOutput && !config.supportsOutput)
-		throw std::system_error(rs::RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
 
 	setSioLdn(kGpioLdn);
 	uint8_t reg = kOutputEnableBar + config.offset;
@@ -182,7 +182,7 @@ bool Ite8786::getPinState(PinConfig config)
 {
 	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	bool state = false;
 	uint8_t data = inb(reg);
@@ -198,15 +198,15 @@ bool Ite8786::getPinState(PinConfig config)
 void Ite8786::setPinState(PinConfig config, bool state)
 {
 	if (!config.supportsOutput)
-		throw std::system_error(rs::RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
+		throw std::system_error(RsSdkError::FunctionNotSupported, "Output mode not supported on pin");
 
 	if (getPinMode(config) != ModeOutput)
-		throw std::system_error(rs::RsSdkError::InvalidArgument, "Can't set state of pin in input mode");
+		throw std::system_error(RsSdkError::InvalidArgument, "Can't set state of pin in input mode");
 
 	if (config.invert) state = !state;
 	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	uint8_t data = inb(reg);
 	if (state) data |= config.bitmask;
@@ -246,7 +246,7 @@ void Ite8786::printRegs()
 void Ite8786::enterSio()
 {
 	if (ioperm(0x2E, 1, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(0x87, 0x2E);
 	outb(0x01, 0x2E);
@@ -259,7 +259,7 @@ void Ite8786::enterSio()
 void Ite8786::exitSio()
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(0x02, kSpecialAddress);
 	outb(0x02, kSpecialData);
@@ -282,7 +282,7 @@ void Ite8786::setSioLdn(uint8_t ldn)
 uint8_t Ite8786::readSioRegister(uint8_t reg)
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(reg, kSpecialAddress);
 	return inb(kSpecialData);
@@ -293,7 +293,7 @@ uint8_t Ite8786::readSioRegister(uint8_t reg)
 void Ite8786::writeSioRegister(uint8_t reg, uint8_t data)
 {
 	if (ioperm(kSpecialAddress, 2, 1))
-		throw std::system_error(rs::RsSdkError::PermissionDenied);
+		throw std::system_error(RsSdkError::PermissionDenied);
 
 	outb(reg, kSpecialAddress);
 	outb(data, kSpecialData);

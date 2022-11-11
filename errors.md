@@ -10,7 +10,7 @@ This SDK uses [std::error_code](https://en.cppreference.com/w/cpp/error/error_co
 rs::RsDio *dio = rs::createRsDio();
 if (!dio->setXmlFile('ecs9000.xml'))
 {
-    if (dio->getLastError() == rs::RsSdkError::PermissionError)
+    if (dio->getLastError() == RsSdkError::PermissionError)
         std::cerr << "Program must be run as root" << std::endl;
     else
         std::cerr << dio->getLastErrorString() << std::endl;
@@ -21,7 +21,7 @@ if (!dio->setXmlFile('ecs9000.xml'))
 
 if (!dio->setOutputMode(1, rs::OutputMode::Source))
 {
-    if (dio->getLastError() == rs::RsSdkError::FunctionNotSupported)
+    if (dio->getLastError() == RsSdkError::FunctionNotSupported)
     {
         std::cerr << "This device does not support setting the output mode" << std::endl;
         return 1;
@@ -32,7 +32,7 @@ int state = dio->digitalRead(1, 200);
 if (state < 0)
 {
     // Pin 200 doesn't exist.
-    if (dio->getLastError() == rs::RsSdkError::InvalidArgument)
+    if (dio->getLastError() == RsSdkError::InvalidArgument)
     {
         std::cerr << "Pin 200 doesn't exist" << std::endl;
         return 1;
@@ -49,7 +49,7 @@ if (state < 0)
 
 ## RsSdkError
 ```c++
-enum class rs::RsSdkError
+enum class RsSdkError
 ```
 
 All error codes 
