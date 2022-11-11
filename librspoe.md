@@ -172,6 +172,7 @@ int RsPoe::getBudgetAvailable()
 ```
 
 Gets the watts available before reaching max budget.
+
 ---
 
 ### Return value
@@ -184,6 +185,7 @@ Watts on success. Negative value on error.
 int RsPoe::getBudgetTotal()
 ```
 Gets the total watts the unit can handle. When this is exceeded the PoE controller will start shutting down ports to prevent an over current condition.
+
 ---
 
 ### Return value
@@ -196,11 +198,12 @@ Watts on success. Negative value on error.
 std::error_code RsPoe::getLastError() const
 ```
 
-Gets the [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
+Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
+
 ---
 
 ### Return value
-The [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
+The [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
 
 <br>
 
@@ -210,6 +213,7 @@ std::string RsPoe::getLastErrorString() const
 ```
 
 Gets the string containing information about the last error that occured. This will usually provide a bit more info about [getLastError](#getlasterror).
+
 ---
 
 ### Return value
@@ -221,6 +225,7 @@ String containing the last error.
 ```c++
 const char *rs::rsPoeVersion()
 ```
+
 ---
 
 ### Return value
