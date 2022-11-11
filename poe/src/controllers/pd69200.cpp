@@ -104,28 +104,28 @@ rs::PoeState Pd69200::getPortState(uint8_t port)
 
     PortStatus status = getPortStatus(port);
 
-    if (!status.enabled) return rs::StateDisabled;
-    else if (status.force) return rs::StateEnabled;
-    else return rs::StateAuto;
+    if (!status.enabled) return rs::PoeState::Disabled;
+    else if (status.force) return rs::PoeState::Enabled;
+    else return rs::PoeState::Auto;
 }
 
 void Pd69200::setPortState(uint8_t port, rs::PoeState state)
 {
     switch (state)
     {
-        case rs::StateEnabled:
+        case rs::PoeState::Enabled:
             setPortEnabled(port, true);
             setPortForce(port, true);
             break;
-        case rs::StateDisabled:
+        case rs::PoeState::Disabled:
             setPortForce(port, false);
             setPortEnabled(port, false);
             break;
-        case rs::StateAuto:
+        case rs::PoeState::Auto:
             setPortEnabled(port, true);
             setPortForce(port, false);
             break;
-        case rs::StateError:
+        case rs::PoeState::Error:
             throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid PoE state");
     }
 }

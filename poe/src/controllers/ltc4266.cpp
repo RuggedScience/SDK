@@ -51,11 +51,11 @@ rs::PoeState Ltc4266::getPortState(uint8_t port)
 {
 	uint8_t mode = getPortMode(port);
 	if (mode == kManualMode)
-		return rs::StateEnabled;
+		return rs::PoeState::Enabled;
 	else if (mode == kShutdownMode)
-		return rs::StateDisabled;
+		return rs::PoeState::Disabled;
 	else if (mode == kAutoMode)
-		return rs::StateAuto;
+		return rs::PoeState::Auto;
 	else
 		throw std::system_error(rs::RsSdkError::CommunicationError, "Received invalid data from controller");
 }
@@ -64,23 +64,23 @@ void Ltc4266::setPortState(uint8_t port, rs::PoeState state)
 {
 	switch (state)
 	{
-		case rs::StateEnabled:
+		case rs::PoeState::Enabled:
 			setPortMode(port, kManualMode);
 			setPortDetection(port, false);
 			setPortClassification(port, false);
 			setPortSensing(port, false);
 			setPortEnabled(port, true);
 			break;
-		case rs::StateDisabled:
+		case rs::PoeState::Disabled:
 			setPortMode(port, kShutdownMode);
 			break;
-		case rs::StateAuto:
+		case rs::PoeState::Auto:
 			setPortMode(port, kAutoMode);
 			setPortDetection(port, true);
 			setPortClassification(port, true);
 			setPortSensing(port, true);
 			break;
-		case rs::StateError:
+		case rs::PoeState::Error:
 			throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid PoE state");
 	}
 }

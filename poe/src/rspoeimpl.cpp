@@ -153,14 +153,14 @@ rs::PoeState RsPoeImpl::getPortState(int port)
     {
         m_lastError = rs::RsSdkError::NotInitialized;
         m_lastErrorString = "XML file never set";
-        return rs::StateError;
+        return rs::PoeState::Error;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
         m_lastError = rs::RsSdkError::InvalidArgument;
         m_lastErrorString = "Invalid port";
-        return rs::StateError;
+        return rs::PoeState::Error;
     }
 
     try 
@@ -178,7 +178,7 @@ rs::PoeState RsPoeImpl::getPortState(int port)
         m_lastErrorString = "Unknown exception occurred";
     }
 
-    return rs::StateError;
+    return rs::PoeState::Error;
 }
 
 int RsPoeImpl::setPortState(int port, rs::PoeState state)

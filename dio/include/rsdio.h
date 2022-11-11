@@ -29,11 +29,11 @@ struct PinInfo
 typedef std::map<int, PinInfo> pinmap_t;
 typedef std::map<int, pinmap_t> diomap_t;
 
-enum OutputMode
+enum class OutputMode
 {
-    ModeError = 0,
-    ModePnp = -1,
-    ModeNpn = -2    
+    Error = 0,
+    Source = -1,
+    Sink = -2    
 };
 
 class RsDio {

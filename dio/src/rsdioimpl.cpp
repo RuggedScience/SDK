@@ -250,20 +250,23 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     dioconfigmap_t::iterator it;
     for (it = m_dioMap.begin(); it != m_dioMap.end(); ++it)
     {
+        const int modeSink = static_cast<int>(rs::OutputMode::Sink);
+        const int modeSource = static_cast<int>(rs::OutputMode::Source);
+
         pinconfigmap_t pinMap = it->second;
-        //Not all units support programmable NPN/PNP modes so if these pins don't exist we don't really care.
-        if (pinMap.find(rs::ModeNpn) != pinMap.end() && pinMap.find(rs::ModePnp) != pinMap.end())
+        //Not all units support programmable Source/Sink modes so if these pins don't exist we don't really care.
+        if (pinMap.find(modeSink) != pinMap.end() && pinMap.find(modeSource) != pinMap.end())
         {
-            PinConfig npn = pinMap[rs::ModeNpn];
-            PinConfig pnp = pinMap[rs::ModePnp];
+            PinConfig sink = pinMap[modeSink];
+            PinConfig source = pinMap[modeSource];
 
             try
             {
                 //If these two pins are in the same state the dio will not operate. Let's fix that.
-                if (mp_controller->getPinState(npn) == mp_controller->getPinState(pnp))
+                if (mp_controller->getPinState(sink) == mp_controller->getPinState(source))
                 {
-                    mp_controller->setPinState(npn, true);
-                    mp_controller->setPinState(pnp, false);
+                    mp_controller->setPinState(sink, true);
+                    mp_controller->setPinState(source, false);
                 }
             }
             catch (const std::system_error &ex) 
@@ -311,7 +314,9 @@ int RsDioImpl::canSetOutputMode(int dio)
     }
 
     pinconfigmap_t pinMap = m_dioMap.at(dio);
-    if (pinMap.find(rs::ModeNpn) == pinMap.end() || pinMap.find(rs::ModePnp) == pinMap.end())
+    const int modeSink = static_cast<int>(rs::OutputMode::Sink);
+    const int modeSource = static_cast<int>(rs::OutputMode::Source);
+    if (pinMap.find(modeSink) == pinMap.end() || pinMap.find(modeSource) == pinMap.end())
     {
         return 0;
     }
@@ -328,7 +333,7 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
         return false;
     }
 
-    if (mode == rs::ModeError)
+    if (mode == rs::OutputMode::Error)
     {
         m_lastError = rs::RsSdkError::InvalidArgument;
         m_lastErrorString = "Invalid output mode";
@@ -343,7 +348,9 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
     }
 
     pinconfigmap_t pinMap = m_dioMap.at(dio);
-    if (pinMap.find(rs::ModeNpn) == pinMap.end() || pinMap.find(rs::ModePnp) == pinMap.end())
+    const int modeSink = static_cast<int>(rs::OutputMode::Sink);
+    const int modeSource = static_cast<int>(rs::OutputMode::Source);
+    if (pinMap.find(modeSink) == pinMap.end() || pinMap.find(modeSource) == pinMap.end())
     {
         m_lastError = rs::RsSdkError::FunctionNotSupported;
         m_lastErrorString = "Setting output mode not supported";
@@ -352,8 +359,8 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
 
     try
     {
-        mp_controller->setPinState(pinMap.at(rs::ModeNpn), (mode == rs::ModeNpn));
-        mp_controller->setPinState(pinMap.at(rs::ModePnp), (mode == rs::ModePnp));
+        mp_controller->setPinState(pinMap.at(modeSink), (mode == rs::OutputMode::Sink));
+        mp_controller->setPinState(pinMap.at(modeSource), (mode == rs::OutputMode::Source));
     }
     catch (const std::system_error &ex)
     {

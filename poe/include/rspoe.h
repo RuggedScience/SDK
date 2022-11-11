@@ -8,12 +8,12 @@
 namespace rs
 {
 
-enum PoeState
+enum class PoeState
 {
-    StateDisabled,		//No power regardless of attached device.
-    StateEnabled,		//Power always applied regardless of attached device.
-    StateAuto,			//Normal PoE operation.
-    StateError          //Error retreiving state. Use getLastError and getLastErrorString for more details.
+    Disabled,		//No power regardless of attached device.
+    Enabled,		//Power always applied regardless of attached device.
+    Auto,			//Normal PoE operation.
+    Error           //Error retreiving state. Use getLastError and getLastErrorString for more details.
 };
 
 

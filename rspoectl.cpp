@@ -13,24 +13,24 @@ static rs::PoeState stringToState(std::string str)
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
 	//str = std::toupper((str.begin(), str.end());
 	if (str == "DISABLED")
-		return rs::StateDisabled;
+		return rs::PoeState::Disabled;
 	else if (str == "ENABLED")
-		return rs::StateEnabled;
+		return rs::PoeState::Enabled;
 	else if (str == "AUTO")
-		return rs::StateAuto;
+		return rs::PoeState::Auto;
 	
-	return rs::StateError;
+	return rs::PoeState::Error;
 }
 
 static const char *stateToString(rs::PoeState state)
 {
     switch (state)
     {
-        case rs::StateDisabled:
+        case rs::PoeState::Disabled:
             return "disabled";
-        case rs::StateEnabled:
+        case rs::PoeState::Enabled:
             return "enabled";
-        case rs::StateAuto:
+        case rs::PoeState::Auto:
             return "auto";
     }
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	}
 
 	// If the command is "state=" we need to break it up into command / value.
-	rs::PoeState state = rs::StateError;
+	rs::PoeState state = rs::PoeState::Error;
 	std::string& cmd = argList[1];	
 	size_t index = cmd.find("=");
 	if (index != cmd.npos)
@@ -144,19 +144,19 @@ int main(int argc, char *argv[])
 
 		// stringToState returs "StateError" if it couldn't convert it.
 		// Let's check if they used a number instead of string.
-		if (state == rs::StateError)
+		if (state == rs::PoeState::Error)
 		{
 			try
 			{
 				int s = std::stoi(val);
-				if (s >= 0 && s < (int)rs::StateError)
+				if (s >= 0 && s < (int)rs::PoeState::Error)
 					state = (rs::PoeState)s;
 			}
 			catch (...) {}
 		}
 
 		// Couldn't convert the state from a string or an int... give up.
-		if (state == rs::StateError)
+		if (state == rs::PoeState::Error)
 		{
 			std::cerr << "Invalid state supplied" << std::endl;
 			showUsage();
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 	else if (cmd == "s" || cmd == "state")
 	{
 		state = rspoe->getPortState(port);
-		if (state != rs::StateError)
+		if (state != rs::PoeState::Error)
 		{
 			if (human) printf("%s\n", stateToString(state));
 			else printf("%d", (int)state);

@@ -29,12 +29,12 @@ static const char *stateToString(bool state)
 static rs::OutputMode stringToMode(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
-	if (str == "PNP" || str == "0")
-		return rs::ModePnp;
-	else if (str == "NPN" || str == "1")
-		return rs::ModeNpn;
+	if (str == "Source" || str == "0")
+		return rs::OutputMode::Source;
+	else if (str == "Sink" || str == "1")
+		return rs::OutputMode::Sink;
 
-	return rs::ModeError;
+	return rs::OutputMode::Error;
 }
 
 static void showUsage()
@@ -53,8 +53,8 @@ static void showUsage()
 				<< "\n"
 				<< "m=MODE, mode=MODE\tsets the output mode of a specific dio port\n"
 				<< "\t\t\tModes:\n"
-				<< "\t\t\t0, PNP\n"
-				<< "\t\t\t1, NPN\n"
+				<< "\t\t\t0, SOURCE\n"
+				<< "\t\t\t1, SINK\n"
 				<< "\n"
 				<< "Options:\n"
 				<< "-p NUM, --pin NUM \tthe pin number to be used by COMMAND\n"
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 	{
 		rs::OutputMode mode = stringToMode(val);
 		//stringToMode returns 0 on error.
-		if (mode == rs::ModeError)
+		if (mode == rs::OutputMode::Error)
 		{
 			std::cerr << "Invalid mode supplied" << std::endl;
 			showUsage();
