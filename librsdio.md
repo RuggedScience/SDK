@@ -70,6 +70,7 @@ int RsDio::digitalRead(int dio, int pin)
 ```
 
 Reads the state of `pin` on `dio`. Can be used on either input or output pins.
+
 ---
 
 ### Parameters
@@ -91,6 +92,7 @@ bool RsDio::digitalWrite(int dio, int pin, bool state)
 ```
 
 Sets the state of `pin` on `dio` to `state`. Can only be used on pins in output mode.
+
 ---
 
 ### Parameters
@@ -110,6 +112,7 @@ bool RsDio::setOutputMode(int dio, rs::OutputMode mode)
 
 Sets the output mode of `dio` to `mode`.  
 **NOTE:** Not all hardware supports switching output modes.
+
 ---
 
 ### Parameters
@@ -126,11 +129,12 @@ True on success and false on failure.
 std::error_code RsDio::getLastError() const
 ```
 
-Gets the [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
+Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
+
 ---
 
 ### Return value
-The [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
+The [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
 
 <br>
 
@@ -140,6 +144,7 @@ std::string RsDio::getLastErrorString() const
 ```
 
 Gets the string containing information about the last error that occured. This will usually provide a bit more info about [getLastError](#getlasterror).
+
 ---
 
 ### Return value
@@ -151,6 +156,7 @@ String containing the last error.
 ```c++
 const char *rs::rsDioVersion()
 ```
+
 ---
 
 ### Return value
