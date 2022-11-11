@@ -1,21 +1,21 @@
 # librsdio
 
-The **librsdio** library is used to control the DIO on supported Rugged Science units. All library functions return a negative value on error except [`setXmlFile`](###setXmlFile) which returns false on error. If this happens it is best to use the [`getLastError`](###getLastError) function to see what caused the error.
+The **librsdio** library is used to control the DIO on supported Rugged Science units. All library functions return either a negative value or false to indicate an error occurred. If this happens it is best to use the [getLastError](#getlasterror) and [getLastErrorString](#getlasterrorstring) functions to see what caused the error. For more information on error handling see [Error Handling](/errors.md#error-handling).
 
 ## Basic Usage
 
 ```c++
 #include <rsdio.h>
 ...
-RsDio *dio = createRsDio();
+rs::RsDio *dio = rs::createRsDio();
 if (!dio->setXmlFile('ecs9000.xml'))
 {
-    std::cerr << dio->getLastError() << std::endl;
+    std::cerr << dio->getLastErrorString() << std::endl;
     dio->destroy();
     return 1;
 }
 
-dio->setOutputMode(1, ModePnp);
+dio->setOutputMode(1, rs::OutputMode::Source);
 dio->digitalWrite(1, 11, true);
 dio->destroy();
 ```
@@ -23,7 +23,7 @@ dio->destroy();
 One important thing to note is that the RsDio class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
 
 ```c++
-std::shared_ptr<RsDio> dio(createRsDio(), std::mem_fn(&RsDio::destroy));
+std::shared_ptr<rs::RsDio> dio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
 if (!dio)
 {
     std::cerr << "Failed to create instance of RsDio" << std::endl;
@@ -35,13 +35,13 @@ if (!dio)
 
 ### OutputMode
 ```c++
-enum OutputMode
+enum class rs::OutputMode
 ```
 ---
 | Constant  | Value     | Description                       |
 |-----------|-----------|-----------------------------------|
-| ModePnp   | -1        | Pin state LOW = Open, HIGH = DC+  |
-| ModeNpn   | -2        | Pin state LOW = Open, HIGH = DC-  |
+| Source    | -1        | Pin state LOW = Open, HIGH = DC+  |
+| Sink      | -2        | Pin state LOW = Open, HIGH = DC-  |
 
 <br>
 
@@ -49,30 +49,37 @@ enum OutputMode
 
 ### setXmlFile
 ```c++
-bool setXmlFile(const char *fileName)
+bool RsDio::setXmlFile(const char *fileName)
 ```
+
+Initializes the RsDio class with the appropriate hardware. Must be called before any other functions.
+
 ---
 
 ### Parameters
 fileName - This should be a path to the XML file specific to your model.
 
 ### Return value
-Returns true if the dio was successfully initialized, otherwise returns false.
+Returns true if the dio library was successfully initialized, otherwise returns false.
 
 <br>
 
 ### digitalRead
 ```c++
-int digitalRead(int dio, int pin)
+int RsDio::digitalRead(int dio, int pin)
 ```
+
+Reads the state of `pin` on `dio`. Can be used on either input or output pins.
 ---
 
 ### Parameters
 dio - The number of the dio which is being read. Screen printed on the unit. Generally 1 or 2.  
 pin - The number of the pin which is being read. Screen printed on the unit. Generally 1 through 20.
 
+**NOTE:** Not all pins are input / output pins. See the user manual of your specific unit for pinout information.
+
 ### Return value
-The state of 'pin' read from 'dio'. Negative value on error.  
+The state of `pin` read from `dio`. Negative value on error.  
 0 - LOW  
 1 - HIGH  
 
@@ -80,8 +87,10 @@ The state of 'pin' read from 'dio'. Negative value on error.
 
 ### digitalWrite
 ```c++
-int digitalWrite(int dio, int pin, bool state)
+bool RsDio::digitalWrite(int dio, int pin, bool state)
 ```
+
+Sets the state of `pin` on `dio` to `state`. Can only be used on pins in output mode.
 ---
 
 ### Parameters
@@ -90,39 +99,57 @@ pin - The number of the pin which is being set. Screen printed on the unit. Gene
 state - The state to which the supplied dio / pin should be set.  
 
 ### Return value
-Zero on successful write. Negative value on error.  
+True on success and false on failure. 
 
 <br>
 
 ### setOutputMode
 ```c++
-int setOutputMode(int dio, Output mode)
+bool RsDio::setOutputMode(int dio, rs::OutputMode mode)
 ```
+
+Sets the output mode of `dio` to `mode`.  
+**NOTE:** Not all hardware supports switching output modes.
 ---
 
 ### Parameters
 dio - The number off the dio whos output mode should be set.  
-mode - The mode which dio should be set to. [OutputMode](##OutputMode)  
+mode - The mode which dio should be set to. [OutputMode](#outputmode)
 
 ### Return value
-Zero on successful write. Negative value on error.  
+True on success and false on failure. 
 
 <br>
 
 ### getLastError
 ```c++
-std::string *getLastError()
+std::error_code RsDio::getLastError() const
 ```
+
+Gets the [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
 ---
 
 ### Return value
-String containing the last error encountered by the library.
+The [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
 
 <br>
 
-### version
+### getLastErrorString
 ```c++
-std::string version()
+std::string RsDio::getLastErrorString() const
+```
+
+Gets the string containing information about the last error that occured. This will usually provide a bit more info about [getLastError](#getlasterror).
+---
+
+### Return value
+String containing the last error.
+
+<br>
+
+### rsDioVersion
+```c++
+const char *rs::rsDioVersion()
 ```
 ---
 
