@@ -39,7 +39,7 @@ Ltc4266::Ltc4266(uint16_t bus, uint8_t dev) :
 {
 	int devId = getDeviceId();
 	if (devId != kDeviceId)
-		throw std::system_error(RsSdkError::DeviceNotFound);
+		throw std::system_error(rs::RsSdkError::DeviceNotFound);
 }
 
 Ltc4266::~Ltc4266()
@@ -47,41 +47,41 @@ Ltc4266::~Ltc4266()
 
 }
 
-PoeState Ltc4266::getPortState(uint8_t port)
+rs::PoeState Ltc4266::getPortState(uint8_t port)
 {
 	uint8_t mode = getPortMode(port);
 	if (mode == kManualMode)
-		return StateEnabled;
+		return rs::StateEnabled;
 	else if (mode == kShutdownMode)
-		return StateDisabled;
+		return rs::StateDisabled;
 	else if (mode == kAutoMode)
-		return StateAuto;
+		return rs::StateAuto;
 	else
-		throw std::system_error(RsSdkError::CommunicationError, "Received invalid data from controller");
+		throw std::system_error(rs::RsSdkError::CommunicationError, "Received invalid data from controller");
 }
 
-void Ltc4266::setPortState(uint8_t port, PoeState state)
+void Ltc4266::setPortState(uint8_t port, rs::PoeState state)
 {
 	switch (state)
 	{
-		case StateEnabled:
+		case rs::StateEnabled:
 			setPortMode(port, kManualMode);
 			setPortDetection(port, false);
 			setPortClassification(port, false);
 			setPortSensing(port, false);
 			setPortEnabled(port, true);
 			break;
-		case StateDisabled:
+		case rs::StateDisabled:
 			setPortMode(port, kShutdownMode);
 			break;
-		case StateAuto:
+		case rs::StateAuto:
 			setPortMode(port, kAutoMode);
 			setPortDetection(port, true);
 			setPortClassification(port, true);
 			setPortSensing(port, true);
 			break;
-		case StateError:
-			throw std::system_error(RsSdkError::InvalidArgument, "Invalid PoE state");
+		case rs::StateError:
+			throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid PoE state");
 	}
 }
 
@@ -94,7 +94,7 @@ float Ltc4266::getPortVoltage(uint8_t port)
 	else if (port == 3) reg = kPort4VoltReg;
 
 	if (reg == 0)
-		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t volts = 0x00FF & data;
@@ -112,7 +112,7 @@ float Ltc4266::getPortCurrent(uint8_t port)
 	else if (port == 3) reg = kPort4CurReg;
 
 	if (reg == 0)
-		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t cur = 0x00FF & data;

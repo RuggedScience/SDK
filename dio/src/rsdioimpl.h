@@ -6,7 +6,7 @@
 
 #include <string>
 
-class RsDioImpl : public RsDio
+class RsDioImpl : public rs::RsDio
 {
 public:
     RsDioImpl();
@@ -15,10 +15,10 @@ public:
     void destroy() override;
     bool setXmlFile(const char *fileName, bool debug=false) override;
 
-    diomap_t getPinList() const override;
+    rs::diomap_t getPinList() const override;
 
     int canSetOutputMode(int dio) override;
-    bool setOutputMode(int dio, OutputMode mode) override;
+    bool setOutputMode(int dio, rs::OutputMode mode) override;
 
     int digitalRead(int dio, int pin) override;
     bool digitalWrite(int dio, int pin, bool state) override;

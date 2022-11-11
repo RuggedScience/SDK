@@ -14,8 +14,8 @@ public:
 	Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget=170);
 	~Pd69200() override;
 
-	PoeState getPortState(uint8_t port) override;
-	void setPortState(uint8_t port, PoeState state) override;
+	rs::PoeState getPortState(uint8_t port) override;
+	void setPortState(uint8_t port, rs::PoeState state) override;
 
 	float getPortVoltage(uint8_t port) override;
 	float getPortCurrent(uint8_t port) override;

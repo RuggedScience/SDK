@@ -8,7 +8,7 @@
 #include <string>
 #include <stdint.h>
 
-class RsPoeImpl : public RsPoe
+class RsPoeImpl : public rs::RsPoe
 {
 public:
     RsPoeImpl();
@@ -17,8 +17,8 @@ public:
     void destroy() override;
     bool setXmlFile(const char *fileName) override;
 
-    PoeState getPortState(int port) override;
-    int setPortState(int port, PoeState state) override;
+    rs::PoeState getPortState(int port) override;
+    int setPortState(int port, rs::PoeState state) override;
 
     float getPortVoltage(int port) override;
     float getPortCurrent(int port) override;
@@ -26,7 +26,7 @@ public:
 
     int getBudgetConsumed() override;
     int getBudgetAvailable() override;
-    int getBudgetTotal() override;\
+    int getBudgetTotal() override;
 
     std::error_code getLastError() const override;
     std::string getLastErrorString() const override;

@@ -9,8 +9,8 @@ public:
     Ltc4266(uint16_t bus, uint8_t dev);
     ~Ltc4266() override;
 
-    PoeState getPortState(uint8_t port) override;
-    void setPortState(uint8_t port, PoeState state) override;
+    rs::PoeState getPortState(uint8_t port) override;
+    void setPortState(uint8_t port, rs::PoeState state) override;
 
     float getPortVoltage(uint8_t port) override;
     float getPortCurrent(uint8_t port) override;

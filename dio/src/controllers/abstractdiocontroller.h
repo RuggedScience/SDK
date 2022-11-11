@@ -12,7 +12,7 @@ enum PinMode
 	ModeOutput
 };
 
-struct PinConfig : public PinInfo
+struct PinConfig : public rs::PinInfo
 {
 	uint8_t bitmask;
 	uint8_t offset;

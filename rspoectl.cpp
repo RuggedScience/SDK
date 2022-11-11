@@ -8,29 +8,29 @@
 #include <memory>
 #include <functional>
 
-static PoeState stringToState(std::string str)
+static rs::PoeState stringToState(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
 	//str = std::toupper((str.begin(), str.end());
 	if (str == "DISABLED")
-		return StateDisabled;
+		return rs::StateDisabled;
 	else if (str == "ENABLED")
-		return StateEnabled;
+		return rs::StateEnabled;
 	else if (str == "AUTO")
-		return StateAuto;
+		return rs::StateAuto;
 	
-	return StateError;
+	return rs::StateError;
 }
 
-static const char *stateToString(PoeState state)
+static const char *stateToString(rs::PoeState state)
 {
     switch (state)
     {
-        case StateDisabled:
+        case rs::StateDisabled:
             return "disabled";
-        case StateEnabled:
+        case rs::StateEnabled:
             return "enabled";
-        case StateAuto:
+        case rs::StateAuto:
             return "auto";
     }
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "--version")
 		{
-			std::cout << rsPoeVersion() << std::endl;
+			std::cout << rs::rsPoeVersion() << std::endl;
 			return 0;
 		}
 		else if (arg == "-h" || arg == "--human-readable")
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 		std::cerr << std::endl;
 	}
 
-	std::shared_ptr<RsPoe> rspoe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+	std::shared_ptr<rs::RsPoe> rspoe(rs::createRsPoe(), std::mem_fn(&rs::RsPoe::destroy));
 	if (!rspoe)
 	{
 		std::cerr << "Failed to create instance of RsPoe" << std::endl;
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	}
 
 	// If the command is "state=" we need to break it up into command / value.
-	PoeState state = StateError;
+	rs::PoeState state = rs::StateError;
 	std::string& cmd = argList[1];	
 	size_t index = cmd.find("=");
 	if (index != cmd.npos)
@@ -144,19 +144,19 @@ int main(int argc, char *argv[])
 
 		// stringToState returs "StateError" if it couldn't convert it.
 		// Let's check if they used a number instead of string.
-		if (state == StateError)
+		if (state == rs::StateError)
 		{
 			try
 			{
 				int s = std::stoi(val);
-				if (s >= 0 && s < (int)StateError)
-					state = (PoeState)s;
+				if (s >= 0 && s < (int)rs::StateError)
+					state = (rs::PoeState)s;
 			}
 			catch (...) {}
 		}
 
 		// Couldn't convert the state from a string or an int... give up.
-		if (state == StateError)
+		if (state == rs::StateError)
 		{
 			std::cerr << "Invalid state supplied" << std::endl;
 			showUsage();
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 	else if (cmd == "s" || cmd == "state")
 	{
 		state = rspoe->getPortState(port);
-		if (state != StateError)
+		if (state != rs::StateError)
 		{
 			if (human) printf("%s\n", stateToString(state));
 			else printf("%d", (int)state);

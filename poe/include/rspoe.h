@@ -5,6 +5,9 @@
 #include <system_error>
 #include "rspoe_export.h"
 
+namespace rs
+{
+
 enum PoeState
 {
     StateDisabled,		//No power regardless of attached device.
@@ -38,5 +41,7 @@ public:
 
 extern "C" RSPOE_EXPORT RsPoe *createRsPoe();
 extern "C" RSPOE_EXPORT const char *rsPoeVersion();
+
+} // namespace rs
 
 #endif //RSPOE_H

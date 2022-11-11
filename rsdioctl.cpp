@@ -26,15 +26,15 @@ static const char *stateToString(bool state)
 		return "high";
 }
 
-static OutputMode stringToMode(std::string str)
+static rs::OutputMode stringToMode(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
 	if (str == "PNP" || str == "0")
-		return ModePnp;
+		return rs::ModePnp;
 	else if (str == "NPN" || str == "1")
-		return ModeNpn;
+		return rs::ModeNpn;
 
-	return ModeError;
+	return rs::ModeError;
 }
 
 static void showUsage()
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 		}
 		else if (arg == "--version")
 		{
-			std::cout << rsDioVersion() << std::endl;
+			std::cout << rs::rsDioVersion() << std::endl;
 			return 0;
 		}
 		else if (arg == "-p" || arg == "--pin")
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		std::cerr << std::endl;
 	}
 
-	std::shared_ptr<RsDio> rsdio(createRsDio(), std::mem_fn(&RsDio::destroy));
+	std::shared_ptr<rs::RsDio> rsdio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
 	if (!rsdio)
 	{
 		std::cerr << "Failed to create instance of RsDio" << std::endl;
@@ -223,9 +223,9 @@ int main(int argc, char *argv[])
 	}
 	else if (cmd == "m=" || cmd == "mode=")
 	{
-		OutputMode mode = stringToMode(val);
+		rs::OutputMode mode = stringToMode(val);
 		//stringToMode returns 0 on error.
-		if (mode == ModeError)
+		if (mode == rs::ModeError)
 		{
 			std::cerr << "Invalid mode supplied" << std::endl;
 			showUsage();

@@ -7,6 +7,9 @@
 
 #include "rsdio_export.h"
 
+namespace rs
+{
+
 struct PinInfo
 {
     bool supportsInput;
@@ -54,5 +57,7 @@ public:
 
 extern "C" RSDIO_EXPORT RsDio *createRsDio();
 extern "C" RSDIO_EXPORT const char *rsDioVersion();
+
+} // namespace rs
 
 #endif //RSDIO_H

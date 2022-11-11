@@ -82,7 +82,7 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
     catch (const std::system_error&) { devId = getDeviceId(); }
     
 	if (devId != kDeviceId)
-		throw std::system_error(RsSdkError::DeviceNotFound);
+		throw std::system_error(rs::RsSdkError::DeviceNotFound);
 
     PowerBankSettings s = getPowerBankSettings(0);
     if (s.powerLimit != totalBudget)
@@ -97,43 +97,43 @@ Pd69200::~Pd69200()
     
 }
 
-PoeState Pd69200::getPortState(uint8_t port)
+rs::PoeState Pd69200::getPortState(uint8_t port)
 {
     if (port == 0x80)
-        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+        throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
     PortStatus status = getPortStatus(port);
 
-    if (!status.enabled) return StateDisabled;
-    else if (status.force) return StateEnabled;
-    else return StateAuto;
+    if (!status.enabled) return rs::StateDisabled;
+    else if (status.force) return rs::StateEnabled;
+    else return rs::StateAuto;
 }
 
-void Pd69200::setPortState(uint8_t port, PoeState state)
+void Pd69200::setPortState(uint8_t port, rs::PoeState state)
 {
     switch (state)
     {
-        case StateEnabled:
+        case rs::StateEnabled:
             setPortEnabled(port, true);
             setPortForce(port, true);
             break;
-        case StateDisabled:
+        case rs::StateDisabled:
             setPortForce(port, false);
             setPortEnabled(port, false);
             break;
-        case StateAuto:
+        case rs::StateAuto:
             setPortEnabled(port, true);
             setPortForce(port, false);
             break;
-        case StateError:
-            throw std::system_error(RsSdkError::InvalidArgument, "Invalid PoE state");
+        case rs::StateError:
+            throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid PoE state");
     }
 }
 
 float Pd69200::getPortVoltage(uint8_t port)
 {
     if (port == 0x80)
-        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+        throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).voltage;
 }
@@ -141,7 +141,7 @@ float Pd69200::getPortVoltage(uint8_t port)
 float Pd69200::getPortCurrent(uint8_t port)
 {
     if (port == 0x80)
-        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+        throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).current;
 }
@@ -149,7 +149,7 @@ float Pd69200::getPortCurrent(uint8_t port)
 float Pd69200::getPortPower(uint8_t port)
 {
     if (port == 0x80)
-        throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+        throw std::system_error(rs::RsSdkError::InvalidArgument, "Invalid port");
 
     return getPortMeasurements(port).wattage;
 }
@@ -215,10 +215,10 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
 
     chksum = (response[MSG_LEN - 2] << 8) | response[MSG_LEN - 1];
     if (chksum != calcCheckSum(response.data(), MSG_LEN - 2))
-        throw std::system_error(RsSdkError::CommunicationError, "Invalid checksum");
+        throw std::system_error(rs::RsSdkError::CommunicationError, "Invalid checksum");
 
     if (msg[1] != response[1])
-        throw std::system_error(RsSdkError::CommunicationError, "Invalid echo");
+        throw std::system_error(rs::RsSdkError::CommunicationError, "Invalid echo");
 
     // If the msg is a command or program we should expect a success response from the controller.
     if (msg[0] == COMMAND_KEY || msg[0] == PROGRAM_KEY)
@@ -228,14 +228,14 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
             if (i == 1) continue; // Ignore echo byte.
 
             if (response[i] != commandAccepted[i])
-                throw std::system_error(RsSdkError::CommunicationError, "Command unsuccessful");
+                throw std::system_error(rs::RsSdkError::CommunicationError, "Command unsuccessful");
         }
     }
     // If the msg is a request we should expect a telemetry response from the controller.
     else if (msg[0] == REQUEST_KEY)
     {
         if (response[0] != TELEMETRY_KEY)
-            throw std::system_error(RsSdkError::CommunicationError, "Invalid telemetry key");
+            throw std::system_error(rs::RsSdkError::CommunicationError, "Invalid telemetry key");
     }
     
     return response;

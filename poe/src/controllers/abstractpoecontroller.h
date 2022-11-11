@@ -12,19 +12,19 @@ class AbstractPoeController
 public:
 	virtual ~AbstractPoeController() {}
 
-	virtual PoeState getPortState(uint8_t port) = 0;
-	virtual void setPortState(uint8_t port, PoeState state) = 0;
+	virtual rs::PoeState getPortState(uint8_t port) = 0;
+	virtual void setPortState(uint8_t port, rs::PoeState state) = 0;
 
-    virtual float getPortVoltage(uint8_t port) { throw std::system_error(RsSdkError::FunctionNotSupported); } // Should always return volts
-	virtual float getPortCurrent(uint8_t port) { throw std::system_error(RsSdkError::FunctionNotSupported); } // Should always return amps
+    virtual float getPortVoltage(uint8_t port) { throw std::system_error(rs::RsSdkError::FunctionNotSupported); }
+	virtual float getPortCurrent(uint8_t port) { throw std::system_error(rs::RsSdkError::FunctionNotSupported); }
 	virtual float getPortPower(uint8_t port)
     {
         return getPortVoltage(port) * getPortCurrent(port);
     };
 
-    virtual int getBudgetConsumed()     { throw std::system_error(RsSdkError::FunctionNotSupported); }
-    virtual int getBudgetAvailable()    { throw std::system_error(RsSdkError::FunctionNotSupported); }
-    virtual int getBudgetTotal()        { throw std::system_error(RsSdkError::FunctionNotSupported); }
+    virtual int getBudgetConsumed()     { throw std::system_error(rs::RsSdkError::FunctionNotSupported); }
+    virtual int getBudgetAvailable()    { throw std::system_error(rs::RsSdkError::FunctionNotSupported); }
+    virtual int getBudgetTotal()        { throw std::system_error(rs::RsSdkError::FunctionNotSupported); }
 };
 
 #endif

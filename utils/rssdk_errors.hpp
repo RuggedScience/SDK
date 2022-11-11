@@ -1,4 +1,10 @@
+#ifndef RSSDK_ERRORS_HPP
+#define RSSDK_ERRORS_HPP
+
 #include <system_error>
+
+namespace rs
+{
 
 enum class RsSdkError
 {
@@ -13,11 +19,6 @@ enum class RsSdkError
     CommunicationError,
     UnknownError,
 };
-
-namespace std
-{
-    template <> struct is_error_code_enum<RsSdkError> : true_type {};
-}
 
 namespace detail
 {
@@ -96,3 +97,12 @@ inline std::error_code make_error_code(RsSdkError e)
 {
     return {static_cast<int>(e), RsSdkError_category()};
 }
+
+} // namespace rs
+
+namespace std
+{
+    template <> struct is_error_code_enum<rs::RsSdkError> : true_type {};
+}
+
+#endif //RSSDK_ERRORS_HPP
