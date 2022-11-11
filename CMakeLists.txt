@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(rssdk VERSION 3.0.3)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 
 add_subdirectory(dio)
 add_subdirectory(poe)
@@ -46,3 +46,5 @@ endif(INSTALL_UTILITIES)
 if (INSTALL_XML)
     install(DIRECTORY xml/ DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${CMAKE_PROJECT_NAME})
 endif(INSTALL_XML)
+
+install(FILES utils/rssdk_errors.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})

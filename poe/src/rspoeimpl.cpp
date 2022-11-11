@@ -135,6 +135,10 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
 
     if (m_portMap.size() <= 0)
     {
+        m_portMap.clear();
+        delete mp_controller;
+        mp_controller = nullptr;
+        
         m_lastError = RsSdkError::FunctionNotSupported;
         m_lastErrorString = "PoE function not supported";
         return false;

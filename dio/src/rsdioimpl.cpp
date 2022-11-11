@@ -190,6 +190,10 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     // Assuming it's a legit XML file... 
 	if (!con)
 	{
+        m_dioMap.clear();
+        delete mp_controller;
+        mp_controller = nullptr;
+
         m_lastError = RsSdkError::FunctionNotSupported;
         m_lastErrorString = "DIO function not supported";
         return false;
@@ -232,8 +236,10 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     
     if (m_dioMap.size() <= 0)
     {
+        m_dioMap.clear();
         delete mp_controller;
         mp_controller = nullptr;
+
         m_lastError = RsSdkError::XmlParseError;
         m_lastErrorString = "Found DIO connector node but no pins";
         return false;
@@ -261,6 +267,10 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
             }
             catch (const std::system_error &ex) 
             {
+                m_dioMap.clear();
+                delete mp_controller;
+                mp_controller = nullptr;
+
                 m_lastError = ex.code();
                 m_lastErrorString = ex.what();
                 return false;
@@ -290,22 +300,22 @@ diomap_t RsDioImpl::getPinList() const
     return dios;
 }
 
-std::optional<bool> RsDioImpl::canSetOutputMode(int dio)
+int RsDioImpl::canSetOutputMode(int dio)
 {
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
         m_lastError = RsSdkError::InvalidArgument;
         m_lastErrorString = "Invalid DIO";
-        return {};
+        return -1;
     }
 
     pinconfigmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(ModeNpn) == pinMap.end() || pinMap.find(ModePnp) == pinMap.end())
     {
-        return false;
+        return 0;
     }
 
-    return true;
+    return 1;
 }
 
 bool RsDioImpl::setOutputMode(int dio, OutputMode mode)
@@ -314,6 +324,13 @@ bool RsDioImpl::setOutputMode(int dio, OutputMode mode)
     {
         m_lastError = RsSdkError::NotInitialized;
         m_lastErrorString = "XML file never set";
+        return false;
+    }
+
+    if (mode == ModeError)
+    {
+        m_lastError = RsSdkError::InvalidArgument;
+        m_lastErrorString = "Invalid output mode";
         return false;
     }
 
@@ -352,20 +369,20 @@ bool RsDioImpl::setOutputMode(int dio, OutputMode mode)
     return true;
 }
 
-std::optional<bool> RsDioImpl::digitalRead(int dio, int pin)
+int RsDioImpl::digitalRead(int dio, int pin)
 {
     if (mp_controller == nullptr)
     {
         m_lastError = RsSdkError::NotInitialized;
         m_lastErrorString = "XML file never set";
-        return {};
+        return -1;
     }
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
         m_lastError = RsSdkError::InvalidArgument;
         m_lastErrorString = "Invalid DIO";
-        return {};
+        return -1;
     }
 
     pinconfigmap_t pinMap = m_dioMap.at(dio);
@@ -373,7 +390,7 @@ std::optional<bool> RsDioImpl::digitalRead(int dio, int pin)
     {
         m_lastError = RsSdkError::InvalidArgument;
         m_lastErrorString = "Invalid pin";
-        return {};
+        return -1;
     }
 
     PinConfig config = pinMap.at(pin);
@@ -393,7 +410,7 @@ std::optional<bool> RsDioImpl::digitalRead(int dio, int pin)
         m_lastErrorString = "unknown exception occured";
     }
 
-    return {};
+    return -1;
 }
 
 bool RsDioImpl::digitalWrite(int dio, int pin, bool state)

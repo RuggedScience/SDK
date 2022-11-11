@@ -26,7 +26,7 @@ static const char *stateToString(bool state)
 		return "high";
 }
 
-static std::optional<OutputMode> stringToMode(std::string str)
+static OutputMode stringToMode(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), toupper);
 	if (str == "PNP" || str == "0")
@@ -34,7 +34,7 @@ static std::optional<OutputMode> stringToMode(std::string str)
 	else if (str == "NPN" || str == "1")
 		return ModeNpn;
 
-	return {};
+	return ModeError;
 }
 
 static void showUsage()
@@ -209,30 +209,30 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		auto state = rsdio->digitalRead(dio, pin);
-		if (!state)
+		int state = rsdio->digitalRead(dio, pin);
+		if (state < 0)
 		{
 			std::cerr << rsdio->getLastErrorString() << std::endl;
 			return 1;
 		}
 		else
 		{
-			if (human) printf("%s\n", stateToString(*state));
-			else printf("%i", *state);
+			if (human) printf("%s\n", stateToString(state));
+			else printf("%i", state);
 		}
 	}
 	else if (cmd == "m=" || cmd == "mode=")
 	{
-		auto mode = stringToMode(val);
+		OutputMode mode = stringToMode(val);
 		//stringToMode returns 0 on error.
-		if (!mode)
+		if (mode == ModeError)
 		{
 			std::cerr << "Invalid mode supplied" << std::endl;
 			showUsage();
 			return 1;
 		}
 
-		if (!rsdio->setOutputMode(dio, *mode))
+		if (!rsdio->setOutputMode(dio, mode))
 		{
 			std::cerr << rsdio->getLastErrorString() << std::endl;
 			return 1;
