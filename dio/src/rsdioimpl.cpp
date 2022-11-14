@@ -491,14 +491,8 @@ const char *rs::rsDioVersion()
     return RSDIO_VERSION_STRING;
 }
 
-const RsSdkError_category &getCategory()
+RSDIO_EXPORT const RsSdkError_category &rs::getCategory()
 {
-    static RsSdkError_category c;
-    std::cout << "RsDio Category: " << static_cast<void*>(&c) << std::endl;
-    return c;
-}
-
-RSDIO_EXPORT std::error_code make_error_code(RsSdkError e)
-{
-    return {static_cast<int>(e), getCategory()};
+  static RsSdkError_category c;
+  return c;
 }

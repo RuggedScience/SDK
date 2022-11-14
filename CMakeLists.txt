@@ -24,7 +24,10 @@ target_link_libraries(rspoectl rspoe)
 SET_TARGET_PROPERTIES(rsdioctl rspoectl
     PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/")
 
-add_executable(rsdio_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp)
+add_executable(rsdio_test 
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
+)
 target_link_libraries(rsdio_test rsdio)
 target_include_directories(rsdio_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 

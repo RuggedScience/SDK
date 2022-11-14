@@ -430,14 +430,8 @@ const char *rs::rsPoeVersion()
     return RSPOE_VERSION_STRING;
 }
 
-const RsSdkError_category &getCategory()
+RSPOE_EXPORT const RsSdkError_category &rs::getCategory()
 {
-    static RsSdkError_category c;
-    std::cout << "RsPoe Category: " << static_cast<void*>(&c) << std::endl;
-    return c;
-}
-
-RSPOE_EXPORT std::error_code make_error_code(RsSdkError e)
-{
-    return {static_cast<int>(e), getCategory()};
+  static RsSdkError_category c;
+  return c;
 }

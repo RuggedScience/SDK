@@ -1,3 +1,6 @@
+#ifndef RSSDK_ERRORS_H
+#define RSSDK_ERRORS_H
+
 #include <system_error>
 
 enum class RsSdkError
@@ -19,10 +22,11 @@ namespace std
     template <> struct is_error_code_enum<RsSdkError> : true_type {};
 }
 
-extern std::error_code make_error_code(RsSdkError e);
 
-struct RsSdkError_category : public std::error_category
+
+class RsSdkError_category : public std::error_category
 {
+public:
     virtual const char *name() const noexcept override final { return "RsSdkError"; }
 
     virtual std::string message(int c) const override final
@@ -71,3 +75,15 @@ struct RsSdkError_category : public std::error_category
         }
     }
 };
+
+namespace rs
+{
+    extern const RsSdkError_category &getCategory();
+}
+
+inline std::error_code make_error_code(RsSdkError e)
+{
+    return {static_cast<int>(e), rs::getCategory()};
+}
+
+#endif //RSSDK_ERRORS_H

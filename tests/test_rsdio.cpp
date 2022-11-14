@@ -3,14 +3,14 @@
 #include <functional>
 
 #include <rsdio.h>
-#include <rspoe.h>
 #include <rssdk_errors.h>
 
-int main(int argc, char *argv[])
-{
-    std::shared_ptr<rs::RsDio> dio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
-    std::shared_ptr<rs::RsPoe> poe(rs::createRsPoe(), std::mem_fn(&rs::RsPoe::destroy));
+#include "argparse.h"
 
+typedef std::shared_ptr<rs::RsDio> RsDio_t;
+
+int testNoSuchFile(RsDio_t dio)
+{
     if (dio->setXmlFile("fake_file"))
     {
         std::cerr << "setXmlFile returned true with invalid file" << std::endl;
@@ -23,16 +23,51 @@ int main(int argc, char *argv[])
         return 1; 
     }
 
-    if (dio->setXmlFile("/home/rugged/sdk/tests/invalid.xml"))
+}
+
+int main(int argc, char *argv[])
+{
+    ArgParse mainParser("rsdio_test");
+
+    mainParser.addPositionalArg(PositionalArg{
+        .name = "filename", 
+        .description = "XML file to parse"
+    });
+
+    PositionalArg commandArg{
+        .name = "command", 
+        .description = "Test command to run"
+    };
+
+    // Run all tests. We don't need any args but let the parser know about he option.
+    mainParser.addSubCommand(commandArg, "all");
+
+    // Test XML parsing
+    ArgParse &xmlCommandParser = mainParser.addSubCommand(commandArg, "xml");
+
+    if (!mainParser.parse(argc, argv))
+    {
+        std::cerr << "Error parsing arguments\n";
+        return 1;
+    }
+
+    std::string command;
+    mainParser.getValue("command", command);
+    if (command == "xml")
+    {
+
+    }
+
+    RsDio_t dio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
+
+    std::string xmlFile;
+    xmlCommandParser.getValue("filename", xmlFile);
+    if (dio->setXmlFile(xmlFile.c_str()))
     {
         std::cerr << "setXmlFile returned true with invalid file" << std::endl;
         return 1;
     }
 
-    if (poe->setXmlFile("/home/rugged/sdk/tests/invalid.xml"))
-    {
-        
-    }
 
     std::error_code c = dio->getLastError();
     std::error_code e = RsSdkError::XmlParseError;
