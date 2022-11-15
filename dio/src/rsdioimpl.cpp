@@ -295,7 +295,10 @@ rs::diomap_t RsDioImpl::getPinList() const
         pinconfigmap_t::const_iterator pinIt;
         for (pinIt = dioIt->second.begin(); pinIt != dioIt->second.end(); ++pinIt)
         {
-            pins[pinIt->first] = (rs::PinInfo)pinIt->second;
+            if (pinIt->first >= 0)
+            {
+                pins[pinIt->first] = (PinInfo)pinIt->second;
+            }
         }
 
         dios[dioIt->first] = pins;
