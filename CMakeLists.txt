@@ -5,8 +5,10 @@ project(rssdk VERSION 3.0.3)
 
 set(CMAKE_CXX_STANDARD 11)
 
+add_subdirectory(error)
 add_subdirectory(dio)
 add_subdirectory(poe)
+
 
 include(GNUInstallDirs)
 option(INSTALL_UTILITIES "Installs utilities" ON)
@@ -28,8 +30,15 @@ add_executable(rsdio_test
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
 )
-target_link_libraries(rsdio_test rsdio)
+target_link_libraries(rsdio_test rsdio rspoe)
 target_include_directories(rsdio_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
+
+add_executable(rspoe_test 
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rspoe.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
+)
+target_link_libraries(rspoe_test rspoe rsdio)
+target_include_directories(rspoe_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 
 # enable testing functionality
 enable_testing()

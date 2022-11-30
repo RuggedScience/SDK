@@ -129,7 +129,7 @@ True on success and false on failure.
 std::error_code RsDio::getLastError() const
 ```
 
-Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsSdkErrors](./errors.md#rssdkerror).
+Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsErrorCodes](./errors.md#RsErrorCode).
 
 ---
 

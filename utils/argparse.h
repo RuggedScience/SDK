@@ -16,15 +16,22 @@ struct PositionalArg
 {
     std::string name;
     std::string description;
-    bool required;
+
+    PositionalArg(std::string name, std::string description)
+        : name(name), description(description)
+    {
+    }
 };
 
-struct OptionalArg
+struct OptionalArg : PositionalArg
 {
-    std::string name;
-    std::string description;
     ArgType type;
     std::vector<std::string> options;
+
+    OptionalArg(std::string name, std::string description, ArgType type, std::vector<std::string> options)
+        : PositionalArg(name, description), type(type), options(options)
+    {
+    }
 };
 
 class ArgParse
@@ -52,11 +59,11 @@ private:
     OptionalArg *getOptionalArg(std::string arg);
 
     std::string m_programName;
+    std::string m_description;
     std::vector<PositionalArg> m_positionalArgs;
     std::vector<OptionalArg> m_optionalArgs;
     std::map<std::string, ArgParse> m_subParsers;
     std::map<std::string, std::string> m_foundArgs;
-
 };
 
-#endif //ARGPARSE_H
+#endif // ARGPARSE_H

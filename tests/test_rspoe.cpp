@@ -2,24 +2,24 @@
 #include <memory>
 #include <functional>
 
-#include <rsdio.h>
+#include <rspoe.h>
 #include <rserrors.h>
 
 #include "argparse.h"
 
-typedef std::shared_ptr<rs::RsDio> RsDio_t;
+typedef std::shared_ptr<rs::RsPoe> RsPoe_t;
 
-int testNoSuchFile(RsDio_t dio)
+int testNoSuchFile(RsPoe_t poe)
 {
-    if (dio->setXmlFile("fake_file"))
+    if (poe->setXmlFile("fake_file"))
     {
         std::cerr << "setXmlFile returned true with invalid file" << std::endl;
         return 1;
     }
 
-    if (dio->getLastError() != std::errc::no_such_file_or_directory)
+    if (poe->getLastError() != std::errc::no_such_file_or_directory)
     {
-        std::cerr << "Expected no such file error. Got " << dio->getLastErrorString() << std::endl;
+        std::cerr << "Expected no such file error. Got " << poe->getLastErrorString() << std::endl;
         return 1; 
     }
     return 0;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     if (!mainParser.parse(argc, argv))
     {
         std::cerr << "Error parsing arguments\n";
-        return 1;
+        //return 1;
     }
 
     std::string command, xmlFile;
@@ -52,10 +52,15 @@ int main(int argc, char *argv[])
         
     }
 
-    RsDio_t dio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
-    if (dio->setXmlFile(xmlFile.c_str()))
+    RsPoe_t poe(rs::createRsPoe(), std::mem_fn(&rs::RsPoe::destroy));
+    if (poe->setXmlFile("/home/tlassiter/SDK/xml/ecs9000.xml"))
     {
         std::cerr << "setXmlFile returned true with invalid file" << std::endl;
         return 1;
     }
+
+    std::cout << (poe->getLastError() == RsErrorCode::XmlParseError) << std::endl;
+    std::cout << (poe->getLastError() == RsErrorCondition::HardwareError) << std::endl;
+    std::cout << (poe->getLastError() == RsErrorCondition::UserError) << std::endl;
+    std::cout << (poe->getLastError() == std::errc::operation_not_permitted) << std::endl;
 }

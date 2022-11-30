@@ -39,7 +39,7 @@ Ltc4266::Ltc4266(uint16_t bus, uint8_t dev) :
 {
 	int devId = getDeviceId();
 	if (devId != kDeviceId)
-		throw std::system_error(RsSdkError::DeviceNotFound);
+		throw std::system_error(std::make_error_code(std::errc::no_such_device));
 }
 
 Ltc4266::~Ltc4266()
@@ -57,7 +57,7 @@ rs::PoeState Ltc4266::getPortState(uint8_t port)
 	else if (mode == kAutoMode)
 		return rs::PoeState::Auto;
 	else
-		throw std::system_error(RsSdkError::CommunicationError, "Received invalid data from controller");
+		throw std::system_error(std::make_error_code(std::errc::protocol_error), "Received invalid data from controller");
 }
 
 void Ltc4266::setPortState(uint8_t port, rs::PoeState state)
@@ -81,7 +81,7 @@ void Ltc4266::setPortState(uint8_t port, rs::PoeState state)
 			setPortSensing(port, true);
 			break;
 		case rs::PoeState::Error:
-			throw std::system_error(RsSdkError::InvalidArgument, "Invalid PoE state");
+			throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid PoE state");
 	}
 }
 
@@ -94,7 +94,7 @@ float Ltc4266::getPortVoltage(uint8_t port)
 	else if (port == 3) reg = kPort4VoltReg;
 
 	if (reg == 0)
-		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t volts = 0x00FF & data;
@@ -112,7 +112,7 @@ float Ltc4266::getPortCurrent(uint8_t port)
 	else if (port == 3) reg = kPort4CurReg;
 
 	if (reg == 0)
-		throw std::system_error(RsSdkError::InvalidArgument, "Invalid port");
+		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
 	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
 	uint16_t cur = 0x00FF & data;

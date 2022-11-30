@@ -4,8 +4,8 @@
 #include "controllers/ltc4266.h"
 
 #include <tinyxml2.h>
+#include <rserrors.h>
 
-#include <system_error>
 #include <iostream>
 
 RsPoeImpl::RsPoeImpl() 
@@ -36,12 +36,12 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     {
         if (doc.ErrorID() == XML_ERROR_FILE_NOT_FOUND)
         {
-            m_lastError = std::make_error_code(std::errc::no_such_file_or_directory);
+            m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = fileName;
         }
         else
         {
-            m_lastError = RsSdkError::XmlParseError;
+            m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = doc.ErrorStr();
         }
         
@@ -51,7 +51,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     XMLElement *comp = doc.FirstChildElement("computer");
     if (!comp)
     {
-        m_lastError = RsSdkError::XmlParseError;
+        m_lastError = RsErrorCode::XmlParseError;
         m_lastErrorString = "Missing computer node";
         return false;
     }
@@ -59,7 +59,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     XMLElement *poe = comp->FirstChildElement("poe_controller");
     if (!poe)
     {
-        m_lastError = RsSdkError::XmlParseError;
+        m_lastError = RsErrorCode::XmlParseError;
         m_lastErrorString = "Missing poe_controller node";
         return false;
     }
@@ -74,7 +74,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
         chipAddressStr = poe->Attribute("address");
         if (!chipAddressStr)
         {
-            m_lastError = RsSdkError::XmlParseError;
+            m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = "Missing address attribute for poe_controller";
             return false;
         }
@@ -100,7 +100,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
             mp_controller = new Ltc4266(busAddress, chipAddress);
         else
         {
-            m_lastError = RsSdkError::XmlParseError;
+            m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = "Invalid PoE controller ID";
             return false;
         }
@@ -108,15 +108,12 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     catch (const std::system_error &ex)
     {
         m_lastError = ex.code();
-        if (ex.code() == RsSdkError::PermissionDenied)
-            m_lastErrorString = "Must be run as root";
-        else
-            m_lastErrorString = ex.what();        
+        m_lastErrorString = ex.what();
         return false;
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
         return false;
     }
@@ -140,7 +137,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
         delete mp_controller;
         mp_controller = nullptr;
         
-        m_lastError = RsSdkError::FunctionNotSupported;
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
         m_lastErrorString = "PoE function not supported";
         return false;
     }
@@ -152,14 +149,14 @@ rs::PoeState RsPoeImpl::getPortState(int port)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return rs::PoeState::Error;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid port";
         return rs::PoeState::Error;
     }
@@ -175,7 +172,7 @@ rs::PoeState RsPoeImpl::getPortState(int port)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -186,14 +183,14 @@ int RsPoeImpl::setPortState(int port, rs::PoeState state)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid port";
         return -1;
     }
@@ -210,7 +207,7 @@ int RsPoeImpl::setPortState(int port, rs::PoeState state)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -221,14 +218,14 @@ float RsPoeImpl::getPortVoltage(int port)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid port";
         return -1.0f;
     }
@@ -244,7 +241,7 @@ float RsPoeImpl::getPortVoltage(int port)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -255,14 +252,14 @@ float RsPoeImpl::getPortCurrent(int port)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid port";
         return -1.0f;
     }
@@ -278,7 +275,7 @@ float RsPoeImpl::getPortCurrent(int port)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -289,14 +286,14 @@ float RsPoeImpl::getPortPower(int port)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1.0f;
     }
 
     if (m_portMap.find(port) == m_portMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid port";
         return -1.0f;
     }
@@ -312,7 +309,7 @@ float RsPoeImpl::getPortPower(int port)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -323,7 +320,7 @@ int RsPoeImpl::getBudgetConsumed()
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1;
     }
@@ -339,7 +336,7 @@ int RsPoeImpl::getBudgetConsumed()
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -350,7 +347,7 @@ int RsPoeImpl::getBudgetAvailable()
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1;
     }
@@ -366,7 +363,7 @@ int RsPoeImpl::getBudgetAvailable()
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -377,7 +374,7 @@ int RsPoeImpl::getBudgetTotal()
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1;
     }
@@ -393,7 +390,7 @@ int RsPoeImpl::getBudgetTotal()
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
     }
 
@@ -428,10 +425,4 @@ rs::RsPoe *rs::createRsPoe()
 const char *rs::rsPoeVersion()
 { 
     return RSPOE_VERSION_STRING;
-}
-
-RSPOE_EXPORT const RsSdkError_category &rs::getCategory()
-{
-  static RsSdkError_category c;
-  return c;
 }

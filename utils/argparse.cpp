@@ -170,12 +170,18 @@ void ArgParse::printUsage() const
 void ArgParse::printUsage(std::ostream &stream) const
 {
     stream << m_programName;
+
     for (const PositionalArg &arg : m_positionalArgs)
     {
         stream << " " << arg.name;
     }
 
-    stream << " [OPTIONS...]\n";
+    if (!m_optionalArgs.empty())
+    {
+        stream << " [OPTIONS...]";
+    }
+
+    stream << "\n";
 
     if (!m_positionalArgs.empty())
     {
@@ -192,11 +198,16 @@ void ArgParse::printUsage(std::ostream &stream) const
         maxLength += 4;
         for (const PositionalArg &arg : m_positionalArgs)
         {
-            int spaces = maxLength - arg.name.size();
+            size_t spaces = maxLength - arg.name.size();
             stream << "\t" << arg.name;
             for (int i = 0; i < spaces; ++i)
                 stream << " ";
             stream << arg.description << "\n";
+        }
+
+        for (std::pair<std::string, ArgParse> pair : m_subParsers)
+        {
+            stream << "\t\t" << pair.first << "\n";
         }
     }
 
