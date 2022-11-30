@@ -1,11 +1,11 @@
 #include <iostream>
 #include <assert.h>
 
-#include "rssdk_errors.h"
 #include "rsdioimpl.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
 
+#include <rserrors.h>
 #include <tinyxml2.h>
 
 
@@ -104,12 +104,12 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 	{
         if (doc.ErrorID() == XML_ERROR_FILE_NOT_FOUND)
         {
-            m_lastError = std::make_error_code(std::errc::no_such_file_or_directory);
-            m_lastErrorString = fileName;
+            m_lastError = RsErrorCode::XmlParseError;
+            m_lastErrorString = std::string(fileName) + " not found";
         }
         else
         {
-            m_lastError = RsSdkError::XmlParseError;
+            m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = doc.ErrorStr();
         }
         
@@ -119,7 +119,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 	XMLElement *comp = doc.FirstChildElement("computer");
 	if (!comp)
 	{
-        m_lastError = RsSdkError::XmlParseError;
+        m_lastError = RsErrorCode::XmlParseError;
         m_lastErrorString = "Missing computer node";
         return false;
     }
@@ -127,7 +127,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 	XMLElement *dio = comp->FirstChildElement("dio_controller");
 	if (!dio)
 	{
-        m_lastError = RsSdkError::XmlParseError;
+        m_lastError = RsErrorCode::XmlParseError;
         m_lastErrorString = "Missing dio_controller node";
         return false;
     }
@@ -158,7 +158,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
         }
 	    else
 	    {
-    		m_lastError = RsSdkError::XmlParseError;
+    		m_lastError = RsErrorCode::XmlParseError;
             m_lastErrorString = "Invalid DIO controller ID";
 		    return false;
 	    }
@@ -166,16 +166,12 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
     catch (const std::system_error &ex)
     {
         m_lastError = ex.code();
-        if (ex.code() == RsSdkError::PermissionDenied)
-            m_lastErrorString = "Must be run as root";
-        else
-            m_lastErrorString = ex.what();
-
+        m_lastErrorString = ex.what();
         return false;
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
         return false;
     }
@@ -195,7 +191,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
         delete mp_controller;
         mp_controller = nullptr;
 
-        m_lastError = RsSdkError::FunctionNotSupported;
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
         m_lastErrorString = "DIO function not supported";
         return false;
     }
@@ -241,7 +237,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
         delete mp_controller;
         mp_controller = nullptr;
 
-        m_lastError = RsSdkError::XmlParseError;
+        m_lastError = RsErrorCode::XmlParseError;
         m_lastErrorString = "Found DIO connector node but no pins";
         return false;
     }
@@ -308,7 +304,7 @@ int RsDioImpl::canSetOutputMode(int dio)
 {
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
         return -1;
     }
@@ -328,21 +324,21 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return false;
     }
 
     if (mode == rs::OutputMode::Error)
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid output mode";
         return false;
     }
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
         return false;
     }
@@ -352,7 +348,7 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
     const int modeSource = static_cast<int>(rs::OutputMode::Source);
     if (pinMap.find(modeSink) == pinMap.end() || pinMap.find(modeSource) == pinMap.end())
     {
-        m_lastError = RsSdkError::FunctionNotSupported;
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
         m_lastErrorString = "Setting output mode not supported";
         return false;
     }
@@ -370,7 +366,7 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
     } 
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occured";
     }
 
@@ -381,14 +377,14 @@ int RsDioImpl::digitalRead(int dio, int pin)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return -1;
     }
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
         return -1;
     }
@@ -396,7 +392,7 @@ int RsDioImpl::digitalRead(int dio, int pin)
     pinconfigmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid pin";
         return -1;
     }
@@ -414,7 +410,7 @@ int RsDioImpl::digitalRead(int dio, int pin)
     }
     catch (...)
     {
-        m_lastError = RsSdkError::UnknownError;
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "unknown exception occured";
     }
 
@@ -425,14 +421,14 @@ bool RsDioImpl::digitalWrite(int dio, int pin, bool state)
 {
     if (mp_controller == nullptr)
     {
-        m_lastError = RsSdkError::NotInitialized;
+        m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
         return false;
     }
 
     if (m_dioMap.find(dio) == m_dioMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
         return false;
     }
@@ -440,7 +436,7 @@ bool RsDioImpl::digitalWrite(int dio, int pin, bool state)
     pinconfigmap_t pinMap = m_dioMap.at(dio);
     if (pinMap.find(pin) == pinMap.end())
     {
-        m_lastError = RsSdkError::InvalidArgument;
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid pin";
         return false;
     }
@@ -489,10 +485,4 @@ rs::RsDio *rs::createRsDio()
 const char *rs::rsDioVersion()
 { 
     return RSDIO_VERSION_STRING;
-}
-
-RSDIO_EXPORT const RsSdkError_category &rs::getCategory()
-{
-  static RsSdkError_category c;
-  return c;
 }
