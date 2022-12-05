@@ -104,7 +104,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 	{
         if (doc.ErrorID() == XML_ERROR_FILE_NOT_FOUND)
         {
-            m_lastError = RsErrorCode::XmlParseError;
+            m_lastError = std::make_error_code(std::errc::no_such_file_or_directory);
             m_lastErrorString = std::string(fileName) + " not found";
         }
         else

@@ -36,8 +36,8 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     {
         if (doc.ErrorID() == XML_ERROR_FILE_NOT_FOUND)
         {
-            m_lastError = RsErrorCode::XmlParseError;
-            m_lastErrorString = fileName;
+            m_lastError = std::make_error_code(std::errc::no_such_file_or_directory);
+            m_lastErrorString = std::string(fileName) + " not found";
         }
         else
         {
