@@ -38,13 +38,19 @@ add_executable(rspoe_test
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rspoe.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
 )
-target_link_libraries(rspoe_test rspoe rsdio)
-target_include_directories(rspoe_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 
-# enable testing functionality
+add_executable(rserrors_test
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rserrors.cpp
+)
+target_link_libraries(rserrors_test PRIVATE rsdio rspoe)
+
 enable_testing()
 
-add_test(NAME rsdio_test COMMAND $<TARGET_FILE:rsdio_test> WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_test(
+    NAME rserrors_test
+    COMMAND rserrors_test
+)
+
 
 add_custom_target(xml ALL)
 add_custom_command(TARGET xml POST_BUILD
