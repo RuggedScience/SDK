@@ -17,9 +17,10 @@ int main(int argc, char *argv[])
     dio->setXmlFile("fake_file");
     poe->setXmlFile("fake_file");
 
+    // Ensure the static error category is always the same between libs
     if (dio->getLastError() != poe->getLastError())
     {
-        std::cerr << "Errors don't match" << std::endl;
+        std::cerr << "DIO and PoE errors don't match" << std::endl;
         return 1;
     }
 
