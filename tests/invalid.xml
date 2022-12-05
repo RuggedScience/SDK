@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<computer id="ecs9000">
+<computer id="test">
   <dio_controller id="test">
   </dio_controller>
-  <poe_controller id="test" bus_address="0xF040" chip_address="0x40">
+  <poe_controller id="test">
   </poe_controller>
 </computer>
