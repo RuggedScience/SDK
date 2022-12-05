@@ -59,8 +59,8 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
     XMLElement *poe = comp->FirstChildElement("poe_controller");
     if (!poe)
     {
-        m_lastError = RsErrorCode::XmlParseError;
-        m_lastErrorString = "Missing poe_controller node";
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
+        m_lastErrorString = "PoE functionality not supported";
         return false;
     }
 

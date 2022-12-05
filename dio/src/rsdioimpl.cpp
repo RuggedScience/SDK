@@ -127,8 +127,8 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
 	XMLElement *dio = comp->FirstChildElement("dio_controller");
 	if (!dio)
 	{
-        m_lastError = RsErrorCode::XmlParseError;
-        m_lastErrorString = "Missing dio_controller node";
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
+        m_lastErrorString = "DIO functionality not supported";
         return false;
     }
 
