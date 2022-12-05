@@ -10,8 +10,6 @@ set(PROJECT_VERSION 3.0.5)
 
 cmake_policy(SET CMP0063 NEW)
 
-option(BUILD_SHARED_LIBS "build as shared library" ON)
-
 set(includedir 
     ${PROJECT_SOURCE_DIR}/include
     ${rssdk_SOURCE_DIR}/utils
@@ -36,13 +34,13 @@ add_library(rspoe ${src})
 set_target_properties(rspoe PROPERTIES 
     COMPILE_DEFINITIONS "RSPOE_VERSION_STRING=\"${PROJECT_VERSION}\""
     VERSION ${PROJECT_VERSION}
-    POSITION_INDEPENDENT_CODE ON
+    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
 )
 
 include(GenerateExportHeader)
 generate_export_header(rspoe EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/exports/rspoe_export.h)
 
-target_link_libraries(rspoe PRIVATE rserrors)
+target_link_libraries(rspoe PUBLIC rserrors)
 
 target_include_directories(rspoe PRIVATE
     ${rssdk_SOURCE_DIR}/utils
@@ -51,7 +49,6 @@ target_include_directories(rspoe PRIVATE
 target_include_directories(rspoe PUBLIC
     ${includedir}
     ${CMAKE_CURRENT_BINARY_DIR}/exports
-    ${rserrors_SOURCE_DIR}/include
 )
 
 if(MSVC)

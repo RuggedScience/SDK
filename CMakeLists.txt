@@ -18,9 +18,6 @@ option(INSTALL_XML "Installs XML files" ON)
 add_executable(rsdioctl rsdioctl.cpp)
 add_executable(rspoectl rspoectl.cpp)
 
-target_include_directories(rsdioctl PRIVATE "${PROJECT_BINARY_DIR}/dio")
-target_include_directories(rspoectl PRIVATE "${PROJECT_BINARY_DIR}/poe")
-
 target_link_libraries(rsdioctl rsdio)
 target_link_libraries(rspoectl rspoe)
 
@@ -29,15 +26,13 @@ SET_TARGET_PROPERTIES(rsdioctl rspoectl
 
 add_executable(rsdio_test 
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
 )
-target_link_libraries(rsdio_test rsdio rspoe)
-target_include_directories(rsdio_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/utils)
+target_link_libraries(rsdio_test PRIVATE rsdio)
 
 add_executable(rspoe_test 
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rspoe.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils/argparse.cpp
 )
+target_link_libraries(rspoe_test PRIVATE rspoe)
 
 add_executable(rserrors_test
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rserrors.cpp
@@ -51,11 +46,17 @@ add_test(
     COMMAND rserrors_test
 )
 
+add_test(
+    NAME rsdio_test 
+    COMMAND rsdio_test
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
 
-add_custom_target(xml ALL)
-add_custom_command(TARGET xml POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${PROJECT_SOURCE_DIR}/xml/ ${CMAKE_CURRENT_BINARY_DIR}/xml/)
+add_test(
+    NAME rspoe_test 
+    COMMAND rspoe_test
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
     set (CMAKE_INSTALL_SYSCONFDIR /etc)
@@ -74,5 +75,3 @@ endif(INSTALL_UTILITIES)
 if (INSTALL_XML)
     install(DIRECTORY xml/ DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${CMAKE_PROJECT_NAME})
 endif(INSTALL_XML)
-
-install(FILES utils/rssdk_errors.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})
