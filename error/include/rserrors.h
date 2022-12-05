@@ -17,8 +17,7 @@ enum class RsErrorCondition
 {
     HardwareError = 1,
     UnsupportedFunction,
-    PermissionErrror,
-    InitializationError
+    PermissionErrror
 };
 
 namespace std

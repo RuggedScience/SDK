@@ -38,8 +38,6 @@ namespace detail
       return "Unsupported Function";
     case RsErrorCondition::PermissionErrror:
       return "Permission error";
-    case RsErrorCondition::InitializationError:
-      return "Initialization error";
     default:
       return "Unknown Error";
     }
@@ -57,7 +55,6 @@ namespace detail
         );
       case RsErrorCondition::UnsupportedFunction:
         return (
-          ec == std::errc::no_such_device ||
           ec == std::errc::function_not_supported ||
           ec == std::errc::invalid_argument
         );
@@ -65,11 +62,6 @@ namespace detail
         return (
           ec == std::errc::operation_not_permitted ||
           ec == std::errc::permission_denied
-        );
-      case RsErrorCondition::InitializationError:
-        return (
-          ec == RsErrorCode::NotInitialized ||
-          ec == RsErrorCode::XmlParseError
         );
     }
 
