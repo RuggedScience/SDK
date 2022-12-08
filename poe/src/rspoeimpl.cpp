@@ -153,7 +153,7 @@ rs::PoeState RsPoeImpl::getPortState(int port)
     }
 
     try {
-        rs::PoeState state = mp_controller->getPortState(m_portMap[port]);
+        state = mp_controller->getPortState(m_portMap[port]);
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
