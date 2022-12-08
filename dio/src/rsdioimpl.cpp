@@ -297,6 +297,7 @@ bool RsDioImpl::setXmlFile(const char *fileName, bool debug)
         }
     }
 
+    m_lastError = std::error_code();
     return true;
 }
 
@@ -333,15 +334,17 @@ int RsDioImpl::canSetOutputMode(int dio)
         return -1;
     }
 
+    int ret;
     pinconfigmap_t pinMap = m_dioMap.at(dio);
     const int modeSink = static_cast<int>(rs::OutputMode::Sink);
     const int modeSource = static_cast<int>(rs::OutputMode::Source);
     if (pinMap.find(modeSink) == pinMap.end() || pinMap.find(modeSource) == pinMap.end())
-    {
-        return 0;
-    }
+        ret = 0;
+    else
+        ret = 1;
 
-    return 1;
+    m_lastError = std::error_code();
+    return ret;
 }
 
 bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
@@ -381,12 +384,14 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
     {
         mp_controller->setPinState(pinMap.at(modeSink), (mode == rs::OutputMode::Sink));
         mp_controller->setPinState(pinMap.at(modeSource), (mode == rs::OutputMode::Source));
+        
+        m_lastError = std::error_code();
+        return true;
     }
     catch (const std::system_error &ex)
     {
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
-        return false;
     } 
     catch (...)
     {
@@ -394,7 +399,7 @@ bool RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
         m_lastErrorString = "Unknown exception occured";
     }
 
-    return true;
+    return false;
 }
 
 int RsDioImpl::digitalRead(int dio, int pin)
@@ -425,7 +430,9 @@ int RsDioImpl::digitalRead(int dio, int pin)
 
     try 
     { 
-        return mp_controller->getPinState(config);
+        int ret = mp_controller->getPinState(config);
+        m_lastError = std::error_code();
+        return ret;
     }
     catch (const std::system_error &ex)
     {
@@ -478,6 +485,7 @@ bool RsDioImpl::digitalWrite(int dio, int pin, bool state)
         return false;
     }
 
+    m_lastError = std::error_code();
     return true;
 }
 
@@ -490,7 +498,7 @@ std::string RsDioImpl::getLastErrorString() const
 {
     std::string lastError;
 
-    if (m_lastError)
+    if (m_lastError.value() != 0)
     {
         lastError += m_lastError.message();
         if (!m_lastErrorString.empty())

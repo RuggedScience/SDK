@@ -153,6 +153,7 @@ bool RsPoeImpl::setXmlFile(const char *fileName)
         return false;
     }
 
+    m_lastError = std::error_code();
     return true;
 }
 
@@ -174,7 +175,9 @@ rs::PoeState RsPoeImpl::getPortState(int port)
 
     try 
     { 
-        return mp_controller->getPortState(m_portMap[port]); 
+        rs::PoeState state = mp_controller->getPortState(m_portMap[port]);
+        m_lastError = std::error_code();
+        return state;
     }
     catch (const std::system_error &ex) 
     {
@@ -209,6 +212,7 @@ int RsPoeImpl::setPortState(int port, rs::PoeState state)
     try
     {
         mp_controller->setPortState(m_portMap[port], state);
+        m_lastError = std::error_code();
         return 0;
     }
     catch (const std::system_error &ex)
@@ -243,7 +247,9 @@ float RsPoeImpl::getPortVoltage(int port)
     
     try
     {
-        return mp_controller->getPortVoltage(m_portMap[port]);
+        float voltage = mp_controller->getPortVoltage(m_portMap[port]);
+        m_lastError = std::error_code();
+        return voltage;
     }
     catch (const std::system_error &ex)
     {
@@ -277,7 +283,9 @@ float RsPoeImpl::getPortCurrent(int port)
 
     try
     {
-        return mp_controller->getPortCurrent(m_portMap[port]);
+        float current = mp_controller->getPortCurrent(m_portMap[port]);
+        m_lastError = std::error_code();
+        return current;
     }
     catch (const std::system_error &ex)
     {
@@ -311,7 +319,9 @@ float RsPoeImpl::getPortPower(int port)
 
     try
     {
-        return mp_controller->getPortPower(m_portMap[port]);
+        float power = mp_controller->getPortPower(m_portMap[port]);
+        m_lastError = std::error_code();
+        return power;
     }
     catch (const std::system_error &ex)
     {
@@ -338,7 +348,9 @@ int RsPoeImpl::getBudgetConsumed()
 
     try
     {
-        return mp_controller->getBudgetConsumed();
+        int consumed = mp_controller->getBudgetConsumed();
+        m_lastError = std::error_code();
+        return consumed;
     }
     catch (const std::system_error &ex)
     {
@@ -365,7 +377,9 @@ int RsPoeImpl::getBudgetAvailable()
 
     try
     {
-        return mp_controller->getBudgetAvailable();
+        int available = mp_controller->getBudgetAvailable();
+        m_lastError = std::error_code();
+        return available;
     }
     catch (const std::system_error &ex)
     {
@@ -392,7 +406,9 @@ int RsPoeImpl::getBudgetTotal()
 
     try
     {
-        return mp_controller->getBudgetTotal();
+        int total = mp_controller->getBudgetTotal();
+        m_lastError = std::error_code();
+        return total;
     }
     catch (const std::system_error &ex)
     {
@@ -417,7 +433,7 @@ std::string RsPoeImpl::getLastErrorString() const
 {
     std::string lastError;
 
-    if (m_lastError)
+    if (m_lastError.value() != 0)
     {
         lastError += m_lastError.message();
         if (!m_lastErrorString.empty())
