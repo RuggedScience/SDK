@@ -473,6 +473,12 @@ bool RsDioImpl::digitalWrite(int dio, int pin, bool state)
     }
 
     PinConfig config = pinMap.at(pin);
+    if (!config.supportsOutput)
+    {
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
+        m_lastErrorString = "Pin does not support output mode";
+        return false;
+    }
 
     try
     {
