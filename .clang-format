@@ -1,0 +1,14 @@
+Standard: Cpp11
+BasedOnStyle: Google
+IndentWidth: 4
+
+BreakBeforeBraces: Stroustrup
+
+# Don't pack arguments into a single line
+BinPackArguments: false
+BinPackParameters: false
+ExperimentalAutoDetectBinPacking: false
+AllowAllParametersOfDeclarationOnNextLine: false
+# Break after open bracket when params don't fit
+AlignAfterOpenBracket: BlockIndent
+

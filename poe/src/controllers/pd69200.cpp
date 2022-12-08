@@ -1,6 +1,6 @@
 #include "pd69200.h"
 
-#include "../../utils/i801_smbus.h"
+#include "../../../utils/i801_smbus.h"
 
 #include <fcntl.h>
 #include <cstring>

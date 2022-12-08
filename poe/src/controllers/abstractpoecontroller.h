@@ -1,7 +1,8 @@
 #ifndef ABSTRACTPOECONTROLLER_H
 #define ABSTRACTPOECONTROLLER_H
 
-#include <rspoe.h>
+#include "../../include/rspoe.h"
+
 #include <stdint.h>
 
 
