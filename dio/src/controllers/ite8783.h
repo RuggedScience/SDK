@@ -9,12 +9,12 @@ public:
 	Ite8783(bool debug=false);
 	~Ite8783();
 	
-	void initPin(PinConfig info) override;
-	PinMode getPinMode(PinConfig info) override;
-	void setPinMode(PinConfig info, PinMode mode) override;
+	void initPin(const PinConfig &config) override;
+	PinMode getPinMode(const PinConfig &config) override;
+	void setPinMode(const PinConfig &config, PinMode mode) override;
 
-	bool getPinState(PinConfig info) override;
-	void setPinState(PinConfig info, bool state) override;
+	bool getPinState(const PinConfig &config) override;
+	void setPinState(const PinConfig &config, bool state) override;
 
 	void printRegs() override;
 

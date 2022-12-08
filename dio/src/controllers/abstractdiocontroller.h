@@ -44,12 +44,12 @@ class AbstractDioController
 public:
 	virtual ~AbstractDioController() {}
 
-    virtual void initPin(PinConfig) = 0;
-	virtual PinMode getPinMode(PinConfig info) = 0;
-	virtual void setPinMode(PinConfig info, PinMode mode) = 0;
+    virtual void initPin(const PinConfig &config) = 0;
+	virtual PinMode getPinMode(const PinConfig &config) = 0;
+	virtual void setPinMode(const PinConfig &config, PinMode mode) = 0;
 
-	virtual bool getPinState(PinConfig info) = 0;
-	virtual void setPinState(PinConfig info, bool state) = 0;
+	virtual bool getPinState(const PinConfig &config) = 0;
+	virtual void setPinState(const PinConfig &config, bool state) = 0;
 
 	virtual void printRegs() = 0;
 };

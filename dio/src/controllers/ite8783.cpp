@@ -61,7 +61,7 @@ Ite8783::~Ite8783()
 	exitSio();
 }
 
-void Ite8783::initPin(PinConfig config)
+void Ite8783::initPin(const PinConfig &config)
 {
 	setSioLdn(kGpioLdn);
 	uint8_t reg = kPolarityBar + config.offset;
@@ -78,7 +78,7 @@ void Ite8783::initPin(PinConfig config)
 		setPinMode(config, ModeOutput);
 }
 
-PinMode Ite8783::getPinMode(PinConfig config)
+PinMode Ite8783::getPinMode(const PinConfig &config)
 {
 	setSioLdn(kGpioLdn);
 	uint8_t reg = kOutputEnableBar + config.offset;
@@ -89,7 +89,7 @@ PinMode Ite8783::getPinMode(PinConfig config)
 		return ModeInput;
 }
 
-void Ite8783::setPinMode(PinConfig config, PinMode mode)
+void Ite8783::setPinMode(const PinConfig &config, PinMode mode)
 {
 	if (mode == ModeInput && !config.supportsInput)
 		throw std::system_error(std::make_error_code(std::errc::function_not_supported), "Input mode not supported on pin");
@@ -107,7 +107,7 @@ void Ite8783::setPinMode(PinConfig config, PinMode mode)
 	writeSioRegister(reg, data);
 }
 
-bool Ite8783::getPinState(PinConfig config)
+bool Ite8783::getPinState(const PinConfig &config)
 {
 	uint16_t reg = m_baseAddress + config.offset;
 	if (ioperm(reg, 1, 1))
@@ -127,7 +127,7 @@ bool Ite8783::getPinState(PinConfig config)
 	return state;
 }
 
-void Ite8783::setPinState(PinConfig config, bool state)
+void Ite8783::setPinState(const PinConfig &config, bool state)
 {
 	if (!config.supportsOutput)
 		throw std::system_error(std::make_error_code(std::errc::function_not_supported), "Output mode not supported on pin");
