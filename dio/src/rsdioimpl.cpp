@@ -489,6 +489,53 @@ bool RsDioImpl::digitalWrite(int dio, int pin, bool state)
     return true;
 }
 
+std::map<int, bool> RsDioImpl::readAll(int dio, bool *error)
+{
+    std::map<int, bool> values;
+    if (error) *error = true;
+
+    if (mp_controller == nullptr)
+    {
+        m_lastError = RsErrorCode::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return values;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end())
+    {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid DIO";
+        return values;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    
+    try
+    {
+        for (const auto &pin: pinMap)
+        {
+            if (pin.first >= 0)
+                values[pin.first] = mp_controller->getPinState(pin.second);
+        }
+    }
+    catch (const std::system_error &ex)
+    {
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+        return values;
+    }
+    catch (...)
+    {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = "unknown exception occured";
+        return values;
+    }
+
+    if (error) *error = false;
+    m_lastError = std::error_code();
+    return values;
+}
+
 std::error_code RsDioImpl::getLastError() const
 {
     return m_lastError;

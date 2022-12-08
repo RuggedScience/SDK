@@ -55,6 +55,8 @@ public:
     virtual int digitalRead(int dio, int pin) = 0;
     virtual bool digitalWrite(int dio, int pin, bool state) = 0;
 
+    virtual std::map<int, bool> readAll(int dio, bool *error = nullptr) = 0;
+
     virtual std::error_code getLastError() const = 0;
     virtual std::string getLastErrorString() const = 0;
 };
