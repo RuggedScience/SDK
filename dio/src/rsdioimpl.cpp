@@ -293,7 +293,9 @@ rs::diomap_t RsDioImpl::getPinList() const
         {
             if (pinIt->first >= 0)
             {
-                pins[pinIt->first] = (rs::PinInfo)pinIt->second;
+                PinConfig config = pinIt->second;
+                rs::PinInfo info(config.supportsInput, config.supportsOutput);
+                pins[pinIt->first] = info;
             }
         }
 
