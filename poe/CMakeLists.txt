@@ -10,10 +10,6 @@ set(PROJECT_VERSION 3.0.5)
 
 cmake_policy(SET CMP0063 NEW)
 
-set(includedir 
-    ${PROJECT_SOURCE_DIR}/include
-    ${rssdk_SOURCE_DIR}/utils
-)
 set(srcdir ${PROJECT_SOURCE_DIR}/src)
 set(src 
     ${srcdir}/rspoeimpl.cpp 
@@ -42,12 +38,8 @@ generate_export_header(rspoe EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/export
 
 target_link_libraries(rspoe PUBLIC rserrors)
 
-target_include_directories(rspoe PRIVATE
-    ${rssdk_SOURCE_DIR}/utils
-)
-
 target_include_directories(rspoe PUBLIC
-    ${includedir}
+    ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/exports
 )
 

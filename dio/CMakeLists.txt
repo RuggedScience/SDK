@@ -10,10 +10,6 @@ set(PROJECT_VERSION 3.0.4)
 
 cmake_policy(SET CMP0063 NEW)
 
-set(includedir 
-    ${PROJECT_SOURCE_DIR}/include
-    ${rssdk_SOURCE_DIR}/utils
-)
 set(srcdir ${PROJECT_SOURCE_DIR}/src)
 set(src 
     ${srcdir}/rsdioimpl.cpp 
@@ -40,12 +36,8 @@ generate_export_header(rsdio EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/export
 
 target_link_libraries(rsdio PUBLIC rserrors)
 
-target_include_directories(rsdio PRIVATE
-    ${rssdk_SOURCE_DIR}/utils
-)
-
 target_include_directories(rsdio PUBLIC
-    ${includedir}
+    ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/exports
 )
 
