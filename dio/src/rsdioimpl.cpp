@@ -4,9 +4,12 @@
 #include "rsdioimpl.h"
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
+#include "../../error/include/rserrors.h"
+#include "../../utils/tinyxml2.h"
 
-#include <rserrors.h>
-#include <tinyxml2.h>
+#ifndef RSDIO_VERSION_STRING
+#define RSDIO_VERSION_STRING "test"
+#endif
 
 
 static tinyxml2::XMLError getInternalPinInfo(const tinyxml2::XMLElement *pin, int& pinId, PinConfig& info)

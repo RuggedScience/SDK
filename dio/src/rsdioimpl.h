@@ -1,7 +1,7 @@
 #ifndef RSDIOIMPL_H
 #define RSDIOIMPL_H
 
-#include "rsdio.h"
+#include "../include/rsdio.h"
 #include "controllers/abstractdiocontroller.h"
 
 #include <string>

@@ -5,7 +5,11 @@
 #include <map>
 #include <system_error>
 
+#ifdef NO_EXPORT
+#define RSDIO_EXPORT
+#else
 #include "rsdio_export.h"
+#endif
 
 namespace rs
 {
@@ -38,7 +42,7 @@ enum class OutputMode
 
 class RsDio {
 public:
-    virtual ~RsDio(){};
+    virtual ~RsDio() {}
 
     virtual void destroy() = 0;
     virtual bool setXmlFile(const char *fileName, bool debug=false) = 0;

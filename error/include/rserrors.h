@@ -2,7 +2,12 @@
 #define RSERRORS_H
 
 #include <system_error>
+
+#ifdef NO_EXPORT
+#define RSERRORS_EXPORT
+#else
 #include <rserrors_export.h>
+#endif
 
 #include <iostream>
 

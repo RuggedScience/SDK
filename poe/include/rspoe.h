@@ -4,7 +4,11 @@
 #include <string>
 #include <system_error>
 
+#ifdef NO_EXPORT
+#define RSPOE_EXPORT
+#else
 #include "rspoe_export.h"
+#endif
 
 namespace rs
 {

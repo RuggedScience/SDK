@@ -8,6 +8,10 @@
 
 #include <iostream>
 
+#ifndef RSPOE_VERSION_STRING
+#define RSPOE_VERSION_STRING "test"
+#endif
+
 RsPoeImpl::RsPoeImpl() 
     : m_lastError()
     , m_lastErrorString()
