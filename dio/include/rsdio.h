@@ -1,8 +1,8 @@
 #ifndef RSDIO_H
 #define RSDIO_H
 
-#include <string>
 #include <map>
+#include <string>
 #include <system_error>
 
 #ifdef NO_EXPORT
@@ -11,51 +11,39 @@
 #include "rsdio_export.h"
 #endif
 
-namespace rs
-{
+namespace rs {
 
-struct PinInfo
-{
+struct PinInfo {
     bool supportsInput;
     bool supportsOutput;
 
-    PinInfo() 
-        : supportsInput(false)
-		, supportsOutput(false)
-	{}
+    PinInfo() : supportsInput(false), supportsOutput(false) {}
 
-    PinInfo(bool input, bool output) 
-        : supportsInput(input)
-		, supportsOutput(output)
-    {}
+    PinInfo(bool input, bool output)
+        : supportsInput(input), supportsOutput(output) {}
 };
 
 typedef std::map<int, PinInfo> pinmap_t;
 typedef std::map<int, pinmap_t> diomap_t;
 
-enum class OutputMode
-{
-    Error = 0,
-    Source = -1,
-    Sink = -2    
-};
+enum class OutputMode { Error = 0, Source = -1, Sink = -2 };
 
 class RsDio {
-public:
+   public:
     virtual ~RsDio() {}
 
     virtual void destroy() = 0;
-    virtual bool setXmlFile(const char *fileName, bool debug=false) = 0;
+    virtual void setXmlFile(const char *fileName, bool debug = false) = 0;
 
     virtual diomap_t getPinList() const = 0;
 
-    virtual int canSetOutputMode(int dio) = 0;
-    virtual bool setOutputMode(int dio, OutputMode mode) = 0;
+    virtual bool canSetOutputMode(int dio) = 0;
+    virtual void setOutputMode(int dio, OutputMode mode) = 0;
 
-    virtual int digitalRead(int dio, int pin) = 0;
-    virtual bool digitalWrite(int dio, int pin, bool state) = 0;
+    virtual bool digitalRead(int dio, int pin) = 0;
+    virtual void digitalWrite(int dio, int pin, bool state) = 0;
 
-    virtual std::map<int, bool> readAll(int dio, bool *error = nullptr) = 0;
+    virtual std::map<int, bool> readAll(int dio) = 0;
 
     virtual std::error_code getLastError() const = 0;
     virtual std::string getLastErrorString() const = 0;
@@ -64,6 +52,6 @@ public:
 extern "C" RSDIO_EXPORT RsDio *createRsDio();
 extern "C" RSDIO_EXPORT const char *rsDioVersion();
 
-} // namespace rs
+}  // namespace rs
 
-#endif //RSDIO_H
+#endif  // RSDIO_H

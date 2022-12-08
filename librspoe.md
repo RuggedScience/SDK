@@ -1,6 +1,6 @@
 # librspoe
 
-The **librspoe** library is used to control the PoE ports on supported Rugged Science units. All library functions return a negative value or false to indicate an error occurred. If this happens it is best to use the [getLastError](#getlasterror) and [getLastErrorString](#getlasterrorstring) functions to see what caused the error. For more information on error handling see [Error Handling](/errors.md#error-handling).
+The **librspoe** library is used to control the PoE ports on supported Rugged Science units.
 
 ## Basic Usage
 
@@ -8,7 +8,8 @@ The **librspoe** library is used to control the PoE ports on supported Rugged Sc
 #include <rspoe.h>
 ...
 rs::RsPoe *poe = rs::createRsPoe();
-if (!poe->setXmlFile('ecs9000.xml'))
+poe->setXmlFile('ecs9000.xml')
+if (poe->getLastError())
 {
     std::cerr << poe->getLastErrorString() << std::endl;
     poe->destroy();
@@ -30,6 +31,19 @@ if (!poe)
     return 1;
 }
 ```
+## Error Handling
+After each function call you can call [getLastError](#getlasterror) to check if it was successfull.
+
+```c++
+poe->getBudgetTotal();
+if (poe->getLastError())
+{
+    std::cerr << "Failed to get budget: " << poe->getLastErrorString() << std::endl;
+    exit(1);
+}
+```
+
+For more advanced error handling see the [docs](./errors.md).
 
 ## Public Types
 
@@ -51,7 +65,7 @@ enum class rs::PoeState
 
 ### setXmlFile
 ```c++
-bool RsPoe::setXmlFile(const char *fileName)
+void RsPoe::setXmlFile(const char *fileName)
 ```
 
 Initializes the RsDio class with the appropriate hardware. Must be called before any other functions.
@@ -60,9 +74,6 @@ Initializes the RsDio class with the appropriate hardware. Must be called before
 
 ### Parameters
 fileName - This should be a path to the XML file specific to your model.
-
-### Return value
-Returns true if the poe library was successfully initialized, otherwise returns false.
 
 <br>
 
@@ -85,7 +96,7 @@ Returns the [PoeState](#poestate) of port.
 
 ### setPortState
 ```c++
-int RsPoe::setPortState(int port, rs::PoeState state)
+void RsPoe::setPortState(int port, rs::PoeState state)
 ```
 
 Sets the state of `port` to `state`.
@@ -95,9 +106,6 @@ Sets the state of `port` to `state`.
 ### Parameters
 port - The number of the port to be set. Screen printed on the unit in the form of Lan `3`.
 state - The desired [PoeState](#poestate) of port.
-
-### Return value
-Zero if sucessfully set. Negative value on error.
 
 <br>
 
@@ -114,7 +122,7 @@ Gets the current output voltage of `port` in volts.
 port - The number of the port to read the voltage from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Voltage of port in volts on success. Negative value on error.
+Voltage of port in volts.
 
 <br>
 
@@ -131,7 +139,7 @@ Gets the current current of `port` in amps.
 port - The number of the port to read the current from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Current of port in amps on success. Negative value on error.
+Current of port in amps.
 
 <br>
 
@@ -148,7 +156,7 @@ Gets the current power draw of `port` in watts. *Same as [getPortVoltage](#getpo
 port - The number of the port to read the power from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Power of port in watts on success. Negative value on error.
+Current power draw of port in watts.
 
 <br>
 
@@ -162,7 +170,7 @@ Gets the total watts being consumed from all ports. *If this exceeds the total b
 ---
 
 ### Return value
-Watts on success. Negative value on error.
+Total budget consumed in watts.
 
 <br>
 
@@ -176,7 +184,7 @@ Gets the watts available before reaching max budget.
 ---
 
 ### Return value
-Watts on success. Negative value on error.
+Remaining budget in watts.
 
 <br>
 
@@ -189,7 +197,7 @@ Gets the total watts the unit can handle. When this is exceeded the PoE controll
 ---
 
 ### Return value
-Watts on success. Negative value on error.
+Total available budget in watts.
 
 <br>
 
@@ -198,7 +206,7 @@ Watts on success. Negative value on error.
 std::error_code RsPoe::getLastError() const
 ```
 
-Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. For more information on possible errors see [RsErrorCodes](./errors.md#RsErrorCode).
+Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. Cleared after a successful operation.
 
 ---
 

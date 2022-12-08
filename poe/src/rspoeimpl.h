@@ -1,28 +1,28 @@
 #ifndef RSPOEIMPL_H
 #define RSPOEIMPL_H
 
-#include "rspoe.h"
-#include "controllers/abstractpoecontroller.h"
+#include <stdint.h>
 
 #include <map>
 #include <string>
-#include <stdint.h>
+
+#include "../include/rspoe.h"
+#include "controllers/abstractpoecontroller.h"
 
 typedef std::map<int, uint8_t> portmap_t;
 
-class RsPoeImpl : public rs::RsPoe
-{
-public:
+class RsPoeImpl : public rs::RsPoe {
+   public:
     RsPoeImpl();
     RsPoeImpl(AbstractPoeController *controller, portmap_t portMap);
-    
+
     ~RsPoeImpl();
 
     void destroy() override;
-    bool setXmlFile(const char *fileName) override;
+    void setXmlFile(const char *fileName) override;
 
     rs::PoeState getPortState(int port) override;
-    int setPortState(int port, rs::PoeState state) override;
+    void setPortState(int port, rs::PoeState state) override;
 
     float getPortVoltage(int port) override;
     float getPortCurrent(int port) override;
@@ -35,11 +35,11 @@ public:
     std::error_code getLastError() const override;
     std::string getLastErrorString() const override;
 
-private:
+   private:
     std::error_code m_lastError;
     std::string m_lastErrorString;
     AbstractPoeController *mp_controller;
     portmap_t m_portMap;
 };
 
-#endif //RSPOEIMPL_H
+#endif  // RSPOEIMPL_H

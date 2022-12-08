@@ -10,6 +10,7 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 ## API References
 * [DIO Library - librsdio](./librsdio.md)
 * [PoE Library - librspoe](./librspoe.md)
+* [Error Library - librserrors](./errors.md)
 * [DIO Utility - rsdioctl](./rsdioctl.md)
 * [PoE Utility - rspoectl](./rspoectl.md)
 

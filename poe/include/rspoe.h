@@ -10,27 +10,25 @@
 #include "rspoe_export.h"
 #endif
 
-namespace rs
-{
+namespace rs {
 
-enum class PoeState
-{
-    Disabled,		//No power regardless of attached device.
-    Enabled,		//Power always applied regardless of attached device.
-    Auto,			//Normal PoE operation.
-    Error           //Error retreiving state. Use getLastError and getLastErrorString for more details.
+enum class PoeState {
+    Disabled,  // No power regardless of attached device.
+    Enabled,   // Power always applied regardless of attached device.
+    Auto,      // Normal PoE operation.
+    Error  // Error retreiving state. Use getLastError and getLastErrorString
+           // for more details.
 };
 
-
 class RsPoe {
-public:
+   public:
     virtual ~RsPoe(){};
-    
+
     virtual void destroy() = 0;
-    virtual bool setXmlFile(const char *fileName) = 0;
+    virtual void setXmlFile(const char *fileName) = 0;
 
     virtual PoeState getPortState(int port) = 0;
-    virtual int setPortState(int port, PoeState state) = 0;
+    virtual void setPortState(int port, PoeState state) = 0;
 
     virtual float getPortVoltage(int port) = 0;
     virtual float getPortCurrent(int port) = 0;
@@ -47,6 +45,6 @@ public:
 extern "C" RSPOE_EXPORT RsPoe *createRsPoe();
 extern "C" RSPOE_EXPORT const char *rsPoeVersion();
 
-} // namespace rs
+}  // namespace rs
 
-#endif //RSPOE_H
+#endif  // RSPOE_H
