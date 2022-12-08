@@ -38,8 +38,8 @@ class RsPoeImpl : public rs::RsPoe {
    private:
     std::error_code m_lastError;
     std::string m_lastErrorString;
-    AbstractPoeController *mp_controller;
     portmap_t m_portMap;
+    AbstractPoeController *mp_controller;
 };
 
 #endif  // RSPOEIMPL_H

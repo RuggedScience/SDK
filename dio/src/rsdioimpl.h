@@ -34,9 +34,8 @@ class RsDioImpl : public rs::RsDio {
    private:
     std::error_code m_lastError;
     std::string m_lastErrorString;
-    AbstractDioController *mp_controller;
-
     dioconfigmap_t m_dioMap;
+    AbstractDioController *mp_controller;
 };
 
 #endif  // RSDIOIMPL_H
