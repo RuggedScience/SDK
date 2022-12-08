@@ -82,6 +82,22 @@ RsDioImpl::RsDioImpl()
     , mp_controller(nullptr)
 {}
 
+RsDioImpl::RsDioImpl(AbstractDioController *controller, dioconfigmap_t dioMap)
+    : m_lastError()
+    , m_lastErrorString()
+    , m_dioMap(dioMap)
+    , mp_controller(controller)
+{
+    for (auto &dio : m_dioMap)
+    {
+        auto pinMap = dio.second;
+        for (auto &pin : pinMap)
+        {
+            controller->initPin(pin.second);
+        }
+    }
+}
+
 RsDioImpl::~RsDioImpl()
 {
     delete mp_controller;

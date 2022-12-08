@@ -6,10 +6,14 @@
 
 #include <string>
 
+typedef std::map<int, PinConfig> pinconfigmap_t;
+typedef std::map<int, pinconfigmap_t> dioconfigmap_t;
+
 class RsDioImpl : public rs::RsDio
 {
 public:
     RsDioImpl();
+    RsDioImpl(AbstractDioController *controller, dioconfigmap_t dioMap);
     ~RsDioImpl();
 
     void destroy() override;
@@ -31,8 +35,6 @@ private:
     std::string m_lastErrorString;
     AbstractDioController *mp_controller;
 
-    typedef std::map<int, PinConfig> pinconfigmap_t;
-    typedef std::map<int, pinconfigmap_t> dioconfigmap_t;
     dioconfigmap_t m_dioMap;
 };
 

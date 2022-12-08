@@ -8,10 +8,14 @@
 #include <string>
 #include <stdint.h>
 
+typedef std::map<int, uint8_t> portmap_t;
+
 class RsPoeImpl : public rs::RsPoe
 {
 public:
     RsPoeImpl();
+    RsPoeImpl(AbstractPoeController *controller, portmap_t portMap);
+    
     ~RsPoeImpl();
 
     void destroy() override;
@@ -35,7 +39,7 @@ private:
     std::error_code m_lastError;
     std::string m_lastErrorString;
     AbstractPoeController *mp_controller;
-    std::map<int, uint8_t> m_portMap;
+    portmap_t m_portMap;
 };
 
 #endif //RSPOEIMPL_H

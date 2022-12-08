@@ -14,6 +14,13 @@ RsPoeImpl::RsPoeImpl()
     , mp_controller(nullptr)
 {}
 
+RsPoeImpl::RsPoeImpl(AbstractPoeController *controller, portmap_t portMap)
+    : m_lastError()
+    , m_lastErrorString()
+    , m_portMap(portMap)
+    , mp_controller(controller)
+{}
+
 RsPoeImpl::~RsPoeImpl()
 {
     delete mp_controller;
