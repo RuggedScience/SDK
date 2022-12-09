@@ -11,6 +11,7 @@ option(INSTALL_UTILITIES "Installs utilities" ON)
 option(INSTALL_XML "Installs XML files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 
+add_subdirectory(error)
 add_subdirectory(dio)
 add_subdirectory(poe)
 
