@@ -6,14 +6,13 @@ project(rssdk VERSION 3.0.3)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_subdirectory(error)
-add_subdirectory(dio)
-add_subdirectory(poe)
-
-
 include(GNUInstallDirs)
 option(INSTALL_UTILITIES "Installs utilities" ON)
 option(INSTALL_XML "Installs XML files" ON)
+option(BUILD_SHARED_LIBS "Build as shared library" ON)
+
+add_subdirectory(dio)
+add_subdirectory(poe)
 
 add_executable(rsdioctl rsdioctl.cpp)
 add_executable(rspoectl rspoectl.cpp)
