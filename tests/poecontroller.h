@@ -1,28 +1,26 @@
-#include <vector>
 #include <map>
+#include <vector>
 
 #include "../poe/src/controllers/abstractpoecontroller.h"
 
-struct PortStatus
-{
+struct PortStatus {
     rs::PoeState state;
     float voltage;
     float current;
 };
 
-class TestPoeController : public AbstractPoeController
-{
-public:
+class TestPoeController : public AbstractPoeController {
+   public:
     TestPoeController(int budget, std::vector<uint8_t> ports)
-        : m_budgetTotal(budget) 
+        : m_budgetTotal(budget)
     {
-        for (auto port : ports)
-        {
-            m_ports[port] = {
-                .state = rs::PoeState::Auto,
-                .voltage = 0,
-                .current = 0
-            };
+        for (auto port : ports) {
+            PortStatus status;
+            status.state = rs::PoeState::Auto;
+            status.voltage = 0;
+            status.current = 0;
+
+            m_ports[port] = status;
         }
     }
 
@@ -56,29 +54,22 @@ public:
         return getOrThrow(port).current = current;
     }
 
-    int getBudgetConsumed() override final
-    {
-        return m_budgetConsumed;
-    }
+    int getBudgetConsumed() override final { return m_budgetConsumed; }
 
     int getBudgetAvailable() override final
     {
         return m_budgetTotal - m_budgetConsumed;
     }
 
-    int getBudgetTotal() override final
-    {
-        return m_budgetTotal;
-    }
+    int getBudgetTotal() override final { return m_budgetTotal; }
 
-private:
+   private:
     PortStatus &getOrThrow(uint8_t port)
     {
         auto it = m_ports.find(port);
-        if (it == m_ports.end())
-        {
+        if (it == m_ports.end()) {
             throw std::system_error(
-                std::make_error_code(std::errc::invalid_argument), 
+                std::make_error_code(std::errc::invalid_argument),
                 "Invalid port"
             );
         }
