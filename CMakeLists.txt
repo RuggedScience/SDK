@@ -1,19 +1,38 @@
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.4...3.18)
 
-project(rssdk VERSION 3.0.3)
+project(rssdk)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 include(GNUInstallDirs)
-option(INSTALL_UTILITIES "Installs utilities" ON)
+option(BUILD_TESTS "Build all test" OFF)
+option(BUILD_UTILITIES "Build command line control utilities" OFF)
+option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
 option(INSTALL_XML "Installs XML files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+
+if (NOT BUILD_UTILITIES AND INSTALL_UTILITIES)
+    message(WARNING 
+        " INSTALL_UTILITES is ON but BUILD_UTILITIES is OFF.\n"
+        " Not building or installing utilities..."
+    )
+    set(INSTALL_UTILITIES OFF)
+endif()
 
 add_subdirectory(error)
 add_subdirectory(dio)
 add_subdirectory(poe)
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
+if (BUILD_PYTHON_BINDINGS)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extras/python)
+endif()
 
 add_executable(rsdioctl rsdioctl.cpp)
 add_executable(rspoectl rspoectl.cpp)
@@ -23,68 +42,6 @@ target_link_libraries(rspoectl rspoe)
 
 SET_TARGET_PROPERTIES(rsdioctl rspoectl
     PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/"
-)
-
-get_target_property(rserrors_SOURCES rserrors SOURCES)
-
-get_target_property(rsdio_SOURCES rsdio SOURCES)
-add_executable(rsdioimpl_test 
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdioimpl.cpp
-    ${rserrors_SOURCES}
-    ${rsdio_SOURCES}
-)
-target_compile_definitions(rsdioimpl_test PUBLIC NO_EXPORT)
-
-get_target_property(rspoe_SOURCES rspoe SOURCES)
-add_executable(rspoeimpl_test
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rspoeimpl.cpp
-    ${rserrors_SOURCES}
-    ${rspoe_SOURCES}
-)
-target_compile_definitions(rspoeimpl_test PUBLIC NO_EXPORT)
-
-add_executable(rsdio_test 
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rsdio.cpp
-)
-target_link_libraries(rsdio_test PRIVATE rsdio)
-
-add_executable(rspoe_test 
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rspoe.cpp
-)
-target_link_libraries(rspoe_test PRIVATE rspoe)
-
-add_executable(rserrors_test
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_rserrors.cpp
-)
-target_link_libraries(rserrors_test PRIVATE rsdio rspoe)
-
-enable_testing()
-
-add_test(
-    NAME rserrors_test
-    COMMAND rserrors_test
-)
-
-add_test(
-    NAME rsdioimpl_test
-    COMMAND rsdioimpl_test
-)
-
-add_test(
-    NAME rspoeimpl_test
-    COMMAND rspoeimpl_test
-)
-
-add_test(
-    NAME rsdio_test 
-    COMMAND rsdio_test
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
-)
-
-add_test(
-    NAME rspoe_test 
-    COMMAND rspoe_test
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
 )
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)

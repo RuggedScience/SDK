@@ -1,12 +1,8 @@
 include(GNUInstallDirs)
 
-if (CMAKE_VERSION VERSION_LESS "3.0")
-    project(rsdio)
-else()
-    project(rsdio DESCRIPTION "Rugged Science DIO Library")
-endif()
+project(rsdio DESCRIPTION "Rugged Science DIO Library")
 
-set(PROJECT_VERSION 3.0.4)
+set(PROJECT_VERSION 4.0.0)
 
 cmake_policy(SET CMP0063 NEW)
 
@@ -28,7 +24,7 @@ add_library(rsdio ${src})
 set_target_properties(rsdio PROPERTIES 
     COMPILE_DEFINITIONS "RSDIO_VERSION_STRING=\"${PROJECT_VERSION}\""
     VERSION ${PROJECT_VERSION}
-    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+    POSITION_INDEPENDENT_CODE ON
 )
 
 include(GenerateExportHeader)
