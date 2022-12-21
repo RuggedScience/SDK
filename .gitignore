@@ -63,3 +63,5 @@ build/
 install/
 
 _version.py
+
+!driver/*
