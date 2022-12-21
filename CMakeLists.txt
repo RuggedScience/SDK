@@ -13,6 +13,7 @@ option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
 option(INSTALL_XML "Installs XML files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+option(INSTALL_PYTHON_BINDINGS "Install Python bindings to current interpreter" OFF)
 
 if (NOT BUILD_UTILITIES AND INSTALL_UTILITIES)
     message(WARNING 
