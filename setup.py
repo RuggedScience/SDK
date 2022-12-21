@@ -22,6 +22,7 @@ setup(
             install_prefix="rssdk",
             disable_editable=True,
             cmake_depends_on=["pybind11"],
+            cmake_generator=None,
             cmake_configure_options=[
                 f"-DPython3_ROOT_DIR={Path(sys.prefix)}",
                 "-DCALL_FROM_SETUP_PY:BOOL=ON",
