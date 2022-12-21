@@ -6,6 +6,7 @@ requires = [
     "cmake",
     "cmake-build-extension>=0.5.2.dev3",
     "pybind11",
+    "mypy"
 ]
 build-backend = "setuptools.build_meta"
 

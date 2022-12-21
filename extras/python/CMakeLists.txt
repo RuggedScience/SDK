@@ -61,6 +61,14 @@ set_target_properties(
   LIBRARY_OUTPUT_DIRECTORY "${RSSDKPY_BUILDDIR}"
 )
 
+if (MSVC)
+  set_target_properties(
+    rssdkpy PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${RSSDKPY_BUILDDIR}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${RSSDKPY_BUILDDIR}"
+  )
+endif()
+
 # Create the __init__.py file
 file(
   GENERATE
@@ -87,12 +95,25 @@ if (NOT CALL_FROM_SETUP_PY)
 
   message(STATUS "Using python package version ${RSSDKPY_VERSION}")
 
+  file(TOUCH ${RSSDKPY_BUILDDIR}/py.typed)
+
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/METADATA "")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Metadata-Version: 2.1\n")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Name: ${PROJECT_NAME}\n")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Version: ${RSSDKPY_VERSION}\n")
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/INSTALLER "cmake\n")
 endif()
+
+#************#
+# Stub Files #
+# ***********#
+
+add_custom_command(TARGET rssdkpy POST_BUILD
+  COMMAND stubgen -p rssdk -o .
+  WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
+  COMMENT "Generating Python stub files"
+)
+
 
 #*********#
 # Install #
@@ -116,7 +137,10 @@ if (RSSDKPY_INSTDIR)
   
 # Install the __init__.py file
   install(
-    FILES "${RSSDKPY_BUILDDIR}/__init__.py"
+    FILES 
+      "${RSSDKPY_BUILDDIR}/__init__.py" 
+      "${RSSDKPY_BUILDDIR}/rssdk.pyi"
+      "${RSSDKPY_BUILDDIR}/py.typed"
     DESTINATION ${RSSDKPY_INSTDIR}
   )
   if (WIN32)
