@@ -120,9 +120,15 @@ if (RSSDKPY_INSTDIR)
   )
   if (WIN32)
     install(
-      FILES "${CMAKE_CURRENT_SOURCE_DIR}/driver/drv.dll"
+      FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
       DESTINATION ${RSSDKPY_INSTDIR}
     )
+    if (BUILD_SHARED_LIBS)
+      install(
+        TARGETS rserrors rsdio rspoe
+        RUNTIME DESTINATION ${RSSDKPY_INSTDIR}
+      )
+    endif()
   endif()
 endif()
 

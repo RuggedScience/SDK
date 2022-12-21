@@ -192,8 +192,13 @@ install(DIRECTORY
         "${rssdk_SOURCE_DIR}/poe/include/"
         "${CMAKE_CURRENT_BINARY_DIR}/include/"
     TYPE INCLUDE
-    COMPONENT rssdk_Development
 )
+
+if (WIN32)
+    install(FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
+        TYPE BIN
+    )
+endif()
 
 if(INSTALL_UTILITIES)
     if(MSVC)
