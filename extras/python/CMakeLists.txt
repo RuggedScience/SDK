@@ -118,6 +118,12 @@ if (RSSDKPY_INSTDIR)
     FILES "${RSSDKPY_BUILDDIR}/__init__.py"
     DESTINATION ${RSSDKPY_INSTDIR}
   )
+  if (WIN32)
+    install(
+      FILES "${CMAKE_CURRENT_SOURCE_DIR}/driver/drv.dll"
+      DESTINATION ${RSSDKPY_INSTDIR}
+    )
+  endif()
 endif()
 
 if (RSSDKPY_METADIR)

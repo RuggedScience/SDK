@@ -50,7 +50,7 @@ bool RsErrorConditionCategory::equivalent(const std::error_code &ec, int cond)
         case RsErrorCondition::UnsupportedFunction:
             return (
                 ec == std::errc::function_not_supported ||
-                ec == std::errc::invalid_argument
+                ec == std::errc::operation_not_supported
             );
         case RsErrorCondition::PermissionError:
             return (

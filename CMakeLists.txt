@@ -1,10 +1,12 @@
-
 cmake_minimum_required(VERSION 3.4...3.18)
 
-project(rssdk)
+project(rssdk VERSION 4.0.0)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_DEBUG_POSTFIX "d")
 
 include(GNUInstallDirs)
 option(BUILD_TESTS "Build all test" OFF)
@@ -23,16 +25,89 @@ if (NOT BUILD_UTILITIES AND INSTALL_UTILITIES)
     set(INSTALL_UTILITIES OFF)
 endif()
 
-add_subdirectory(error)
-add_subdirectory(dio)
-add_subdirectory(poe)
+
+add_library(rserrors 
+    error/src/rserrors.cpp
+)
+target_include_directories(
+    rserrors PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/error/include>"
+)
+target_compile_definitions(
+    rserrors PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:RSERRORS_STATIC_DEFINE>"
+)
+
+add_library(rsdio
+    dio/src/rsdioimpl.cpp 
+    dio/src/controllers/ite8783.cpp 
+    dio/src/controllers/ite8786.cpp 
+    utils/tinyxml2.cpp
+)
+target_link_libraries(rsdio PUBLIC rserrors)
+target_include_directories(
+    rsdio PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/dio/include>"
+)
+target_compile_definitions(
+    rsdio PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:RSDIO_STATIC_DEFINE>"
+)
+
+add_library(rspoe
+    poe/src/rspoeimpl.cpp 
+    poe/src/controllers/pd69104.cpp 
+    poe/src/controllers/pd69200.cpp 
+    poe/src/controllers/ltc4266.cpp 
+    utils/tinyxml2.cpp 
+    utils/i801_smbus.cpp
+)
+target_link_libraries(rspoe PUBLIC rserrors)
+target_include_directories(
+    rspoe PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/poe/include>"
+)
+target_compile_definitions(
+    rspoe PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:RSPOE_STATIC_DEFINE>"
+)
+
+set(_pic OFF)
+if (BUILD_SHARED_LIBS OR BUILD_PYTHON_BINDINGS)
+    set(_pic ON)
+endif()
+
+message(STATUS "Building libraries with position independent code ${_pic}")
+
+set_target_properties(rserrors rsdio rspoe PROPERTIES 
+    COMPILE_DEFINITIONS "RSSDK_VERSION_STRING=\"${PROJECT_VERSION}\""
+    VERSION ${rssdk_VERSION}
+    SOVERSION ${rssdk_VERSION_MAJOR}
+    POSITION_INDEPENDENT_CODE ${_pic}
+)
+
+
+if(MSVC)
+    target_compile_definitions(rsdio PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(rspoe PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
+include(GenerateExportHeader)
+generate_export_header(rserrors EXPORT_FILE_NAME include/rserrors_export.h)
+generate_export_header(rsdio EXPORT_FILE_NAME include/rsdio_export.h)
+generate_export_header(rspoe EXPORT_FILE_NAME include/rspoe_export.h)
+
+target_include_directories(
+    rserrors PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+)
+target_include_directories(
+    rsdio PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+)
+target_include_directories(
+    rspoe PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+)
+
 
 if (BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
 if (BUILD_PYTHON_BINDINGS)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extras/python)
+    add_subdirectory(extras/python)
 endif()
 
 add_executable(rsdioctl rsdioctl.cpp)
@@ -41,14 +116,42 @@ add_executable(rspoectl rspoectl.cpp)
 target_link_libraries(rsdioctl rsdio)
 target_link_libraries(rspoectl rspoe)
 
-SET_TARGET_PROPERTIES(rsdioctl rspoectl
+set_target_properties(rsdioctl rspoectl
     PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/"
 )
+
+#*********#
+# Install #
+#*********#
+
+include(GNUInstallDirs)
+
+if (NOT DEFINED rssdk_INSTALL_CMAKEDIR)
+   set(rssdk_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rssdk"
+       CACHE STRING "Path to rssdk CMake files")
+endif ()
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
     set (CMAKE_INSTALL_SYSCONFDIR /etc)
     set (CMAKE_INSTALL_FULL_SYSCONFDIR /etc)
 endif()
+
+install(TARGETS rserrors rsdio rspoe EXPORT rssdk_Targets
+    RUNTIME COMPONENT rssdk_Runtime
+    LIBRARY COMPONENT rssdk_Runtime
+    NAMELINK_COMPONENT rssdk_Development
+    ARCHIVE COMPONENT rssdk_Development
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+    
+install(DIRECTORY 
+        "${rssdk_SOURCE_DIR}/error/include/"
+        "${rssdk_SOURCE_DIR}/dio/include/"
+        "${rssdk_SOURCE_DIR}/poe/include/"
+        "${CMAKE_CURRENT_BINARY_DIR}/include/"
+    TYPE INCLUDE
+    COMPONENT rssdk_Development
+)
 
 if(INSTALL_UTILITIES)
     if(MSVC)

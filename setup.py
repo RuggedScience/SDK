@@ -27,11 +27,13 @@ setup(
                 "-DCALL_FROM_SETUP_PY:BOOL=ON",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DBUILD_PYTHON_BINDINGS:BOOL=ON",
+                "-DINSTALL_XML:BOOL=OFF",
             ]
             + CIBW_CMAKE_OPTIONS,
         ),
     ],
     cmdclass=dict(build_ext=BuildExtension),
+    package_dir={"": "extras/python"},
     include_package_data=False,
     package_data=package_data,
     zip_safe=False,
