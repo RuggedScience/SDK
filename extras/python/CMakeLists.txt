@@ -95,8 +95,6 @@ if (NOT CALL_FROM_SETUP_PY)
 
   message(STATUS "Using python package version ${RSSDKPY_VERSION}")
 
-  file(TOUCH ${RSSDKPY_BUILDDIR}/py.typed)
-
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/METADATA "")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Metadata-Version: 2.1\n")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Name: ${PROJECT_NAME}\n")
@@ -107,9 +105,9 @@ endif()
 #************#
 # Stub Files #
 # ***********#
-
 add_custom_command(TARGET rssdkpy POST_BUILD
   COMMAND stubgen -p rssdk -o .
+  COMMAND ${CMAKE_COMMAND} -E touch py.typed
   WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
   COMMENT "Generating Python stub files"
 )
