@@ -152,15 +152,17 @@ if (BUILD_PYTHON_BINDINGS)
     add_subdirectory(extras/python)
 endif()
 
-add_executable(rsdioctl rsdioctl.cpp)
-add_executable(rspoectl rspoectl.cpp)
+if (BUILD_UTILITIES)
+    add_executable(rsdioctl rsdioctl.cpp)
+    add_executable(rspoectl rspoectl.cpp)
 
-target_link_libraries(rsdioctl rsdio)
-target_link_libraries(rspoectl rspoe)
+    target_link_libraries(rsdioctl rsdio)
+    target_link_libraries(rspoectl rspoe)
 
-set_target_properties(rsdioctl rspoectl
-    PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/"
-)
+    set_target_properties(rsdioctl rspoectl
+        PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/"
+    )
+endif()
 
 #*********#
 # Install #
