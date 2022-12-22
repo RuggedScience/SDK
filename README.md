@@ -4,8 +4,8 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 
 *Passing the incorrect XML file will result in undefined behaviour and may harm the PC!*
 
-**The latest prebuilt release can be found [HERE](../../releases/latest).**  
-**Looking for a Python package? Check [HERE](https://github.com/ruggedscience/SDK-python).**
+**The latest prebuilt release can be found [HERE](https://github.com/ruggedscience/SDK/releases/latest). Be sure to install the driver!**  
+**Looking for a Python package? Check out the Python [documentation](/extras/python/README.md).**
 
 ## API References
 * [DIO Library - librsdio](./librsdio.md)
@@ -17,56 +17,70 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 # Building
 
 ## Prerequesites
-The build process relies on the [CMake](https://cmake.org/) utility. This can be easily installed on most Linux distributions using `sudo apt install cmake` or `sudo yum install cmake`. For Windows, you can find the latest downloads [HERE](https://cmake.org/download/). Be sure to add the CMake directory to your PATH or use the full path when calling the cmake command.
+The build process relies on the [CMake](https://cmake.org/) utility. This can be easily installed on most Linux distributions using `sudo apt install cmake` or `sudo yum install cmake`. For Windows, you can find the latest downloads [HERE](https://cmake.org/download/). Be sure to add the CMake directory to your PATH or use the full path when calling the cmake command. 
 
 ## Getting Started
 
-For best results, create a seperate build folder inside the root of this SDK.
 
-`mkdir build`\
-`cd build`
+1) Clone the repository using git and change directory into the newly created folder.
+    ```console
+    git clone https://github.com/ruggedscience/SDK
+    cd SDK
+    ```
 
-From inside of that folder run the following commands.  
+2) Now all of the sources should be available to be built. It's best practice to create a seperate build directory to isolate the build files from the source files.
+    ```console
+    mkdir build
+    cd build
+    ```
 
- `cmake ..`\
- `cmake --build .`
+3) From inside of that folder run the following commands.
+    ```console
+    cmake ..
+    cmake --build .
+    ```
 
-### Static Builds
-For static builds add the  `-DBUILD_SHARED_LIBS=OFF` flag. *Useful when you are just looking to build the control utilities (rspoectl and rsdioctl).* 
+This will result in all of the files being created in the build folder usually scattered across multiple directories. To make things easier to find you can specify an install folder that all of the files can be installed to.
 
-`cmake .. -DBUILD_SHARED_LIBS=OFF`
+```console
+cmake -DCMAKE_INSTALL_PREFIX=install ..
+cmake --build .
+```
 
-Windows requires 64-bit builds due to driver limitations. To do this you will need to specify the generator and architecture using the "-G" switch.
-  
-`cmake -G "Visual Studio 15 2017 Win64" ..`\
-`cmake --build .`
+Doing this will put all of the necessary files into an install folder within your build directory. The files will be separated into subfolders by type.
 
-**The Windows drivers must be installed prior to using this SDK. They can be found in the latest release under `Windows\X64\Drivers\`.**
 
-## Debug and Release
+## Build Type
 Windows and Linux each behave a bit different in regards to the build type. Visual Studio will default to debug builds while gcc defaults to release builds.
 
 To have Visual Studio build a release you will need to add the `--config release` flag as shown below.
 
-`cmake -G "Visual Studio 15 2017 Win64" ..`\
-`cmake --build . --config release`
-
-In most other situations you will need to use the `-DCMAKE_BUILD_TYPE` switch shown below.
-
-`cmake -DCMAKE_BUILD_TYPE=Debug ..`  
-`cmake --build .`
+```console
+cmake --build . --config release
+```
 
 # Installing
-Use the `-DCMAKE_INSTALL_PREFIX=` option in the first command to set the installation location. Then use `--target install` during the build command.
+As mentioned previously you can use the `CMAKE_INSTALL_PREFIX` option to set the installation location. If this options is omitted but the install command is invoked the files will be installed in standard locations based on the platform. 
+
 Default locations:  
 Windows: "C:\Program Files\rssdk\"  
 Linux: "/usr/local"
 
-`cmake .. -DCMAKE_INSTALL_PREFIX=../install`  
-`cmake --build . --target install`
+```console
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+sudo cmake --install .
+```
 
-***NOTE:*** On Linux you should run `sudo ldconfig` after installing the libraries to update the shared library cache.
+***NOTE:*** On Linux when installing to the default location you should run `sudo ldconfig` after installing the libraries to update the shared library cache.
 
-By default the control utilities are installed to `${CMAKE_INSTALL_PREFIX}/bin`. This can be turned off with `-DINSTALL_UTILITIES=OFF`.
-
-Once the build process is finished, you will find a copy of the libraries and examples inside of the build directory or the install directory.
+# Cmake Build Options
+|Option|Description|Default|
+|---------------------------|-----------------------------------------------------------------------|-------|
+| BUILD_SHARED_LIBS         | Build the libraries as shared libs (.dll / .so)                       | ON    |
+| BUILD_UTILITIES           | Build the rsdioctl and rspoectl control utilities                     | OFF   |
+| INSTALL_UTILITIES         | Install the utilities when the install command is invoked             | OFF   |
+| INSTALL_XML               | Install the XML files when the install command is invoked             | ON    |
+| BUILD_PYTHON_BINDINGS     | Build the Python bindings. See [docs](./extras/python/README.md)      | OFF   |
+| INSTALL_PYTHON_BINDINGS   | Install the Python bindings package to the current Python interpreter | OFF   |
+| BUILD_TESTS               | Build and enable all library tests                                    | OFF   |

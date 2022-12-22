@@ -62,9 +62,6 @@ env/
 build/
 install/
 
-setup.cfg
-version.txt
-extras/python-bindings/src/rssdk/*.cpp
-extras/python-bindings/setup.py
+_version.py
 
-!extras/python-bindings/src/rssdk/drv.dll
+!driver/*
