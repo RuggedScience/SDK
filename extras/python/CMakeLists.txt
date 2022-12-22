@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.12...3.18)
 
 # Our setup.py sets this to ensure pybind11 uses the right interpreter
 # If it isn't set, let's default to cmake's FindPython3 module.
-if (NOT PYTHON3_EXECUTABLE)
+if (NOT PYTHON_EXECUTABLE)
   find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-  set(PYTHON3_EXECUTABLE ${Python3_EXECUTABLE})
+  set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
 endif()
 
 # Try to find pybind11 using provided CMAKE_PREFIX_PATH
@@ -15,7 +15,7 @@ find_package(pybind11 QUIET)
 if (NOT pybind11_FOUND)
   message(DEBUG "pybind11 not found. Attempting to use Python package")
   execute_process(
-    COMMAND ${PYTHON3_EXECUTABLE} -m pybind11 --cmake
+    COMMAND ${PYTHON_EXECUTABLE} -m pybind11 --cmake
     OUTPUT_VARIABLE PYBIND11_CMAKE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
