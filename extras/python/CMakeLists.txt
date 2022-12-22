@@ -106,6 +106,7 @@ endif()
 # Stub Files #
 # ***********#
 add_custom_command(TARGET rssdkpy POST_BUILD
+  COMMAND ${Python3_EXECUTABLE} -c "import os; print(os.listdir('.'));"
   COMMAND stubgen -v -p rssdk -o .
   COMMAND ${CMAKE_COMMAND} -E touch py.typed
   WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
