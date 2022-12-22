@@ -111,12 +111,20 @@ endif()
 #************#
 # Stub Files #
 # ***********#
-add_custom_command(TARGET rssdkpy POST_BUILD
-  COMMAND stubgen -v -p rssdk -o .
-  COMMAND ${CMAKE_COMMAND} -E touch py.typed
-  WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
-  COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
-)
+find_program(_STUBGEN_EXISTS stubgen)
+if (_STUBGEN_EXISTS)
+  add_custom_command(TARGET rssdkpy POST_BUILD
+    COMMAND stubgen -v -p rssdk -o .
+    COMMAND ${CMAKE_COMMAND} -E touch py.typed
+    WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
+    COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
+  )
+else()
+  message(WARNING 
+    " stubgen not found. Stub files will not be generated.\n"
+    " To generate stub files install mypy with `python -m pip install mypy`."
+  )
+endif()
 
 
 #*********#
@@ -143,10 +151,16 @@ if (RSSDKPY_INSTDIR)
   install(
     FILES 
       "${RSSDKPY_BUILDDIR}/__init__.py" 
-      "${RSSDKPY_BUILDDIR}/rssdk.pyi"
-      "${RSSDKPY_BUILDDIR}/py.typed"
     DESTINATION ${RSSDKPY_INSTDIR}
   )
+
+  if (_STUBGEN_EXISTS)
+    install(
+      FILES 
+        "${RSSDKPY_BUILDDIR}/__init__.py" 
+      DESTINATION ${RSSDKPY_INSTDIR}
+    )
+  endif()
   if (WIN32)
     install(
       FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
