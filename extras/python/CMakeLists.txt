@@ -111,6 +111,7 @@ add_custom_command(TARGET rssdkpy POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E touch py.typed
   WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
   COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
+  VERBATIM
 )
 
 
