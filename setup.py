@@ -47,7 +47,6 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={cmake_output_dir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
-            "-DCALL_FROM_SETUP_PY:BOOL=ON",
             "-DBUILD_SHARED_LIBS:BOOL=OFF",
             "-DBUILD_PYTHON_BINDINGS:BOOL=ON",
             "-DINSTALL_XML:BOOL=OFF",
