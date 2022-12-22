@@ -13,6 +13,7 @@ option(BUILD_TESTS "Build all test" OFF)
 option(BUILD_UTILITIES "Build command line control utilities" OFF)
 option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
 option(INSTALL_XML "Installs XML files" ON)
+option(INSTALL_SDK "Install SDK files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(INSTALL_PYTHON_BINDINGS "Install Python bindings to current interpreter" OFF)
@@ -170,36 +171,38 @@ endif()
 
 include(GNUInstallDirs)
 
-if (NOT DEFINED rssdk_INSTALL_CMAKEDIR)
-   set(rssdk_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rssdk"
-       CACHE STRING "Path to rssdk CMake files")
-endif ()
+if (INSTALL_SDK)
+    if (NOT DEFINED rssdk_INSTALL_CMAKEDIR)
+        set(rssdk_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rssdk"
+            CACHE STRING "Path to rssdk CMake files")
+    endif ()
 
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
-    set (CMAKE_INSTALL_SYSCONFDIR /etc)
-    set (CMAKE_INSTALL_FULL_SYSCONFDIR /etc)
-endif()
+    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
+        set (CMAKE_INSTALL_SYSCONFDIR /etc)
+        set (CMAKE_INSTALL_FULL_SYSCONFDIR /etc)
+    endif()
 
-install(TARGETS rserrors rsdio rspoe EXPORT rssdk_Targets
-    RUNTIME COMPONENT rssdk_Runtime
-    LIBRARY COMPONENT rssdk_Runtime
-    NAMELINK_COMPONENT rssdk_Development
-    ARCHIVE COMPONENT rssdk_Development
-    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
+    install(TARGETS rserrors rsdio rspoe EXPORT rssdk_Targets
+        RUNTIME COMPONENT rssdk_Runtime
+        LIBRARY COMPONENT rssdk_Runtime
+        NAMELINK_COMPONENT rssdk_Development
+        ARCHIVE COMPONENT rssdk_Development
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
     
-install(DIRECTORY 
+    install(DIRECTORY 
         "${rssdk_SOURCE_DIR}/error/include/"
         "${rssdk_SOURCE_DIR}/dio/include/"
         "${rssdk_SOURCE_DIR}/poe/include/"
         "${CMAKE_CURRENT_BINARY_DIR}/include/"
-    TYPE INCLUDE
-)
-
-if (WIN32)
-    install(FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
-        TYPE BIN
+        TYPE INCLUDE
     )
+
+    if (WIN32)
+        install(FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
+            TYPE BIN
+        )
+    endif()
 endif()
 
 if(INSTALL_UTILITIES)
