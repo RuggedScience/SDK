@@ -24,7 +24,7 @@ setup(
             cmake_depends_on=["pybind11"],
             cmake_generator=None,
             cmake_configure_options=[
-                f"-DPython3_ROOT_DIR={Path(sys.prefix)}",
+                f"-DPYTHON_EXECUTABLE={sys.executable}",
                 "-DCALL_FROM_SETUP_PY:BOOL=ON",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DBUILD_PYTHON_BINDINGS:BOOL=ON",

@@ -1,5 +1,11 @@
-# Find Python3
-find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
+cmake_minimum_required(VERSION 3.12...3.18)
+
+# Our setup.py sets this to ensure pybind11 uses the right interpreter
+# If it isn't set, let's default to cmake's FindPython3 module.
+if (NOT PYTHON3_EXECUTABLE)
+  find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+  set(PYTHON3_EXECUTABLE ${Python3_EXECUTABLE})
+endif()
 
 # Try to find pybind11 using provided CMAKE_PREFIX_PATH
 find_package(pybind11 QUIET)
@@ -9,7 +15,7 @@ find_package(pybind11 QUIET)
 if (NOT pybind11_FOUND)
   message(DEBUG "pybind11 not found. Attempting to use Python package")
   execute_process(
-    COMMAND ${Python3_EXECUTABLE} -m pybind11 --cmake
+    COMMAND ${PYTHON3_EXECUTABLE} -m pybind11 --cmake
     OUTPUT_VARIABLE PYBIND11_CMAKE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
@@ -106,12 +112,10 @@ endif()
 # Stub Files #
 # ***********#
 add_custom_command(TARGET rssdkpy POST_BUILD
-  COMMAND ${Python3_EXECUTABLE} -c "import os; print(os.listdir('.'));"
   COMMAND stubgen -v -p rssdk -o .
   COMMAND ${CMAKE_COMMAND} -E touch py.typed
   WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
   COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
-  VERBATIM
 )
 
 
