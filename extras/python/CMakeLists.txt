@@ -75,6 +75,12 @@ else()
   )
 endif()
 
+if (WIN32)
+  add_custom_command(TARGET rssdkpy
+    COMMAND ${CMAKE_COMMAND} -E copy ${rssdk_SOURCE_DIR}/driver/drv.dll $<TARGET_FILE_DIR:rssdkpy>
+  )
+endif()
+
 #*********#
 # Install #
 #*********#
