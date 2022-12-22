@@ -1,54 +1,63 @@
 # librspoe
 
-The **librspoe** library is used to control the PoE ports on supported Rugged Science units. All library functions return a negative value on error except [`setXmlFile`](###setXmlFile) which returns false on error. If this happens it is best to use the [`getLastError`](###getLastError) function to see what caused the error.
+The **librspoe** library is used to control the PoE ports on supported Rugged Science units.
 
 ## Basic Usage
 
 ```c++
 #include <rspoe.h>
 ...
-RsPoe *poe = createRsPoe();
-if (!poe->setXmlFile('ecs9000.xml'))
+rs::RsPoe *poe = rs::createRsPoe();
+poe->setXmlFile('ecs9000.xml')
+if (poe->getLastError())
 {
-    std::cerr << poe->getLastError() << std::endl;
+    std::cerr << poe->getLastErrorString() << std::endl;
     poe->destroy();
     return 1;
 }
 
-poe->setPortState(3, StateEnabled);
+poe->setPortState(3, rs::PoeState::Enabled);
 float power = poe->getPortPower(3);
-if (power < 0)
-    std::cerr << poe->getLastError() << std::endl;
-else
-    std::cout << "Port 3 power usage: " << power << std::endl;
-
 poe->destroy();
 ```
 
 One important thing to note is that the RsPoe class has special "create" and "destroy" functions. This is due to dynamic library memory limitations. In order to keep clean memory boundries between the application and the library, all memory managment is handled in the library. To make things easier, you can simply wrap the class instance in a smart pointer.
 
 ```c++
-std::shared_ptr<RsPoe> poe(createRsPoe(), std::mem_fn(&RsPoe::destroy));
+std::shared_ptr<rs::RsPoe> poe(rs::createRsPoe(), std::mem_fn(&rs::RsPoe::destroy));
 if (!poe)
 {
     std::cerr << "Failed to create instance of RsPoe" << std::endl;
     return 1;
 }
 ```
+## Error Handling
+After each function call you can call [getLastError](#getlasterror) to check if it was successfull.
+
+```c++
+poe->getBudgetTotal();
+if (poe->getLastError())
+{
+    std::cerr << "Failed to get budget: " << poe->getLastErrorString() << std::endl;
+    exit(1);
+}
+```
+
+For more advanced error handling see the [docs](./errors.md).
 
 ## Public Types
 
 ### PoeState
 ```c++
-enum PoeState
+enum class rs::PoeState
 ```
 ---
-| Constant      | Value | Description                                   |
-|---------------|-------|-----------------------------------------------|
-| StateDisabled | 0     | No power regardless of attached device        |
-| StateEnabled  | 1     | Power applied regardless of attached device   |
-| StateAuto     | 2     | Normal PoE operation                          |
-| StateError    | 3     | Error retreiving state. Check getLastPoeError |
+| Constant      | Value | Description                                                   |
+|---------------|-------|---------------------------------------------------------------|
+| Disabled      | 0     | No power regardless of attached device.                       |
+| Enabled       | 1     | Power applied regardless of attached device (Passive PoE).    |
+| Auto          | 2     | Normal PoE operation (Active PoE).                            |
+| Error         | 3     | Error retreiving state. Check getLastPoeError.                |
 
 <br>
 
@@ -56,138 +65,175 @@ enum PoeState
 
 ### setXmlFile
 ```c++
-bool setXmlFile(const char *fileName)
+void RsPoe::setXmlFile(const char *fileName)
 ```
+
+Initializes the RsDio class with the appropriate hardware. Must be called before any other functions.
+
 ---
 
 ### Parameters
 fileName - This should be a path to the XML file specific to your model.
 
-### Return value
-Returns true if the dio was successfully initialized, otherwise returns false.
-
 <br>
 
 ### getPortState
 ```c++
-PoeState getPortState(int port)
+rs::PoeState RsPoe::getPortState(int port)
 ```
+
+Reads the state of `port`.
+
 ---
 
 ### Parameters
-port - The number of the port to read the state from. *Screen printed on the unit*
+port - The number of the port to read the state from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Returns the [PoeState](##Public-Types) of port.
+Returns the [PoeState](#poestate) of port.
 
 <br>
 
 ### setPortState
 ```c++
-int setPortState(int port, PoeState state)
+void RsPoe::setPortState(int port, rs::PoeState state)
 ```
+
+Sets the state of `port` to `state`.
+
 ---
 
 ### Parameters
-port - The number of the port to be set.\
-state - The desired [PoeState](##Public-Types) of port.
-
-### Return value
-Zero if sucessfully set. Negative value on error.
+port - The number of the port to be set. Screen printed on the unit in the form of Lan `3`.
+state - The desired [PoeState](#poestate) of port.
 
 <br>
 
 ### getPortVoltage
 ```c++
-float getPortVoltage(int port)
+float RsPoe::getPortVoltage(int port)
 ```
+
+Gets the current output voltage of `port` in volts.
+
 ---
 
 ### Parameters
-port - The number of the port to read the voltage from. *Screen printed on the unit*
+port - The number of the port to read the voltage from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Voltage of port in volts. Negative value on error.
+Voltage of port in volts.
 
 <br>
 
 ### getPortCurrent
 ```c++
-float getPortCurrent(int port)
+float RsPoe::getPortCurrent(int port)
 ```
+
+Gets the current current of `port` in amps.
+
 ---
 
 ### Parameters
-port - The number of the port to read the current from. *Screen printed on the unit*
+port - The number of the port to read the current from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Current of port in amps. Negative value on error.
+Current of port in amps.
 
 <br>
 
 ### getPortPower
 ```c++
-float getPortPower(int port)
+float RsPoe::getPortPower(int port)
 ```
+
+Gets the current power draw of `port` in watts. *Same as [getPortVoltage](#getportvoltage) X [getPortCurrent](#getportcurrent)*
+
 ---
 
 ### Parameters
-port - The number of the port to read the power from. *Screen printed on the unit*
+port - The number of the port to read the power from. Screen printed on the unit in the form of Lan `3`.
 
 ### Return value
-Power of port in watts. Negative value on error.
+Current power draw of port in watts.
 
 <br>
 
 ### getBudgetConsumed
 ```c++
-int getBudgetConsumed()
+int RsPoe::getBudgetConsumed()
 ```
+
+Gets the total watts being consumed from all ports. *If this exceeds the total budget, the PoE controller will start disabling ports based on priority until it's below the total budget*
+
 ---
 
 ### Return value
-Total watts being consumed from all ports. Negative value on error.\
-*If this exceeds the total budget, the PoE controller will start disabling ports based on priority until it's below the total budget*
+Total budget consumed in watts.
 
 <br>
 
 ### getBudgetAvailable
 ```c++
-int getBudgetAvailable()
+int RsPoe::getBudgetAvailable()
 ```
+
+Gets the watts available before reaching max budget.
+
 ---
 
 ### Return value
-Watts available before reaching max budget. Negative value on error.
+Remaining budget in watts.
 
 <br>
 
 ### getBudgetTotal
 ```c++
-int getBudgetTotal()
+int RsPoe::getBudgetTotal()
 ```
+Gets the total watts the unit can handle. When this is exceeded the PoE controller will start shutting down ports to prevent an over current condition.
+
 ---
 
 ### Return value
-Total watts the unit can handle. Negative value on error.
+Total available budget in watts.
 
 <br>
 
 ### getLastError
 ```c++
-std::string *getLastError()
+std::error_code RsPoe::getLastError() const
 ```
+
+Gets the [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred. Cleared after a successful operation.
+
 ---
 
 ### Return value
-String containing the last error encountered by the library.
+The [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for the last error that occurred.
 
 <br>
 
-### version
+### getLastErrorString
 ```c++
-std::string version()
+std::string RsPoe::getLastErrorString() const
 ```
+
+Gets the string containing information about the last error that occured. This will usually provide a bit more info about [getLastError](#getlasterror).
+
+---
+
+### Return value
+String containing the last error.
+
+<br>
+
+### rsPoeVersion
+```c++
+const char *rs::rsPoeVersion()
+```
+
 ---
 
 ### Return value
