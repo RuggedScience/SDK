@@ -4,7 +4,9 @@ cmake_minimum_required(VERSION 3.12...3.18)
 # If it isn't set, let's default to cmake's FindPython3 module.
 if (NOT PYTHON_EXECUTABLE)
   find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+  # If we find Python for pybind11, it won't set these and we need them.
   set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+  set(PYTHON_SITE_PACKAGES ${Python3_SITELIB})
 endif()
 
 # Try to find pybind11 using provided CMAKE_PREFIX_PATH
@@ -41,52 +43,46 @@ if (BUILD_SHARED_LIBS)
     " Building the Python bindings with shared libs can results in an\n"
     " ImportError when importing the module and is not recommended"
   )
+  # Add RPATH to the python binding library file.
+  # This allows shared lib installs on Linux to find the libs.
+  SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
-set(PYBIND11_CPP_STANDARD -std=c++11)
-# Add RPATH to the python binding library file.
-# This allows shared lib installs on Linux to find the libs.
-SET(CMAKE_SKIP_BUILD_RPATH FALSE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_DEBUG_POSTFIX "")
+set(PYBIND11_CPP_STANDARD -std=c++11)
 
 pybind11_add_module(rssdkpy MODULE rssdk.cpp)
-
 target_link_libraries(rssdkpy PRIVATE rserrors rsdio rspoe)
+set_target_properties(rssdkpy PROPERTIES OUTPUT_NAME "rssdk")
 
-set_target_properties(rssdkpy PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rssdk
-    OUTPUT_NAME "rssdk"
-)
-
-set(RSSDKPY_BUILDDIR "${CMAKE_BINARY_DIR}/rssdk")
-set_target_properties(
-  rssdkpy PROPERTIES
-  OUTPUT_NAME rssdk
-  LIBRARY_OUTPUT_DIRECTORY "${RSSDKPY_BUILDDIR}"
-)
-
-if (MSVC)
-  set_target_properties(
-    rssdkpy PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${RSSDKPY_BUILDDIR}"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${RSSDKPY_BUILDDIR}"
+#************#
+# Stub Files #
+# ***********#
+find_program(_STUBGEN_EXISTS stubgen)
+if (_STUBGEN_EXISTS)
+  add_custom_command(TARGET rssdkpy POST_BUILD
+    COMMAND stubgen -v -p rssdk -o .
+    COMMAND ${CMAKE_COMMAND} -E touch py.typed
+    WORKING_DIRECTORY "$<TARGET_FILE_DIR:rssdkpy>"
+    COMMENT "Generating Python stub files"
+  )
+else()
+  message(WARNING 
+    " stubgen not found. Stub files will not be generated.\n"
+    " To generate stub files install mypy with `python -m pip install mypy`."
   )
 endif()
 
-# Create the __init__.py file
-file(
-  GENERATE
-  OUTPUT "${RSSDKPY_BUILDDIR}/__init__.py"
-  CONTENT "from rssdk.rssdk import *\n"
-)
+#*********#
+# Install #
+#*********#
+if (INSTALL_PYTHON_BINDINGS)
+  message(STATUS "Installing rssdk Python package in ${PYTHON_SITE_PACKAGES}")
 
-# If we didn't build this from Python's build system
-# We need to generate the package metadata info.
-if (NOT CALL_FROM_SETUP_PY)
   execute_process(
-    COMMAND ${Python3_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version());"
+    COMMAND ${PYTHON_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version());"
     WORKING_DIRECTORY ${rssdk_SOURCE_DIR}
     OUTPUT_VARIABLE RSSDKPY_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -101,84 +97,41 @@ if (NOT CALL_FROM_SETUP_PY)
 
   message(STATUS "Using python package version ${RSSDKPY_VERSION}")
 
+  set(RSSDKPY_INSTDIR ${PYTHON_SITE_PACKAGES}/rssdk)
+  set(RSSDKPY_METADIR ${PYTHON_SITE_PACKAGES}/rssdk-${RSSDKPY_VERSION}.dist-info)
+
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/METADATA "")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Metadata-Version: 2.1\n")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Name: ${PROJECT_NAME}\n")
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/METADATA "Version: ${RSSDKPY_VERSION}\n")
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/INSTALLER "cmake\n")
-endif()
 
-#************#
-# Stub Files #
-# ***********#
-find_program(_STUBGEN_EXISTS stubgen)
-if (_STUBGEN_EXISTS)
-  add_custom_command(TARGET rssdkpy POST_BUILD
-    COMMAND stubgen -v -p rssdk -o .
-    COMMAND ${CMAKE_COMMAND} -E touch py.typed
-    WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
-    COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
-  )
-else()
-  message(WARNING 
-    " stubgen not found. Stub files will not be generated.\n"
-    " To generate stub files install mypy with `python -m pip install mypy`."
-  )
-endif()
-
-
-#*********#
-# Install #
-# ********#
-
-if (CALL_FROM_SETUP_PY)
-  # This will be set correctly when running
-  # from Python's build system.
-  set(RSSDKPY_INSTDIR ${CMAKE_INSTALL_PREFIX})
-elseif (INSTALL_PYTHON_BINDINGS)
-  # The Python package is installed directly in the folder of the
-  # detected interpreter (system, user, or virtualenv)
-  set(RSSDKPY_INSTDIR ${Python3_SITELIB}/rssdk)
-  set(RSSDKPY_METADIR ${Python3_SITELIB}/rssdk-${RSSDKPY_VERSION}.dist-info)
-endif()
-
-if (RSSDKPY_INSTDIR)
-  message(STATUS "Installing rssdk Python package in ${RSSDKPY_INSTDIR}")
-  # Setup installation path
   install(TARGETS rssdkpy COMPONENT python DESTINATION "${RSSDKPY_INSTDIR}")
+  install(FILES 
+      "${CMAKE_CURRENT_SOURCE_DIR}/rssdk/__init__.py"
+      "$<TARGET_FILE_DIR:rssdkpy>/rssdk.pyi"
+      "$<TARGET_FILE_DIR:rssdkpy>/py.typed"
+    DESTINATION "${RSSDKPY_INSTDIR}"
+  )
   
-# Install the __init__.py file
   install(
-    FILES 
-      "${RSSDKPY_BUILDDIR}/__init__.py" 
-    DESTINATION ${RSSDKPY_INSTDIR}
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/METADATA" "${CMAKE_CURRENT_BINARY_DIR}/INSTALLER"
+    DESTINATION ${RSSDKPY_METADIR}
   )
 
-  if (_STUBGEN_EXISTS)
-    install(
-      FILES 
-        "${RSSDKPY_BUILDDIR}/__init__.py" 
-      DESTINATION ${RSSDKPY_INSTDIR}
-    )
-  endif()
   if (WIN32)
     install(
       FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
       DESTINATION ${RSSDKPY_INSTDIR}
     )
-    if (BUILD_SHARED_LIBS)
-      install(
-        TARGETS rserrors rsdio rspoe
-        RUNTIME DESTINATION ${RSSDKPY_INSTDIR}
-      )
-    endif()
   endif()
-endif()
 
-if (RSSDKPY_METADIR)
-  message(STATUS "Installing rssdk Python package metadata in ${RSSDKPY_METADIR}")
-  install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/METADATA" "${CMAKE_CURRENT_BINARY_DIR}/INSTALLER"
-    DESTINATION ${RSSDKPY_METADIR}
-  )
+  # Install the libraries with the Python package if 
+  # they are built as shared libs and not being installed.
+  if (BUILD_SHARED_LIBS AND NOT INSTALL_SDK)
+    install(
+      TARGETS rserrors rsdio rspoe
+      RUNTIME DESTINATION ${RSSDKPY_INSTDIR}
+    )
+  endif()
 endif()

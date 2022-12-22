@@ -16,9 +16,8 @@ PLAT_TO_CMAKE = {
 }
 
 
-# A CMakeExtension needs a sourcedir instead of a file list.
-# The name must be the _single_ output extension from the CMake build.
-# If you need multiple extensions, see scikit-build.
+# Source: pybind11 cmake example
+# https://github.com/pybind/cmake_example/blob/master/setup.py
 class CMakeExtension(Extension):
     def __init__(self, name: str, sourcedir: str = "") -> None:
         super().__init__(name, sources=[])
@@ -41,9 +40,11 @@ class CMakeBuild(build_ext):
         # Can be set with Conda-Build, for example.
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
+        cmake_output_dir = f"{extdir}{os.sep}{ext.name}"
+
         # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
         cmake_args = [
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={cmake_output_dir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
             "-DCALL_FROM_SETUP_PY:BOOL=ON",
@@ -91,8 +92,9 @@ class CMakeBuild(build_ext):
 
             # Multi-config generators have a different way to specify configs
             if not single_config:
+                cmake_output_dir
                 cmake_args += [
-                    f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"
+                    f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={cmake_output_dir}"
                 ]
                 build_args += ["--config", cfg]
 
@@ -122,13 +124,15 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", "."] + build_args, cwd=build_temp, check=True
         )
 
+package_data = {"rssdk": ["*.py", "*.pyi", "py.typed"]}
+if os.name == "nt":
+    package_data["rssdk"].append("driver/*.dll")
 
 setup(
-    ext_modules=[
-        CMakeExtension(name="rssdk")
-    ],
+    ext_modules=[CMakeExtension(name="rssdk")],
     cmdclass=dict(build_ext=CMakeBuild),
     package_dir={"": "extras/python"},
+    packages=["rssdk"],
     include_package_data=False,
     zip_safe=False,
 )

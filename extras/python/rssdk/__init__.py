@@ -1,1 +1,1 @@
-from rssdk import *
+from rssdk.rssdk import *
