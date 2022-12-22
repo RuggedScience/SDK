@@ -41,6 +41,8 @@ poe.setPortState(PoeState.StateDisabled)
 # Compiling
 The Python bindings are built against the standard C++ SDK libraries using [pybind11](https://pybind11.readthedocs.io/en/stable/). There are two ways to compile them. Either using Python's build system or by using cmake directly. Both options assume you have have already cloned the repository as shown in the step below.
 
+***NOTE: It is best to [enable long paths](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#enable-long-paths-in-windows-10-version-1607-and-later) in Windows when compiling using the Python build system.***
+
 ```console
 git clone https://github.com/ruggedscience/SDK
 cd SDK
