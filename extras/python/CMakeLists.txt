@@ -109,7 +109,7 @@ add_custom_command(TARGET rssdkpy POST_BUILD
   COMMAND stubgen -p rssdk -o .
   COMMAND ${CMAKE_COMMAND} -E touch py.typed
   WORKING_DIRECTORY ${RSSDKPY_BUILDDIR}
-  COMMENT "Generating Python stub files"
+  COMMENT "Generating Python stub files in ${RSSDKPY_BUILDDIR}"
 )
 
 
