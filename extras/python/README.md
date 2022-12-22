@@ -71,8 +71,9 @@ The cmake build process isn't quite as straightforward but offers more flexibili
 
 1) Install requirements
     ```console
-    python -m pip install pybind11 setuptools_scm
+    python -m pip install pybind11 setuptools_scm mypy
     ```
+    *Note: mypy is optional and used to generate stub files. This allows IDEs to offer code completion.*
 
 2) Create build folder
     ```console
@@ -82,10 +83,12 @@ The cmake build process isn't quite as straightforward but offers more flexibili
 
 3) Configure cmake
     ```console
-    cmake -DBUILD_PYTHON_BINDINGS=ON -DINSTALL_PYTHON_BINDINGS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=install ..
+    cmake -DBUILD_PYTHON_BINDINGS=ON -DINSTALL_PYTHON_BINDINGS=ON -DBUILD_SHARED_LIBS=OFF -DINSTALL_XML=OFF -DINSTALL_UTILITIES=OFF -DINSTALL_SDK=OFF ..
     ```
+    *Note: On Linux the build type should be set to release using `-DBUILD_TYPE=Release`.*
 
 4) Build and install
     ```console
     cmake --build . --target install
     ```
+    *Note: On Windows the build type should be set to release using `--config Release`.*
