@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4...3.18)
 
-project(rssdk VERSION 4.0.0)
+project(rssdk VERSION 3.1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
