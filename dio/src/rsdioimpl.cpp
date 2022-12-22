@@ -178,6 +178,11 @@ void RsDioImpl::setXmlFile(const char *fileName, bool debug)
         m_lastErrorString = ex.what();
         return;
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+        return;
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -270,6 +275,20 @@ void RsDioImpl::setXmlFile(const char *fileName, bool debug)
 
                 m_lastError = ex.code();
                 m_lastErrorString = ex.what();
+                return;
+            }
+            catch (const std::exception &ex) {
+                m_dioMap.clear();
+                delete mp_controller;
+                m_lastError = RsErrorCode::UnknownError;
+                m_lastErrorString = ex.what();
+                return;
+            }
+            catch (...) {
+                m_dioMap.clear();
+                delete mp_controller;
+                m_lastError = RsErrorCode::UnknownError;
+                m_lastErrorString = "Unknown exception occurred";
                 return;
             }
         }
@@ -366,6 +385,10 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occured";
@@ -403,6 +426,10 @@ bool RsDioImpl::digitalRead(int dio, int pin)
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = ex.what();
     }
     catch (...) {
@@ -443,14 +470,20 @@ void RsDioImpl::digitalWrite(int dio, int pin, bool state)
 
     try {
         mp_controller->setPinState(config, state);
+        m_lastError = std::error_code();
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
-        return;
     }
-
-    m_lastError = std::error_code();
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
+    catch (...) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = "unknown exception occured";
+    }
 }
 
 std::map<int, bool> RsDioImpl::readAll(int dio)
@@ -476,19 +509,21 @@ std::map<int, bool> RsDioImpl::readAll(int dio)
             if (pin.first >= 0)
                 values[pin.first] = mp_controller->getPinState(pin.second);
         }
+        m_lastError = std::error_code();
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
-        return values;
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
     }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "unknown exception occured";
-        return values;
     }
 
-    m_lastError = std::error_code();
     return values;
 }
 

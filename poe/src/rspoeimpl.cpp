@@ -107,6 +107,11 @@ void RsPoeImpl::setXmlFile(const char *fileName)
         m_lastErrorString = ex.what();
         return;
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+        return;
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -154,19 +159,21 @@ rs::PoeState RsPoeImpl::getPortState(int port)
 
     try {
         state = mp_controller->getPortState(m_portMap[port]);
+        m_lastError = std::error_code();
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
-        return state;
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
     }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
-        return state;
     }
 
-    m_lastError = std::error_code();
     return state;
 }
 
@@ -198,6 +205,10 @@ void RsPoeImpl::setPortState(int port, rs::PoeState state)
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -226,6 +237,10 @@ float RsPoeImpl::getPortVoltage(int port)
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = ex.what();
     }
     catch (...) {
@@ -260,6 +275,10 @@ float RsPoeImpl::getPortCurrent(int port)
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -292,6 +311,10 @@ float RsPoeImpl::getPortPower(int port)
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -315,6 +338,10 @@ int RsPoeImpl::getBudgetConsumed()
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = ex.what();
     }
     catch (...) {
@@ -343,6 +370,10 @@ int RsPoeImpl::getBudgetAvailable()
         m_lastError = ex.code();
         m_lastErrorString = ex.what();
     }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
     catch (...) {
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "Unknown exception occurred";
@@ -367,6 +398,10 @@ int RsPoeImpl::getBudgetTotal()
     }
     catch (const std::system_error &ex) {
         m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = ex.what();
     }
     catch (...) {
