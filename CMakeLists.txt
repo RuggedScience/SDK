@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4...3.18)
 
 # TODO: Find a way to make this automatic like setuptools_scm
-project(rssdk VERSION 3.1.1)
+project(rssdk VERSION 3.1.2)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
