@@ -85,8 +85,6 @@ endif()
 # Install #
 #*********#
 if (INSTALL_PYTHON_BINDINGS)
-  message(STATUS "Installing rssdk Python package in ${PYTHON_SITE_PACKAGES}")
-
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version());"
     WORKING_DIRECTORY ${rssdk_SOURCE_DIR}
@@ -101,7 +99,13 @@ if (INSTALL_PYTHON_BINDINGS)
     )
   endif()
 
-  message(STATUS "Using python package version ${RSSDKPY_VERSION}")
+  message(WARNING
+  " This will install the rssdk package directly into your current Python environment.\n"
+  " In order to uninstall it you will need to delete the following two folders manually.\n"
+  " \n"
+  " \t\t${PYTHON_SITE_PACKAGES}/rssdk\n"
+  " \t\t${PYTHON_SITE_PACKAGES}/rssdk-${RSSDKPY_VERSION}.dist-info"
+  )
 
   set(RSSDKPY_INSTDIR ${PYTHON_SITE_PACKAGES}/rssdk)
   set(RSSDKPY_METADIR ${PYTHON_SITE_PACKAGES}/rssdk-${RSSDKPY_VERSION}.dist-info)
