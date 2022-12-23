@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rssdk"
 description = "Rugged Science SDK Python Bindings"
-readme = "README.md"
+readme = "extras/python/README.md"
 authors = [
     {name = "Timothy Lassiter", email = "tim.lassiter@ruggedscience.com"}
 ]
@@ -34,9 +34,9 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://github.com/ruggedscience/SDK"
-documentation = "https://github.com/ruggedscience/SDK"
-repository = "https://github.com/ruggedscience/SDK"
+homepage = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
+documentation = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
+repository = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
 
 [tool.setuptools_scm]
 write_to = "_version.py"

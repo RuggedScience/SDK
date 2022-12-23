@@ -1,5 +1,5 @@
 # Python SDK
-This is a wrapper around the [Rugged Science SDK](/README.md) with the only difference being that exceptions are automatically thrown. There are no `getLastError` or `getLastErrorString` functions. For more information about the available APIs see the [librsdio](/librsdio.md) and [librspoe](/librspoe.md) docs. 
+This is a wrapper around the [Rugged Science SDK](https://github.com/RuggedScience/SDK) with the only difference being that exceptions are automatically thrown. There are no `getLastError` or `getLastErrorString` functions.
 
 
 ## Installing
