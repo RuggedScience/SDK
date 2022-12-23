@@ -1,3 +1,11 @@
 prune .github
 exclude .gitignore
 exclude .clang-format
+exclude rsdioctl.cpp
+exclude rspoectl.cpp
+exclude README.md
+exclude errors.md
+exclude librsdio.md
+exclude librspoe.md
+exclude rsdioctl.md
+exclude rspoectl.md
