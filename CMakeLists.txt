@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.4...3.18)
 # TODO: Find a way to make this automatic like setuptools_scm
 project(rssdk VERSION 3.1.2)
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
@@ -27,6 +28,13 @@ if (NOT BUILD_UTILITIES AND INSTALL_UTILITIES)
     set(INSTALL_UTILITIES OFF)
 endif()
 
+# Detect target architecture so we can 
+# copy / install the correct driver dll file.
+include(TargetArch)
+target_architecture(TARGET_ARCH)
+if ("${TARGET_ARCH}" STREQUAL "x86_64")
+ set(DRIVER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/driver/drv.dll)
+endif()
 
 add_library(rserrors 
     error/src/rserrors.cpp
@@ -170,9 +178,10 @@ endif()
 # Install #
 #*********#
 
-include(GNUInstallDirs)
-
 if (INSTALL_SDK)
+    
+    include(GNUInstallDirs)
+
     if (NOT DEFINED rssdk_INSTALL_CMAKEDIR)
         set(rssdk_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rssdk"
             CACHE STRING "Path to rssdk CMake files")
@@ -200,9 +209,7 @@ if (INSTALL_SDK)
     )
 
     if (WIN32)
-        install(FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
-            TYPE BIN
-        )
+        install(FILES ${DRIVER_FILE} TYPE BIN)
     endif()
 endif()
 

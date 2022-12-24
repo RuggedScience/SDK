@@ -77,7 +77,7 @@ endif()
 
 if (WIN32)
   add_custom_command(TARGET rssdkpy
-    COMMAND ${CMAKE_COMMAND} -E copy ${rssdk_SOURCE_DIR}/driver/drv.dll $<TARGET_FILE_DIR:rssdkpy>
+    COMMAND ${CMAKE_COMMAND} -E copy ${DRIVER_FILE} $<TARGET_FILE_DIR:rssdkpy>
   )
 endif()
 
@@ -130,10 +130,7 @@ if (INSTALL_PYTHON_BINDINGS)
   )
 
   if (WIN32)
-    install(
-      FILES "${rssdk_SOURCE_DIR}/driver/drv.dll"
-      DESTINATION ${RSSDKPY_INSTDIR}
-    )
+    install(FILES ${DRIVER_FILE} DESTINATION ${RSSDKPY_INSTDIR})
   endif()
 
   # Install the libraries with the Python package if 
