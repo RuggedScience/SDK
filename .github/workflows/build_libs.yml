@@ -50,7 +50,7 @@ jobs:
       run: cmake --install ${{github.workspace}}/build_static --prefix ${{github.workspace}}/install --strip
 
     - uses: actions/upload-artifact@v3
-        with:
-          name: libs ${{ matrix.os }}
-          path: ${{github.workspace}}/install
+      with:
+        name: libs ${{ matrix.os }}
+        path: ${{github.workspace}}/install
 
