@@ -51,6 +51,6 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: libs ${{ matrix.os }}
+        name: rssdk-${{ matrix.os }}
         path: ${{github.workspace}}/install
 
