@@ -57,6 +57,17 @@ pybind11_add_module(rssdkpy MODULE rssdk.cpp)
 target_link_libraries(rssdkpy PRIVATE rserrors rsdio rspoe)
 set_target_properties(rssdkpy PROPERTIES OUTPUT_NAME "rssdk")
 
+# We need the libs in the same directory on Windows
+# when building as a shared library.
+if (BUILD_SHARED_LIBS AND WIN32)
+  add_custom_command(TARGET rssdkpy POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:rserrors>" "$<TARGET_FILE_DIR:rssdkpy>"
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:rsdio>" "$<TARGET_FILE_DIR:rssdkpy>"
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:rspoe>" "$<TARGET_FILE_DIR:rssdkpy>"
+    COMMENT "Copying shared libs to Python build folder"
+  )
+endif()
+
 #************#
 # Stub Files #
 # ***********#
