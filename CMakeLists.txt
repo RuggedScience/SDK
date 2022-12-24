@@ -222,5 +222,5 @@ if(INSTALL_UTILITIES)
         set(CMAKE_INSTALL_SBINDIR bin)
     endif(MSVC)
 
-    install(TARGETS rsdioctl rspoectl TYPE BIN)
+    install(TARGETS rsdioctl rspoectl)
 endif(INSTALL_UTILITIES)
