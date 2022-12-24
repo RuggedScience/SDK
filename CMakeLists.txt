@@ -14,7 +14,6 @@ include(GNUInstallDirs)
 option(BUILD_TESTS "Build all test" OFF)
 option(BUILD_UTILITIES "Build command line control utilities" OFF)
 option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
-option(INSTALL_XML "Installs XML files" ON)
 option(INSTALL_SDK "Install SDK files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
@@ -197,17 +196,12 @@ if (INSTALL_SDK)
             CACHE STRING "Path to rssdk CMake files")
     endif ()
 
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND UNIX)
-        set (CMAKE_INSTALL_SYSCONFDIR /etc)
-        set (CMAKE_INSTALL_FULL_SYSCONFDIR /etc)
-    endif()
-
     install(TARGETS rserrors rsdio rspoe EXPORT rssdk_Targets
         RUNTIME COMPONENT rssdk_Runtime
         LIBRARY COMPONENT rssdk_Runtime
         NAMELINK_COMPONENT rssdk_Development
         ARCHIVE COMPONENT rssdk_Development
-        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        INCLUDES COMPONENT rssdk_Development
     )
     
     install(DIRECTORY 
@@ -228,10 +222,5 @@ if(INSTALL_UTILITIES)
         set(CMAKE_INSTALL_SBINDIR bin)
     endif(MSVC)
 
-    install(TARGETS rsdioctl DESTINATION ${CMAKE_INSTALL_SBINDIR})
-    install(TARGETS rspoectl DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(TARGETS rsdioctl rspoectl TYPE BIN)
 endif(INSTALL_UTILITIES)
-
-if (INSTALL_XML)
-    install(DIRECTORY xml/ DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${CMAKE_PROJECT_NAME})
-endif(INSTALL_XML)
