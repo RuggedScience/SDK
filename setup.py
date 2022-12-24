@@ -123,10 +123,6 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", "."] + build_args, cwd=build_temp, check=True
         )
 
-package_data = {"rssdk": ["*.py", "*.pyi", "py.typed"]}
-if os.name == "nt":
-    package_data["rssdk"].append("driver/*.dll")
-
 setup(
     ext_modules=[CMakeExtension(name="rssdk")],
     cmdclass=dict(build_ext=CMakeBuild),
