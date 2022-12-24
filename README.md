@@ -80,7 +80,6 @@ sudo cmake --install .
 | BUILD_SHARED_LIBS         | Build the libraries as shared libs (.dll / .so)                       | ON    |
 | BUILD_UTILITIES           | Build the rsdioctl and rspoectl control utilities                     | OFF   |
 | INSTALL_UTILITIES         | Install the utilities when the install command is invoked             | OFF   |
-| INSTALL_XML               | Install the XML files when the install command is invoked             | ON    |
 | INSTALL_SDK               | Install the SDK files when the install command is invoked             | ON    |
 | BUILD_PYTHON_BINDINGS     | Build the Python bindings. See [docs](./extras/python/README.md)      | OFF   |
 | INSTALL_PYTHON_BINDINGS   | Install the Python bindings package to the current Python interpreter | OFF   |
