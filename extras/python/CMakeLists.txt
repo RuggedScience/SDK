@@ -77,7 +77,7 @@ if (_STUBGEN_EXISTS)
     COMMAND stubgen -v -p rssdk -o .
     COMMAND ${CMAKE_COMMAND} -E touch py.typed
     WORKING_DIRECTORY "$<TARGET_FILE_DIR:rssdkpy>"
-    COMMENT "Generating Python stub files"
+    COMMENT "Generating Python stub files in Python build folder"
   )
 else()
   message(WARNING 

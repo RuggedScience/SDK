@@ -32,8 +32,18 @@ endif()
 # copy / install the correct driver dll file.
 include(TargetArch)
 target_architecture(TARGET_ARCH)
+
+message(STATUS "Building for ${TARGET_ARCH}")
+
 if ("${TARGET_ARCH}" STREQUAL "x86_64")
- set(DRIVER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/driver/drv.dll)
+    set(DRIVER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/driver/x64/drv.dll)
+elseif("${TARGET_ARCH}" STREQUAL "i386")
+    set(DRIVER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/driver/x32/drv.dll)
+endif()
+
+
+if (WIN32)
+    message(STATUS "Using ${DRIVER_FILE}")
 endif()
 
 add_library(rserrors 

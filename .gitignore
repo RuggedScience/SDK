@@ -64,4 +64,4 @@ install/
 
 _version.py
 
-!driver/*
+!driver/**
