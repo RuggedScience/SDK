@@ -128,6 +128,13 @@ if (INSTALL_PYTHON_BINDINGS)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/INSTALLER "cmake\n")
 
   install(TARGETS rssdkpy COMPONENT python DESTINATION "${RSSDKPY_INSTDIR}")
+  # Install the shared libs with the package
+  # on Windows to prevent import error.
+  # On Linux we use RPATH
+  if (BUILD_SHARED_LIBS AND WIN32)
+    install(TARGETS rserrors rsdio rspoe COMPONENT python DESTINATION "${RSSDKPY_INSTDIR}")
+  endif()
+
   install(FILES 
       "${CMAKE_CURRENT_SOURCE_DIR}/rssdk/__init__.py"
       "$<TARGET_FILE_DIR:rssdkpy>/rssdk.pyi"
