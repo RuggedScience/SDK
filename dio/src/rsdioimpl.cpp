@@ -40,7 +40,7 @@ getExternalPinInfo(const tinyxml2::XMLElement *pin, int &pinId, PinConfig &info)
     using namespace tinyxml2;
 
     int id, bit, gpio;
-    bool invert, input, output;
+    bool invert, input, output, pullup = false;
     XMLError e = pin->QueryAttribute("id", &id);
     if (e != XML_SUCCESS) return e;
     e = pin->QueryAttribute("bit", &bit);
@@ -53,9 +53,11 @@ getExternalPinInfo(const tinyxml2::XMLElement *pin, int &pinId, PinConfig &info)
     if (e != XML_SUCCESS) return e;
     e = pin->QueryAttribute("output", &output);
     if (e != XML_SUCCESS) return e;
+    e = pin->QueryAttribute("pullup", &pullup);
+    if (e != XML_SUCCESS && e != XML_NO_ATTRIBUTE) return e;
 
     pinId = id;
-    info = PinConfig(bit, gpio, invert, false, input, output);
+    info = PinConfig(bit, gpio, invert, pullup, input, output);
     return XML_SUCCESS;
 }
 
