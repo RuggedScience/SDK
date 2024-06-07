@@ -47,6 +47,13 @@ class PyRsDio {
         return states;
     }
 
+    rs::diomap_t getPinList()
+    {
+        rs::diomap_t map = m_rsdio->getPinList();
+        this->throwLastError();
+        return map;
+    }
+
    private:
     std::shared_ptr<rs::RsDio> m_rsdio;
 

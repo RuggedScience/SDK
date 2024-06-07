@@ -16,6 +16,12 @@ PYBIND11_MODULE(rssdk, module)
         .value("Source", rs::OutputMode::Source)
         .value("Sink", rs::OutputMode::Sink);
 
+    py::class_<rs::PinInfo>(module, "PinInfo")
+        .def(py::init<>())
+        .def(py::init<bool, bool>())
+        .def_readwrite("supportsInput", &rs::PinInfo::supportsInput)
+        .def_readwrite("supportsOutput", &rs::PinInfo::supportsOutput);
+
     py::class_<PyRsDio>(module, "RsDio")
         .def(py::init<>())
         .def(
@@ -51,6 +57,11 @@ PYBIND11_MODULE(rssdk, module)
             &PyRsDio::readAll,
             "Read the state of all pins on the specified DIO bank",
             py::arg("dio")
+        )
+        .def(
+            "getPinList",
+            &PyRsDio::getPinList,
+            "Get the list of DIO pins as a map"
         );
 
     py::enum_<rs::PoeState>(module, "PoeState")
