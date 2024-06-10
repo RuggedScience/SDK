@@ -30,12 +30,22 @@ static const char* stateToString(bool state)
 static rs::OutputMode stringToMode(std::string str)
 {
     std::transform(str.begin(), str.end(), str.begin(), toupper);
-    if (str == "Source" || str == "0")
+    if (str == "SOURCE" || str == "0")
         return rs::OutputMode::Source;
-    else if (str == "Sink" || str == "1")
+    else if (str == "SINK" || str == "1")
         return rs::OutputMode::Sink;
 
     return rs::OutputMode::Error;
+}
+
+static const char* modeToString(rs::OutputMode mode)
+{
+    if (mode == rs::OutputMode::Sink)
+        return "Sink";
+    else if (mode == rs::OutputMode::Source)
+        return "Source";
+
+    return "Error";
 }
 
 static void showUsage()
@@ -53,6 +63,7 @@ static void showUsage()
         << "\t\t\t1, HIGH\n"
         << "\t\t\trequires DIO and PIN to be defined\n"
         << "\n"
+        << "m, mode\t\tOutput the current output mode of a specific dio port\n"
         << "m=MODE, mode=MODE\tsets the output mode of a specific dio port\n"
         << "\t\t\tModes:\n"
         << "\t\t\t0, SOURCE\n"
@@ -224,6 +235,21 @@ int main(int argc, char* argv[])
         if (rsdio->getLastError()) {
             std::cerr << rsdio->getLastErrorString() << std::endl;
             return 1;
+        }
+    }
+    else if (cmd == "m" || cmd == "mode") {
+        rs::OutputMode mode = rsdio->getOutputMode(dio);
+        if (rsdio->getLastError()) {
+            std::cerr << rsdio->getLastErrorString() << std::endl;
+            return 1;
+        }
+        else {
+            if (human)
+                printf("%s\n", modeToString(mode));
+            else if (mode == rs::OutputMode::Source)
+                printf("0");
+            else if (mode == rs::OutputMode::Sink)
+                printf("1");
         }
     }
     else {

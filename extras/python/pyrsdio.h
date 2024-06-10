@@ -34,6 +34,13 @@ class PyRsDio {
         this->throwLastError();
     }
 
+    rs::OutputMode getOutputMode(int dio)
+    {
+        rs::OutputMode mode = m_rsdio->getOutputMode(dio);
+        this->throwLastError();
+        return mode;
+    }
+
     bool digitalRead(int dio, int pin)
     {
         bool state = m_rsdio->digitalRead(dio, pin);

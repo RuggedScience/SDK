@@ -43,6 +43,7 @@ PYBIND11_MODULE(rssdk, module)
             py::arg("dio"),
             py::arg("mode")
         )
+        .def("getOutputMode", &PyRsDio::getOutputMode, py::arg("dio"))
         .def(
             "digitalRead",
             &PyRsDio::digitalRead,

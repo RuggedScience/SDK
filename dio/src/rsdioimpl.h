@@ -22,6 +22,7 @@ class RsDioImpl : public rs::RsDio {
 
     bool canSetOutputMode(int dio) override;
     void setOutputMode(int dio, rs::OutputMode mode) override;
+    rs::OutputMode getOutputMode(int dio) override;
 
     bool digitalRead(int dio, int pin) override;
     void digitalWrite(int dio, int pin, bool state) override;
