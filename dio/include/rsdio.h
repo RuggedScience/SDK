@@ -20,7 +20,9 @@ struct PinInfo {
     PinInfo() : supportsInput(false), supportsOutput(false) {}
 
     PinInfo(bool input, bool output)
-        : supportsInput(input), supportsOutput(output) {}
+        : supportsInput(input), supportsOutput(output)
+    {
+    }
 };
 
 typedef std::map<int, PinInfo> pinmap_t;
@@ -39,6 +41,7 @@ class RsDio {
 
     virtual bool canSetOutputMode(int dio) = 0;
     virtual void setOutputMode(int dio, OutputMode mode) = 0;
+    virtual OutputMode getOutputMode(int dio) = 0;
 
     virtual bool digitalRead(int dio, int pin) = 0;
     virtual void digitalWrite(int dio, int pin, bool state) = 0;

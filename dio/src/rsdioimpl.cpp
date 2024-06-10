@@ -397,6 +397,64 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
     }
 }
 
+rs::OutputMode RsDioImpl::getOutputMode(int dio)
+{
+    if (mp_controller == nullptr) {
+        m_lastError = RsErrorCode::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return rs::OutputMode::Error;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end()) {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid DIO";
+        return rs::OutputMode::Error;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    const int modeSink = static_cast<int>(rs::OutputMode::Sink);
+    const int modeSource = static_cast<int>(rs::OutputMode::Source);
+    if (pinMap.find(modeSink) == pinMap.end() ||
+        pinMap.find(modeSource) == pinMap.end()) {
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
+        m_lastErrorString = "Setting output mode not supported";
+        return rs::OutputMode::Error;
+    }
+
+    try {
+        bool sink = mp_controller->getPinState(pinMap.at(modeSink));
+        bool source = mp_controller->getPinState(pinMap.at(modeSource));
+
+        m_lastError = std::error_code();
+
+        if (sink && !source) {
+            return rs::OutputMode::Sink;
+        }
+        else if (source && !sink) {
+            return rs::OutputMode::Source;
+        }
+        else {
+            // TODO: How should be handle this?
+            // If sink and source are equal then both chips will be disabled
+            // and outputs will not work at all. Throw error or force a mode?
+        }
+    }
+    catch (const std::system_error &ex) {
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
+    catch (...) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = "Unknown exception occured";
+    }
+
+    return rs::OutputMode::Error;
+}
+
 bool RsDioImpl::digitalRead(int dio, int pin)
 {
     bool state = false;
