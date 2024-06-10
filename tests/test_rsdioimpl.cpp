@@ -73,6 +73,13 @@ int main()
         return 1;
     }
 
+    dio.getOutputMode(2);
+    verifyError(
+        "getOutputMode (unsupported dio)",
+        dio.getLastError(),
+        std::errc::function_not_supported
+    );
+
     dio.setOutputMode(2, rs::OutputMode::Sink);
     verifyError(
         "setOutputMode (unsupported dio)",

@@ -437,6 +437,10 @@ rs::OutputMode RsDioImpl::getOutputMode(int dio)
             // TODO: How should be handle this?
             // If sink and source are equal then both chips will be disabled
             // and outputs will not work at all. Throw error or force a mode?
+            m_lastError = RsErrorCode::UnknownError;
+            m_lastErrorString =
+                "Unexpected output mode found. Try calling setOutputMode to "
+                "fix it";
         }
     }
     catch (const std::system_error &ex) {
