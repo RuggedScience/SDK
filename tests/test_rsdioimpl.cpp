@@ -4,6 +4,18 @@
 #include "diocontroller.h"
 #include "utils.h"
 
+std::string modeToString(rs::OutputMode mode)
+{
+    switch (mode) {
+        case rs::OutputMode::Sink:
+            return std::string("Sink");
+        case rs::OutputMode::Source:
+            return std::string("Source");
+        default:
+            return std::string("Error");
+    }
+}
+
 int main()
 {
     TestDioController *controller = new TestDioController();
@@ -19,7 +31,8 @@ int main()
         {-2, sinkPin},
         {1, outputPin},
         {2, inputPin},
-        {3, dualPin}};
+        {3, dualPin}
+    };
 
     dioconfigmap_t dioMap = {{1, pinMap}, {2, {}}};
     RsDioImpl dio(controller, dioMap);
@@ -39,7 +52,26 @@ int main()
     );
 
     dio.setOutputMode(1, rs::OutputMode::Sink);
-    verifyError("setOutputMode (valid)", dio.getLastError());
+    verifyError("setOutputMode (Sink)", dio.getLastError());
+
+    rs::OutputMode mode = dio.getOutputMode(1);
+    verifyError("getOutputMode (Sink)", dio.getLastError());
+
+    if (mode != rs::OutputMode::Sink) {
+        std::cerr << "Expected OutputMode::Sink but got OutputMode::"
+                  << modeToString(mode) << ".\n";
+        return 1;
+    }
+
+    dio.setOutputMode(1, rs::OutputMode::Source);
+    verifyError("setOutputMode (Source)", dio.getLastError());
+
+    mode = dio.getOutputMode(1);
+    if (mode != rs::OutputMode::Source) {
+        std::cerr << "Expected OutputMode::Source but got OutputMode::"
+                  << modeToString(mode) << ".\n";
+        return 1;
+    }
 
     dio.setOutputMode(2, rs::OutputMode::Sink);
     verifyError(
@@ -91,7 +123,7 @@ int main()
 
     if (dio.digitalRead(1, 1) != true) {
         std::cerr
-            << "digitalRead returned false after call to  digitalWrite(true)"
+            << "digitalRead returned false after call to digitalWrite(true)"
             << std::endl;
         return 1;
     }
