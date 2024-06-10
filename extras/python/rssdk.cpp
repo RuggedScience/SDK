@@ -31,6 +31,12 @@ PYBIND11_MODULE(rssdk, module)
             py::arg("fileName")
         )
         .def(
+            "canSetOutputMode",
+            &PyRsDio::canSetOutputMode,
+            "Check if DIO has programmable output mode.",
+            py::arg("dio")
+        )
+        .def(
             "setOutputMode",
             &PyRsDio::setOutputMode,
             "Set the output mode of a single DIO bank",

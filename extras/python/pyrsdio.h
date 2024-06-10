@@ -21,6 +21,13 @@ class PyRsDio {
         this->throwLastError();
     }
 
+    bool canSetOutputMode(int dio)
+    {
+        bool ret = m_rsdio->canSetOutputMode(dio);
+        this->throwLastError();
+        return ret;
+    }
+
     void setOutputMode(int dio, rs::OutputMode mode)
     {
         m_rsdio->setOutputMode(dio, mode);
