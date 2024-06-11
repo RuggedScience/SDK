@@ -21,6 +21,8 @@ class PyRsPoe {
         this->throwLastError();
     }
 
+    std::vector<int> getPortList() const { return m_rspoe->getPortList(); }
+
     rs::PoeState getPortState(int port)
     {
         rs::PoeState ret = m_rspoe->getPortState(port);

@@ -69,6 +69,11 @@ PYBIND11_MODULE(rssdk, module)
             "getPinList",
             &PyRsDio::getPinList,
             "Get the list of DIO pins as a map"
+        )
+        .def(
+            "getLastErrorString",
+            &PyRsDio::getLastErrorString,
+            "Get the message for the last error"
         );
 
     py::enum_<rs::PoeState>(module, "PoeState")
@@ -83,6 +88,11 @@ PYBIND11_MODULE(rssdk, module)
             &PyRsPoe::setXmlFile,
             "Set hardware XML file",
             py::arg("fileName")
+        )
+        .def(
+            "getPortList",
+            &PyRsPoe::getPortList,
+            "Get the list of available ports"
         )
         .def(
             "getPortState",

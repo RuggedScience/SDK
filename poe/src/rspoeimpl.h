@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "../include/rspoe.h"
 #include "controllers/abstractpoecontroller.h"
@@ -20,6 +21,8 @@ class RsPoeImpl : public rs::RsPoe {
 
     void destroy() override;
     void setXmlFile(const char *fileName) override;
+
+    std::vector<int> getPortList() const override;
 
     rs::PoeState getPortState(int port) override;
     void setPortState(int port, rs::PoeState state) override;
