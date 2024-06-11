@@ -141,6 +141,15 @@ void RsPoeImpl::setXmlFile(const char *fileName)
     m_lastError = std::error_code();
 }
 
+std::vector<int> RsPoeImpl::getPortList() const
+{
+    std::vector<int> keys;
+    for (const auto &pair : m_portMap) {
+        keys.push_back(pair.first);
+    }
+    return keys;
+}
+
 rs::PoeState RsPoeImpl::getPortState(int port)
 {
     rs::PoeState state = rs::PoeState::Error;

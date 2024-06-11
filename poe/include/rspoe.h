@@ -3,6 +3,7 @@
 
 #include <string>
 #include <system_error>
+#include <vector>
 
 #ifdef NO_EXPORT
 #define RSPOE_EXPORT
@@ -26,6 +27,8 @@ class RsPoe {
 
     virtual void destroy() = 0;
     virtual void setXmlFile(const char *fileName) = 0;
+
+    virtual std::vector<int> getPortList() const = 0;
 
     virtual PoeState getPortState(int port) = 0;
     virtual void setPortState(int port, PoeState state) = 0;
