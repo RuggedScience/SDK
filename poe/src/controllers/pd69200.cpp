@@ -21,7 +21,9 @@
 #define CHKSUM_L        MSG_LEN - 1
 #define CHKSUM_H        MSG_LEN - 2
 
-static const uint8_t kDeviceId = 0x16;
+#define PD69200_ID      0x16
+#define PD69220_ID      0x1C
+
 
 // Get Software Version
 static const msg_t softwareVersionCmd = {
@@ -76,12 +78,11 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
 	m_devAddr(dev),
     m_lastEcho(0)
 {
-    int devId;
     // Fixes a bug causing an "invalid echo".
-    try { devId = getDeviceId(); }
-    catch (const std::system_error&) { devId = getDeviceId(); }
+    try { m_devId = getDeviceId(); }
+    catch (const std::system_error&) { m_devId = getDeviceId(); }
     
-	if (devId != kDeviceId)
+	if (m_devId != PD69200_ID && m_devId != PD69220_ID)
 		throw std::system_error(std::make_error_code(std::errc::no_such_device));
 
     PowerBankSettings s = getPowerBankSettings(0);
@@ -241,7 +242,7 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
     return response;
 }
 
-int Pd69200::getDeviceId()
+uint8_t Pd69200::getDeviceId()
 {
     msg_t response, msg = softwareVersionCmd;
     response = sendMsgToController(msg);

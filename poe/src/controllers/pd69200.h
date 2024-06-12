@@ -29,10 +29,11 @@ private:
 	uint16_t m_busAddr;
 	uint8_t m_devAddr;
 	uint8_t m_lastEcho;
+    uint8_t m_devId;
 
-	msg_t sendMsgToController(msg_t& msg);
+    msg_t sendMsgToController(msg_t& msg);
 
-	int getDeviceId();
+	uint8_t getDeviceId();
 
 	struct PortStatus
 	{
