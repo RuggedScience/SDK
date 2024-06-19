@@ -96,9 +96,9 @@ float Ltc4266::getPortVoltage(uint8_t port)
 	if (reg == 0)
 		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, reg);
 	uint16_t volts = 0x00FF & data;
-	data = smbusReadRegister(m_busAddr, m_devAddr, reg+1);
+	data = smbus_read_register(m_busAddr, m_devAddr, reg+1);
 	volts |= data << 8;
 	return (volts * kVoltsCoef) / 1000.0f; // Convert from mV to V
 }
@@ -114,9 +114,9 @@ float Ltc4266::getPortCurrent(uint8_t port)
 	if (reg == 0)
 		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, reg);
 	uint16_t cur = 0x00FF & data;
-	data = smbusReadRegister(m_busAddr, m_devAddr, reg+1);
+	data = smbus_read_register(m_busAddr, m_devAddr, reg+1);
 	cur |= data << 8;
 	return (cur * kCurCoef) / 1000000.0f; // Convert from uA to A
 }
@@ -135,7 +135,7 @@ int Ltc4266::getBudgetConsumed()
 
 int Ltc4266::getDeviceId() const
 {
-	return smbusReadRegister(m_busAddr, m_devAddr, kDevIdReg);
+	return smbus_read_register(m_busAddr, m_devAddr, kDevIdReg);
 }
 
 void Ltc4266::setPortEnabled(uint8_t port, bool enabled)
@@ -144,12 +144,12 @@ void Ltc4266::setPortEnabled(uint8_t port, bool enabled)
 	if (enabled) data = (1 << port);
 	else data = (1 << (port + 4));
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kPwrpbReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kPwrpbReg, data);
 }
 
 uint8_t Ltc4266::getPortMode(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kOpmdReg);
 
 	//The mode is stored in two bits so lets shift it over until the two bits for our port are the LSBs.
 	return ((data >> (port * 2)) & 0b11);
@@ -157,17 +157,17 @@ uint8_t Ltc4266::getPortMode(uint8_t port) const
 
 void Ltc4266::setPortMode(uint8_t port, uint8_t mode)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kOpmdReg);
 
 	data &= ~(0b11 << (port * 2));			//Make sure both bits for this port are low.
 	data |= (mode << (port * 2));			//Then just OR the desired mode (shifted to the correct position) and we are good.
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kOpmdReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kOpmdReg, data);
 }
 
 bool Ltc4266::getPortSensing(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDisenaReg);
 	//Sensing is enabled if the ports bit is set in the 4 MSBs or 4 LSBs so we check both.
 	//We always only set the 4 LSBs but lets be safe in case someone else has been messing around in the registers.
 	return (data & ((1 << (port + 4)) | (1 << port))) != 0;
@@ -175,46 +175,46 @@ bool Ltc4266::getPortSensing(uint8_t port) const
 
 void Ltc4266::setPortSensing(uint8_t port, bool sense)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDisenaReg);
 	//Bits 4-7 do the same thing as 0-3 on this chip (PD69104).
 	//To avoid confusion, let's only work with bits 0-3 and always keeps bits 4-7 low.
 	data &= 0x0F;
 	if (sense) data |= (1 << port);
 	else data &= ~(1 << port);
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kDisenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDisenaReg, data);
 }
 
 bool Ltc4266::getPortDetection(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	return (data & (1 << port)) != 0;
 }
 
 void Ltc4266::setPortDetection(uint8_t port, bool detect)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	if (detect) data |= (1 << port);
 	else data &= ~(1 << port);
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kDetenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDetenaReg, data);
 }
 
 
 bool Ltc4266::getPortClassification(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	//Left shift by 4 since Classification is stored in the 4 MSBs
 	return (data & (1 << (port + 4))) != 0;
 }
 
 void Ltc4266::setPortClassification(uint8_t port, bool classify)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	//Classification and Detection are in the same register. 
 	//4 MSBs are for Classification so we need to shift our bitmask.
 	if (classify) data |= (1 << (port + 4));
 	else data &= ~(1 << (port + 4));
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kDetenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDetenaReg, data);
 }

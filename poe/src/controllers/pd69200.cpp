@@ -196,11 +196,11 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
     
     for (size_t i = 0; i < MSG_LEN - 1; ++i)    // Send everything but the last byte.
     {
-        smbusWriteByte(m_busAddr, m_devAddr, msg[i]);
+        smbus_write(m_busAddr, m_devAddr, msg[i]);
     }
 
     msg_t response;
-    smbusI2CRead(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()); // Now we can send the last byte
+    i2c_read_block(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()); // Now we can send the last byte
 
 #ifdef DEBUG
     std::cout << "Received message from controller" << std::endl;
