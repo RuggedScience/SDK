@@ -13,15 +13,18 @@
 #include "portio.hpp"
 #endif
 
-static const int kMaxRetry = 10000;
 #define BIT(x) (1 << x)
 #define SMBUS_READ 1
 #define SMBUS_WRITE 0
+#define SMBUS_MAX_BLOCK_SIZE 32
 
-// Number of ms to sleep between checking status reg
-#define SLEEP_TIME 100
-// Number of ms to keep retrying before giving up
-#define TIMEOUT_TIME 10000
+typedef std::chrono::milliseconds duration_t;
+typedef std::chrono::high_resolution_clock transaction_clock_t;
+typedef transaction_clock_t::time_point time_point_t;
+
+static const std::chrono::nanoseconds sleep_time{10};
+static const duration_t max_time{100};
+static time_point_t transaction_start;
 
 // SMBus Registers and bits as described in the Intel chipset datasheet. (Page
 // 746 Table 18-2)
@@ -54,6 +57,7 @@ static const uint8_t kCntrlBlck = 0x14;
 static const uint8_t kCntrlI2CRead = 0x18;
 static const uint8_t kCntrlBlckProc = 0x1C;
 
+static const uint8_t kAuxCntrlE32b = BIT(1);
 static const uint8_t kAuxCntrlCrc = BIT(0);
 
 #define HST_STS(x) (x + 0x0)
@@ -64,7 +68,7 @@ static const uint8_t kAuxCntrlCrc = BIT(0);
 #define HST_DATA1(x) (x + 0x6)
 #define HST_BLK_DB(x) (x + 0x7)
 #define AUX_CTL(x) (x + 0xD)
-#define IO_MAX 0xD
+#define IO_MAX 0x17
 
 enum class transaction_type {
     QUICK = 0x00,
@@ -83,9 +87,20 @@ struct transaction_data {
     transaction_type type;
     uint8_t command;
     uint8_t *block;
-    size_t size;
+    uint8_t size;
     char read_write;
 };
+
+static duration_t timeElapsed()
+{
+    time_point_t now = transaction_clock_t::now();
+    return std::chrono::duration_cast<duration_t>(now - transaction_start);
+}
+
+static duration_t timeLeft()
+{
+    return std::chrono::duration_cast<duration_t>(max_time - timeElapsed());
+}
 
 static int initBus(transaction_data *data)
 {
@@ -100,8 +115,11 @@ static int initBus(transaction_data *data)
 
     status &= kStsFlags;
     if (status) {
+        // Clear flags
         outb(status, HST_STS(data->bus));
     }
+
+    status = inb(HST_STS(data->bus));
 
     // Disable CRC / PEC
     // outb(inb(AUX_CTL(bus)) & (~kAuxCntrlCrc), AUX_CTL(bus));
@@ -123,37 +141,39 @@ static void setHostAddress(transaction_data *data)
 
 static int waitForIntr(transaction_data *data)
 {
-    int status, busy, timeout = TIMEOUT_TIME;
+    int status, busy;
 
     do {
-        std::this_thread::sleep_for(std::chrono::microseconds(SLEEP_TIME));
+        std::this_thread::sleep_for(sleep_time);
+        
         status = inb(HST_STS(data->bus));
         busy = status & kStsBusy;
         status &= kStsErrorFlags | kStsIntr;
-        if (!busy && status) return status & kStsErrorFlags;
-        timeout -= SLEEP_TIME;
-    } while (timeout);
+        if (!busy && status) 
+            return status & kStsErrorFlags;
+        
+    } while (timeLeft().count() > 0);
 
     return -ETIMEDOUT;
 }
 
 static int waitForByteDone(transaction_data *data)
 {
-    int status, timeout = TIMEOUT_TIME;
+    int status;
 
     do {
-        std::this_thread::sleep_for(std::chrono::microseconds(SLEEP_TIME));
+        std::this_thread::sleep_for(sleep_time);
         status = inb(HST_STS(data->bus));
         if (status & (kStsErrorFlags | kStsDone))
             return status & kStsErrorFlags;
-        timeout -= SLEEP_TIME;
-    } while (timeout);
+    } while (timeLeft().count() > 0);
 
     return -ETIMEDOUT;
 }
 
 static int startTransaction(transaction_data *data)
 {
+    transaction_start = transaction_clock_t::now();
     outb((uint8_t)data->type | kCntrlStart, HST_CTRL(data->bus));
     return waitForIntr(data);
 }
@@ -163,12 +183,17 @@ static void throwError(std::errc error)
     throw std::system_error(std::make_error_code(error));
 }
 
+static void throwError(std::errc error, const char *message)
+{
+    throw std::system_error(std::make_error_code(error), message);
+}
+
 static void handleResult(transaction_data *data, int status)
 {
     if (status < 0) {
         // Try to kill the current command
         outb(kCntrlKill, HST_CTRL(data->bus));
-        std::this_thread::sleep_for(std::chrono::microseconds(1500));
+        std::this_thread::sleep_for(sleep_time);
         outb(0, HST_CTRL(data->bus));
     }
 
@@ -273,6 +298,7 @@ void smbus_write(uint16_t bus, uint8_t device, uint8_t command)
     data.device = device;
     data.type = transaction_type::BYTE;
     data.read_write = SMBUS_WRITE;
+    data.command = command;
     smbus_transaction(&data);
 }
 
@@ -310,6 +336,71 @@ void smbus_write_register(
     smbus_transaction(&data);
 }
 
+void smbus_write_block(
+    uint16_t bus,
+    uint8_t device,
+    uint8_t *block,
+    size_t size
+)
+{
+    transaction_data data;
+    data.bus = bus;
+    data.device = device;
+    data.type = transaction_type::BLOCK;
+    data.block = block;
+    data.size = size;
+    data.read_write = SMBUS_WRITE;
+
+    initBus(&data);
+    setHostAddress(&data);
+
+    outb(size, HST_DATA0(bus));
+    outb(block[0], HST_BLK_DB(bus));
+    outb((uint8_t)data.type | kCntrlStart, HST_CTRL(bus));
+    for (size_t i = 1; i < size; ++i) {
+        handleResult(&data, waitForByteDone(&data));
+        outb(block[i], HST_BLK_DB(bus));
+        outb(kStsDone, HST_STS(bus));
+    }
+    handleResult(&data, waitForIntr(&data));
+    cleanupBus(&data);
+    
+}
+
+void smbus_read_block(uint16_t bus, uint8_t device, uint8_t command, uint8_t *block, uint8_t size)
+{
+    if (size > SMBUS_MAX_BLOCK_SIZE) {
+        throwError(std::errc::protocol_error, "Invalid SMBus block size");
+    }
+
+    transaction_data data;
+    data.bus = bus;
+    data.device = device;
+    data.type = transaction_type::BLOCK;
+    data.block = block;
+    data.size = size;
+    data.read_write = SMBUS_READ;
+
+    uint8_t aux_ctrl = inb(AUX_CTL(bus));
+    outb(inb(AUX_CTL(bus)) | kAuxCntrlE32b ,AUX_CTL(bus));
+
+    initBus(&data);
+    setHostAddress(&data);
+    outb(command, HST_CMD(bus));
+    outb(size, HST_DATA0(bus));
+    handleResult(&data, startTransaction(&data));
+
+    data.size = inb(HST_DATA0(bus));
+    inb(HST_CTRL(bus));
+
+    for (int i = 0; i < data.size; i++)
+    {
+        data.block[i] = inb(HST_BLK_DB(bus));
+    }
+
+    outb(inb(AUX_CTL(bus)) & ~kAuxCntrlE32b ,AUX_CTL(bus));
+}
+
 void i2c_read_block(
     uint16_t bus,
     uint8_t device,
@@ -329,19 +420,32 @@ void i2c_read_block(
     initBus(&data);
     setHostAddress(&data);
     outb(command, HST_DATA1(bus));
+    outb(0x00, HST_BLK_DB(bus));
 
     uint8_t transaction = (uint8_t)data.type;
     if (size == 1) transaction |= kCntrlLastByte;
     outb(transaction | kCntrlStart, HST_CTRL(bus));
 
-    for (size_t i = 1; i <= size; i++) {
+    // I have no clue why we have to do this but basically
+    // we have to wait until we stop receiving 0x00 from the controller
+    // even though we get the "byte done" signal...
+    buf[0] = 0;
+    while (buf[0] == 0)
+    {
         handleResult(&data, waitForByteDone(&data));
-
-        buf[i] = inb(HST_BLK_DB(bus));
-        if (i == size - 1) outb(transaction | kCntrlLastByte, HST_CTRL(bus));
+        buf[0] = inb(HST_BLK_DB(bus));
         outb(kStsDone, HST_STS(bus));
     }
 
+    uint8_t in = 0;
+    for (size_t i = 1; i < size; i++) {
+        handleResult(&data, waitForByteDone(&data));
+        buf[i] = inb(HST_BLK_DB(bus));
+        // If next read is our last byte, we need to inform the PCH.
+        if (i + 1 == size) outb(transaction | kCntrlLastByte, HST_CTRL(bus));
+        outb(kStsDone, HST_STS(bus));
+    }
+        
     handleResult(&data, waitForIntr(&data));
     cleanupBus(&data);
 }
