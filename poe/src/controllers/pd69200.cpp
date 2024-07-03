@@ -78,12 +78,20 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget) :
 	m_devAddr(dev),
     m_lastEcho(0)
 {
-    // Fixes a bug causing an "invalid echo".
-    try { m_devId = getDeviceId(); }
-    catch (const std::system_error&) { m_devId = getDeviceId(); }
-    
-	if (m_devId != PD69200_ID && m_devId != PD69220_ID)
-		throw std::system_error(std::make_error_code(std::errc::no_such_device));
+    // There is an edge case that happens if there was any sort of error on a previous transaction.
+    // The controller will store the responses and send those before responding to our message.
+    // We need to clear all of the old responses by reading them all.
+    // Once we recieve an entire empty response, we should be good.
+    int count = 0;
+    while (count++ < MSG_LEN)
+    {
+        if (smbus_read(bus, dev) != 0) count = 0;
+    }
+
+    m_devId = getDeviceId();
+
+    if (m_devId != PD69200_ID && m_devId != PD69220_ID)
+        throw std::system_error(std::make_error_code(std::errc::no_such_device));
 
     PowerBankSettings s = getPowerBankSettings(0);
     if (s.powerLimit != totalBudget)
@@ -193,14 +201,13 @@ msg_t Pd69200::sendMsgToController(msg_t& msg)
             std::cout << std::endl;
     }
 #endif // DEBUG
-    
+
+    msg_t response;
     for (size_t i = 0; i < MSG_LEN - 1; ++i)    // Send everything but the last byte.
     {
         smbus_write(m_busAddr, m_devAddr, msg[i]);
     }
-
-    msg_t response;
-    i2c_read_block(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size()); // Now we can send the last byte
+    i2c_read_block(m_busAddr, m_devAddr, msg[MSG_LEN - 1], response.data(), response.size());  // Now we can send the last byte
 
 #ifdef DEBUG
     std::cout << "Received message from controller" << std::endl;
