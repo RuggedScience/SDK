@@ -91,7 +91,7 @@ struct transaction_data {
     transaction_type type;
     uint8_t command;
     uint8_t *block;
-    size_t size;
+    uint8_t size;
     char read_write;
 };
 
@@ -271,7 +271,7 @@ static void smbus_transaction(transaction_data *data)
         case transaction_type::BLOCK:
             outb(data->command, HST_CMD(data->bus));
             if (data->read_write == SMBUS_WRITE) {
-                outb((uint8_t)data->size, HST_DATA0(data->bus));
+                outb(data->size, HST_DATA0(data->bus));
                 outb(data->block[0], HST_BLK_DB(data->bus));
             }
             break;
@@ -389,23 +389,6 @@ void smbus_write_register(
     smbus_transaction(&data);
 }
 
-void smbus_write_block(
-    uint16_t bus,
-    uint8_t device,
-    uint8_t *block,
-    size_t size
-)
-{
-    transaction_data data;
-    data.bus = bus;
-    data.device = device;
-    data.type = transaction_type::BLOCK;
-    data.block = block;
-    data.size = size;
-    data.read_write = SMBUS_WRITE;
-    smbus_transaction(&data);
-}
-
 void smbus_read_block(
     uint16_t bus,
     uint8_t device,
@@ -423,14 +406,39 @@ void smbus_read_block(
     smbus_transaction(&data);
 }
 
+void smbus_write_block(
+    uint16_t bus,
+    uint8_t device,
+    uint8_t *block,
+    uint8_t size
+)
+{
+    if (size > SMBUS_MAX_BLOCK_SIZE) {
+        throwError(std::errc::protocol_error, "Invalid i2c read size");
+    }
+    
+    transaction_data data;
+    data.bus = bus;
+    data.device = device;
+    data.type = transaction_type::BLOCK;
+    data.block = block;
+    data.size = size;
+    data.read_write = SMBUS_WRITE;
+    smbus_transaction(&data);
+}
+
 void i2c_read_block(
     uint16_t bus,
     uint8_t device,
     uint8_t command,
     uint8_t *buf,
-    size_t size
+    uint8_t size
 )
 {
+    if (size > SMBUS_MAX_BLOCK_SIZE) {
+        throwError(std::errc::protocol_error, "Invalid i2c read size");
+    }
+
     transaction_data data;
     data.bus = bus;
     data.device = device;

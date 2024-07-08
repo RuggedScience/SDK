@@ -18,14 +18,14 @@ void smbus_read_block(
     uint16_t bus,
     uint8_t device,
     uint8_t command,
-    uint8_t *block,
-    uint8_t size
+    uint8_t *block
 );
+
 void smbus_write_block(
     uint16_t bus,
     uint8_t device,
     uint8_t *block,
-    size_t size
+    uint8_t size
 );
 
 void i2c_read_block(
@@ -33,7 +33,7 @@ void i2c_read_block(
     uint8_t device,
     uint8_t command,
     uint8_t *buf,
-    size_t size
+    uint8_t size
 );
 
 #endif  // SMBUS_H
