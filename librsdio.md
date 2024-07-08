@@ -60,6 +60,19 @@ enum class rs::OutputMode
 
 <br>
 
+### PinDirection
+```c++
+enum class rs::PinDirection
+```
+---
+| Constant  |
+|-----------|
+| Input     |
+| Output    |
+
+<br>
+
+
 ## Public Functions
 
 ### setXmlFile
@@ -109,6 +122,37 @@ Sets the state of `pin` on `dio` to `state`. Can only be used on pins in output 
 dio - The number of the dio which is being set. Screen printed on the unit. Generally 1 or 2.  
 pin - The number of the pin which is being set. Screen printed on the unit. Generally 1 through 20.  
 state - The state to which the supplied dio / pin should be set.  
+
+<br>
+
+### setPinDirection
+```c++
+void RsDio::setPinDirection(int dio, int pin, rs::PinDirection dir)
+```
+
+Sets the direction of `pin` on `dio` to `dir`. Will cause an error if the pin does not support the provided direction.
+
+---
+
+### Parameters
+dio - The number of the dio which is being set. Screen printed on the unit. Generally 1 or 2.  
+pin - The number of the pin which is being set. Screen printed on the unit. Generally 1 through 20.  
+dir - The direction to which the supplied dio / pin should be set.  
+
+<br>
+
+### getPinDirection
+```c++
+rs::PinDirection RsDio::getPinDirection(int dio, int pin)
+```
+
+Gets the direction of `pin` on `dio`.
+
+---
+
+### Parameters
+dio - The number of the dio which is being set. Screen printed on the unit. Generally 1 or 2.  
+pin - The number of the pin which is being set. Screen printed on the unit. Generally 1 through 20.  
 
 <br>
 
