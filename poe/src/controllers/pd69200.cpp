@@ -8,7 +8,7 @@
 
 #include "../../../utils/i801_smbus.h"
 
-//#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
@@ -324,12 +324,12 @@ msg_t Pd69200::sendMsgToController(msg_t &msg)
 #endif  // DEBUG
 
     // See table 1-2 from the PD692x0 serial communication protocol user guide.
-    // According to the serial communication guide, we need to wait 30ms between commands.
-    // A command is a message with a key of 0x00 and the key is the first byte in the message.
-    // So check if we are sending a command.
+    // According to the serial communication guide, we need to wait 30ms between
+    // commands. A command is a message with a key of 0x00 and the key is the
+    // first byte in the message. So check if we are sending a command.
     if (MSG_KEY(msg) == COMMAND_KEY) {
         // Calculate how long it's been since the last time we sent a command.
-        ns_t deltaTime = timer_t::now() - m_lastCommandTime;
+        ns_t deltaTime = clock_timer_t::now() - m_lastCommandTime;
         ns_t timeLeft = ms_t(30) - deltaTime;
         // If we have time left, we need to sleep for that much time.
         if (timeLeft.count() > 0) {
@@ -342,7 +342,8 @@ msg_t Pd69200::sendMsgToController(msg_t &msg)
     }
 
     // See table 1-2 from the PD692x0 serial communication protocol user guide.
-    // We have to wait 30ms after sending a message before we can read back the response.
+    // We have to wait 30ms after sending a message before we can read back the
+    // response.
     std::this_thread::sleep_for(ms_t(30));
 
     msg_t response;
@@ -353,7 +354,7 @@ msg_t Pd69200::sendMsgToController(msg_t &msg)
     // As described above, we need to wait between command messages.
     // Log the time we sent the last command so we can make sure we do this.
     if (MSG_KEY(msg) == COMMAND_KEY) {
-        m_lastCommandTime = timer_t::now();
+        m_lastCommandTime = clock_timer_t::now();
     }
 
 #ifdef DEBUG
