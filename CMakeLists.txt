@@ -46,7 +46,7 @@ if (WIN32)
 endif()
 
 add_library(rserrors 
-    error/src/rserrors.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/error/src/rserrors.cpp
 )
 target_include_directories(
     rserrors PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/error/include>"
@@ -56,10 +56,10 @@ target_compile_definitions(
 )
 
 add_library(rsdio
-    dio/src/rsdioimpl.cpp 
-    dio/src/controllers/ite8783.cpp 
-    dio/src/controllers/ite8786.cpp 
-    utils/tinyxml2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dio/src/rsdioimpl.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/dio/src/controllers/ite8783.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/dio/src/controllers/ite8786.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/tinyxml2.cpp
 )
 target_link_libraries(rsdio PUBLIC rserrors)
 target_include_directories(
@@ -70,12 +70,12 @@ target_compile_definitions(
 )
 
 add_library(rspoe
-    poe/src/rspoeimpl.cpp 
-    poe/src/controllers/pd69104.cpp 
-    poe/src/controllers/pd69200.cpp 
-    poe/src/controllers/ltc4266.cpp 
-    utils/tinyxml2.cpp 
-    utils/i801_smbus.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/poe/src/rspoeimpl.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/poe/src/controllers/pd69104.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/poe/src/controllers/pd69200.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/poe/src/controllers/ltc4266.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/tinyxml2.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/i801_smbus.cpp
 )
 target_link_libraries(rspoe PUBLIC rserrors)
 target_include_directories(
