@@ -91,7 +91,7 @@ struct transaction_data {
     transaction_type type;
     uint8_t command;
     uint8_t *block;
-    uint8_t size;
+    size_t size;
     char read_write;
 };
 
@@ -245,29 +245,6 @@ static void handleResult(transaction_data *data, int status)
     }
 }
 
-static void smbus_block_transaction() {}
-
-static int i2c_block_transaction(transaction_data *data)
-{
-    if (data->read_write == SMBUS_READ) {
-        outb(data->command, HST_DATA1(data->bus));
-    }
-    else {
-        outb(data->command, HST_CMD(data->bus));
-        // TODO: Set I2C_EN bit in PCI config space
-        outb(data->size, HST_DATA0(data->bus));
-        outb(data->block[0], HST_BLK_DB(data->bus));
-    }
-
-    uint8_t transaction = (uint8_t)data->type;
-    if (data->size == 1) transaction |= kCntrlLastByte;
-    outb(transaction | kCntrlStart, HST_CTRL(data->bus));
-
-    for (size_t i = 0; i <= data->size; ++i) {
-        handleResult(data, waitForByteDone(data));
-    }
-}
-
 static void smbus_transaction(transaction_data *data)
 {
     initBus(data);
@@ -294,7 +271,7 @@ static void smbus_transaction(transaction_data *data)
         case transaction_type::BLOCK:
             outb(data->command, HST_CMD(data->bus));
             if (data->read_write == SMBUS_WRITE) {
-                outb(data->size, HST_DATA0(data->bus));
+                outb((uint8_t)data->size, HST_DATA0(data->bus));
                 outb(data->block[0], HST_BLK_DB(data->bus));
             }
             break;
