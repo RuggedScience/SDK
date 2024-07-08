@@ -99,9 +99,9 @@ float Pd69104::getPortVoltage(uint8_t port)
 	if (reg == 0)
 		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, reg);
 	uint16_t volts = 0x00FF & data;
-	data = smbusReadRegister(m_busAddr, m_devAddr, reg+1);
+	data = smbus_read_register(m_busAddr, m_devAddr, reg+1);
 	volts |= data << 8;
 	return (volts * kVoltsCoef) / 1000.0f; // Convert from mV to V
 }
@@ -117,9 +117,9 @@ float Pd69104::getPortCurrent(uint8_t port)
 	if (reg == 0)
 		throw std::system_error(std::make_error_code(std::errc::invalid_argument), "Invalid port");
 
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, reg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, reg);
 	uint16_t cur = 0x00FF & data;
-	data = smbusReadRegister(m_busAddr, m_devAddr, reg+1);
+	data = smbus_read_register(m_busAddr, m_devAddr, reg+1);
 	cur |= data << 8;
 
 	return (cur * kCurCoef) / 1000000.0f; // Convert from uA to A
@@ -127,7 +127,7 @@ float Pd69104::getPortCurrent(uint8_t port)
 
 int Pd69104::getBudgetConsumed()
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kTotalPwrReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kTotalPwrReg);
 	return data;
 }
 
@@ -138,17 +138,18 @@ int Pd69104::getBudgetAvailable()
 
 int Pd69104::getBudgetTotal()
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kPwrGdReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kPwrGdReg);
 	if (data > 7)
 		throw std::system_error(std::make_error_code(std::errc::protocol_error), "Received invalid power bank");
 
-	data = smbusReadRegister(m_busAddr, m_devAddr, kPwrBankBAR + data);
+	data = smbus_read_register(m_busAddr, m_devAddr, kPwrBankBAR + data);
 	return data;
 }
 
 int Pd69104::getDeviceId() const
 {
-	return smbusReadRegister(m_busAddr, m_devAddr, kDevIdReg);
+    return smbus_read_register(m_busAddr, m_devAddr, kDevIdReg);
+    //return smbusReadRegister(m_busAddr, m_devAddr, kDevIdReg);
 }
 
 void Pd69104::setPortEnabled(uint8_t port, bool enabled)
@@ -157,27 +158,27 @@ void Pd69104::setPortEnabled(uint8_t port, bool enabled)
 	if (enabled) data = (1 << port);
 	else data = (1 << (port + 4));
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kPwrpbReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kPwrpbReg, data);
 }
 
 uint8_t Pd69104::getPortMode(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kOpmdReg);
 	//The mode is stored in two bits so lets shift it over until the two bits for our port are the LSBs.
 	return ((data >> (port * 2)) & 0b11);
 }
 
 void Pd69104::setPortMode(uint8_t port, uint8_t mode)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kOpmdReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kOpmdReg);
 	data &= ~(0b11 << (port * 2));			//Make sure both bits for this port are low.
 	data |= (mode << (port * 2));			//Then just OR the desired mode (shifted to the correct position) and we are good.
-	smbusWriteRegister(m_busAddr, m_devAddr, kOpmdReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kOpmdReg, data);
 }
 
 bool Pd69104::getPortSensing(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDisenaReg);
 	//Sensing is enabled if the ports bit is set in the 4 MSBs or 4 LSBs so we check both.
 	//We always only set the 4 LSBs but lets be safe in case someone else has been messing around in the registers.
 	return (data & ((1 << (port + 4)) | (1 << port))) != 0;
@@ -185,45 +186,45 @@ bool Pd69104::getPortSensing(uint8_t port) const
 
 void Pd69104::setPortSensing(uint8_t port, bool sense)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDisenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDisenaReg);
 	//Bits 4-7 do the same thing as 0-3 on this chip (PD69104).
 	//To avoid confusion, let's only work with bits 0-3 and always keeps bits 4-7 low.
 	data &= 0x0F;
 	if (sense) data |= (1 << port);
 	else data &= ~(1 << port);
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kDisenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDisenaReg, data);
 }
 
 bool Pd69104::getPortDetection(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	return (data & (1 << port)) != 0;
 }
 
 void Pd69104::setPortDetection(uint8_t port, bool detect)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	if (detect) data |= (1 << port);
 	else data &= ~(1 << port);
-	smbusWriteRegister(m_busAddr, m_devAddr, kDetenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDetenaReg, data);
 }
 
 
 bool Pd69104::getPortClassification(uint8_t port) const
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	//Left shift by 4 since Classification is stored in the 4 MSBs
 	return (data & (1 << (port + 4))) != 0;
 }
 
 void Pd69104::setPortClassification(uint8_t port, bool classify)
 {
-	uint8_t data = smbusReadRegister(m_busAddr, m_devAddr, kDetenaReg);
+	uint8_t data = smbus_read_register(m_busAddr, m_devAddr, kDetenaReg);
 	//Classification and Detection are in the same register. 
 	//4 MSBs are for Classification so we need to shift our bitmask.
 	if (classify) data |= (1 << (port + 4));
 	else data &= ~(1 << (port + 4));
 
-	smbusWriteRegister(m_busAddr, m_devAddr, kDetenaReg, data);
+	smbus_write_register(m_busAddr, m_devAddr, kDetenaReg, data);
 }
