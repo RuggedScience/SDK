@@ -2,11 +2,13 @@
 #define PD69200_H
 
 #include <array>
+#include <chrono>
 
 #include "abstractpoecontroller.h"
 
 #define MSG_LEN     15
 typedef std::array<uint8_t, MSG_LEN> msg_t;
+typedef std::chrono::high_resolution_clock timer_t;
 
 class Pd69200 : public AbstractPoeController
 {
@@ -30,6 +32,7 @@ private:
 	uint8_t m_devAddr;
 	uint8_t m_lastEcho;
     uint8_t m_devId;
+    timer_t::time_point m_lastCommandTime;
 
     msg_t sendMsgToController(msg_t& msg);
 

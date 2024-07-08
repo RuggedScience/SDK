@@ -461,35 +461,5 @@ void i2c_read_block(
     data.block = buf;
     data.size = size;
     data.read_write = SMBUS_READ;
-
-    initBus(&data);
-    setHostAddress(&data);
-    outb(command, HST_DATA1(bus));
-    outb(0x00, HST_BLK_DB(bus));
-
-    uint8_t transaction = (uint8_t)data.type;
-    if (size == 1) transaction |= kCntrlLastByte;
-    outb(transaction | kCntrlStart, HST_CTRL(bus));
-
-    // I have no clue why we have to do this but basically
-    // we have to wait until we stop receiving 0x00 from the controller
-    // even though we get the "byte done" signal...
-    buf[0] = 0;
-    while (buf[0] == 0) {
-        handleResult(&data, waitForByteDone(&data));
-        buf[0] = inb(HST_BLK_DB(bus));
-        outb(kStsDone, HST_STS(bus));
-    }
-
-    uint8_t in = 0;
-    for (size_t i = 1; i < size; i++) {
-        handleResult(&data, waitForByteDone(&data));
-        buf[i] = inb(HST_BLK_DB(bus));
-        // If next read is our last byte, we need to inform the PCH.
-        if (i + 1 == size) outb(transaction | kCntrlLastByte, HST_CTRL(bus));
-        outb(kStsDone, HST_STS(bus));
-    }
-
-    handleResult(&data, waitForIntr(&data));
-    cleanupBus(&data);
+    smbus_transaction(&data);
 }
