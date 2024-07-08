@@ -16,6 +16,10 @@ PYBIND11_MODULE(rssdk, module)
         .value("Source", rs::OutputMode::Source)
         .value("Sink", rs::OutputMode::Sink);
 
+    py::enum_<rs::PinDirection>(module, "PinDirection")
+        .value("Input", rs::PinDirection::Input)
+        .value("Output", rs::PinDirection::Output);
+
     py::class_<rs::PinInfo>(module, "PinInfo")
         .def(py::init<>())
         .def(py::init<bool, bool>())
@@ -58,6 +62,21 @@ PYBIND11_MODULE(rssdk, module)
             py::arg("dio"),
             py::arg("pin"),
             py::arg("state")
+        )
+        .def(
+            "setPinDirection",
+            &PyRsDio::setPinDirection,
+            "Set the direction of a single DIO pin",
+            py::arg("dio"),
+            py::arg("pin"),
+            py::arg("dir")
+        )
+        .def(
+            "getPinDirection",
+            &PyRsDio::getPinDirection,
+            "Get the direction of a single DIO pin",
+            py::arg("dio"),
+            py::arg("pin")
         )
         .def(
             "readAll",

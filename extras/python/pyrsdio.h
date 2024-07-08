@@ -54,6 +54,19 @@ class PyRsDio {
         this->throwLastError();
     }
 
+    void setPinDirection(int dio, int pin, rs::PinDirection dir)
+    {
+        m_rsdio->setPinDirection(dio, pin, dir);
+        this->throwLastError();
+    }
+
+    rs::PinDirection getPinDirection(int dio, int pin)
+    {
+        rs::PinDirection dir = m_rsdio->getPinDirection(dio, pin);
+        this->throwLastError();
+        return dir;
+    }
+
     std::map<int, bool> readAll(int dio)
     {
         std::map<int, bool> states = m_rsdio->readAll(dio);
