@@ -91,6 +91,18 @@ get8786RegData(const tinyxml2::XMLElement *reg, Ite8786::RegisterData &data)
     return XML_SUCCESS;
 }
 
+static rs::PinDirection modeToDirection(PinMode mode)
+{
+    return mode == PinMode::ModeInput ? rs::PinDirection::Input
+                                      : rs::PinDirection::Output;
+}
+
+static PinMode directionToMode(rs::PinDirection dir)
+{
+    return dir == rs::PinDirection::Input ? PinMode::ModeInput
+                                          : PinMode::ModeOutput;
+}
+
 RsDioImpl::RsDioImpl()
     : m_lastError(), m_lastErrorString(), mp_controller(nullptr)
 {
@@ -352,12 +364,6 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
         return;
     }
 
-    if (mode == rs::OutputMode::Error) {
-        m_lastError = std::make_error_code(std::errc::invalid_argument);
-        m_lastErrorString = "Invalid output mode";
-        return;
-    }
-
     if (m_dioMap.find(dio) == m_dioMap.end()) {
         m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
@@ -399,16 +405,17 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
 
 rs::OutputMode RsDioImpl::getOutputMode(int dio)
 {
+    rs::OutputMode mode = rs::OutputMode::Sink;
     if (mp_controller == nullptr) {
         m_lastError = RsErrorCode::NotInitialized;
         m_lastErrorString = "XML file never set";
-        return rs::OutputMode::Error;
+        return mode;
     }
 
     if (m_dioMap.find(dio) == m_dioMap.end()) {
         m_lastError = std::make_error_code(std::errc::invalid_argument);
         m_lastErrorString = "Invalid DIO";
-        return rs::OutputMode::Error;
+        return mode;
     }
 
     pinconfigmap_t pinMap = m_dioMap.at(dio);
@@ -418,7 +425,7 @@ rs::OutputMode RsDioImpl::getOutputMode(int dio)
         pinMap.find(modeSource) == pinMap.end()) {
         m_lastError = std::make_error_code(std::errc::function_not_supported);
         m_lastErrorString = "Setting output mode not supported";
-        return rs::OutputMode::Error;
+        return mode;
     }
 
     try {
@@ -428,10 +435,10 @@ rs::OutputMode RsDioImpl::getOutputMode(int dio)
         m_lastError = std::error_code();
 
         if (sink && !source) {
-            return rs::OutputMode::Sink;
+            mode = rs::OutputMode::Sink;
         }
         else if (source && !sink) {
-            return rs::OutputMode::Source;
+            mode = rs::OutputMode::Source;
         }
         else {
             // TODO: How should be handle this?
@@ -456,7 +463,7 @@ rs::OutputMode RsDioImpl::getOutputMode(int dio)
         m_lastErrorString = "Unknown exception occured";
     }
 
-    return rs::OutputMode::Error;
+    return mode;
 }
 
 bool RsDioImpl::digitalRead(int dio, int pin)
@@ -548,6 +555,111 @@ void RsDioImpl::digitalWrite(int dio, int pin, bool state)
         m_lastError = RsErrorCode::UnknownError;
         m_lastErrorString = "unknown exception occured";
     }
+}
+
+void RsDioImpl::setPinDirection(int dio, int pin, rs::PinDirection dir)
+{
+    if (mp_controller == nullptr) {
+        m_lastError = RsErrorCode::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end()) {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid DIO";
+        return;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    if (pin < 0 || pinMap.find(pin) == pinMap.end()) {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid pin";
+        return;
+    }
+
+    PinConfig config = pinMap.at(pin);
+    if (getPinDirection(dio, pin) == dir)
+    {
+        m_lastError = std::error_code();
+        return;
+    }
+
+    if (!config.supportsInput || !config.supportsOutput) {
+
+    }
+    if ((dir == rs::PinDirection::Input && !config.supportsInput) ||
+        (dir == rs::PinDirection::Output && !config.supportsOutput)) {
+        m_lastError = std::make_error_code(std::errc::function_not_supported);
+
+        m_lastErrorString = "Pin does not support direction: ";
+        if (dir == rs::PinDirection::Input)
+            m_lastErrorString += "Input";
+        else
+            m_lastErrorString += "Output";
+        return;
+    }
+
+    try {
+        mp_controller->setPinMode(config, directionToMode(dir));
+        m_lastError = std::error_code();
+    }
+    catch (const std::system_error &ex) {
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
+    catch (...) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = "unknown exception occured";
+    }
+}
+
+rs::PinDirection RsDioImpl::getPinDirection(int dio, int pin)
+{
+    rs::PinDirection dir = rs::PinDirection::Input;
+    if (mp_controller == nullptr) {
+        m_lastError = RsErrorCode::NotInitialized;
+        m_lastErrorString = "XML file never set";
+        return dir;
+    }
+
+    if (m_dioMap.find(dio) == m_dioMap.end()) {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid DIO";
+        return dir;
+    }
+
+    pinconfigmap_t pinMap = m_dioMap.at(dio);
+    if (pin < 0 || pinMap.find(pin) == pinMap.end()) {
+        m_lastError = std::make_error_code(std::errc::invalid_argument);
+        m_lastErrorString = "Invalid pin";
+        return dir;
+    }
+
+    PinConfig config = pinMap.at(pin);
+
+    try {
+        dir = modeToDirection(mp_controller->getPinMode(config));
+        m_lastError = std::error_code();
+    }
+    catch (const std::system_error &ex) {
+        m_lastError = ex.code();
+        m_lastErrorString = ex.what();
+    }
+    catch (const std::exception &ex) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = ex.what();
+    }
+    catch (...) {
+        m_lastError = RsErrorCode::UnknownError;
+        m_lastErrorString = "unknown exception occured";
+    }
+
+    return dir;
 }
 
 std::map<int, bool> RsDioImpl::readAll(int dio)
