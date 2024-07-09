@@ -44,13 +44,6 @@ int main()
         std::errc::invalid_argument
     );
 
-    dio.setOutputMode(1, rs::OutputMode::Error);
-    verifyError(
-        "setOutputMode (invalid mode)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
-
     dio.setOutputMode(1, rs::OutputMode::Sink);
     verifyError("setOutputMode (Sink)", dio.getLastError());
 
@@ -132,6 +125,42 @@ int main()
         std::cerr
             << "digitalRead returned false after call to digitalWrite(true)"
             << std::endl;
+        return 1;
+    }
+
+    dio.setPinDirection(1, 1, rs::PinDirection::Input);
+    verifyError(
+        "setPinDirection (output pin)",
+        dio.getLastError(),
+        std::errc::function_not_supported
+    );
+
+    dio.setPinDirection(1, 1, rs::PinDirection::Output);
+    verifyError("setPinDirection (output pin)", dio.getLastError());
+
+    dio.setPinDirection(1, 2, rs::PinDirection::Output);
+    verifyError(
+        "setPinDirection (input pin)",
+        dio.getLastError(),
+        std::errc::function_not_supported
+    );
+
+    dio.setPinDirection(1, 2, rs::PinDirection::Input);
+    verifyError("setPinDirection (input pin)", dio.getLastError());
+
+    dio.setPinDirection(1, 3, rs::PinDirection::Output);
+    if (dio.getPinDirection(1, 3) != rs::PinDirection::Output) {
+        std::cerr << "getPinDirection returned Input after call to "
+                     "setPinDirection(Output)"
+                  << std::endl;
+        return 1;
+    }
+
+    dio.setPinDirection(1, 3, rs::PinDirection::Input);
+    if (dio.getPinDirection(1, 3) != rs::PinDirection::Input) {
+        std::cerr << "getPinDirection returned Output after call to "
+                     "setPinDirection(Input)"
+                  << std::endl;
         return 1;
     }
 

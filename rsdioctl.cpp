@@ -8,15 +8,15 @@
 #include <string>
 #include <vector>
 
-static int stringToState(std::string str)
+static bool stringToState(std::string str)
 {
     std::transform(str.begin(), str.end(), str.begin(), toupper);
     if (str == "LOW" || str == "FALSE" || str == "0")
-        return 0;
+        return false;
     else if (str == "HIGH" || str == "TRUE" || str == "1")
-        return 1;
+        return true;
 
-    return -1;
+    throw std::invalid_argument("Invalid pin state");
 }
 
 static const char* stateToString(bool state)
@@ -35,7 +35,7 @@ static rs::OutputMode stringToMode(std::string str)
     else if (str == "SINK" || str == "1")
         return rs::OutputMode::Sink;
 
-    return rs::OutputMode::Error;
+    throw std::invalid_argument("Invalid output mode");
 }
 
 static const char* modeToString(rs::OutputMode mode)
@@ -46,6 +46,22 @@ static const char* modeToString(rs::OutputMode mode)
         return "Source";
 
     return "Error";
+}
+
+static rs::PinDirection stringToDirection(std::string str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), toupper);
+    if (str == "OUTPUT" || str == "0")
+        return rs::PinDirection::Output;
+    else if (str == "INPUT" || str == "1")
+        return rs::PinDirection::Input;
+
+    throw std::invalid_argument("Invalid pin direction");
+}
+
+static const char* directionToString(rs::PinDirection dir)
+{
+    return dir == rs::PinDirection::Input ? "input" : "output";
 }
 
 static void showUsage()
@@ -62,6 +78,13 @@ static void showUsage()
         << "\t\t\t0, LOW\n"
         << "\t\t\t1, HIGH\n"
         << "\t\t\trequires DIO and PIN to be defined\n"
+        << "\n"
+        << "d=DIRECTION, d=DIRECTION\tsets the direction of a pin\n"
+        << "\t\t\tDirections:\n"
+        << "\t\t\t0, INPUT\n"
+        << "\t\t\t1, OUTPUT\n"
+        << "\t\t\trequires DIO and PIN to be defined\n"
+        << "\t\t\tpin must support the mode\n"
         << "\n"
         << "m, mode\t\tOutput the current output mode of a specific dio port\n"
         << "m=MODE, mode=MODE\tsets the output mode of a specific dio port\n"
@@ -107,13 +130,13 @@ int main(int argc, char* argv[])
                     pin = std::stoi(std::string(argv[++i]));
                 }
                 catch (...) {
-                    std::cerr << "Pin must be a number!" << std::endl;
+                    std::cerr << "Invalid pin number" << std::endl;
                     showUsage();
                     return 1;
                 }
             }
             else {
-                std::cerr << "Missing pin number!" << std::endl;
+                std::cerr << "Missing pin number" << std::endl;
                 showUsage();
                 return 1;
             }
@@ -124,13 +147,13 @@ int main(int argc, char* argv[])
                     dio = std::stoi(std::string(argv[++i]));
                 }
                 catch (...) {
-                    std::cerr << "Dio must be a number!" << std::endl;
+                    std::cerr << "Invalid dio number" << std::endl;
                     showUsage();
                     return 1;
                 }
             }
             else {
-                std::cerr << "Missing dio number!" << std::endl;
+                std::cerr << "Missing dio number" << std::endl;
                 showUsage();
                 return 1;
             }
@@ -188,73 +211,100 @@ int main(int argc, char* argv[])
         cmd = cmd.substr(0, cmd.size() - val.size());
     }
 
-    if (cmd == "s=" || cmd == "state=") {
-        int state = stringToState(val);
-        // stringToState returns -1 on error;
-        if (state == -1) {
-            std::cerr << "Invalid state supplied!!" << std::endl;
-            showUsage();
-            return 1;
-        }
+    std::string errorString;
+    bool userError = false;
 
-        rsdio->digitalWrite(dio, pin, state);
-        if (rsdio->getLastError()) {
-            std::cerr << rsdio->getLastErrorString() << std::endl;
-            return 1;
+    try {
+        if (cmd == "s=" || cmd == "state=") {
+            if (pin < 0) {
+                errorString = "Missing required option: pin";
+                userError = true;
+            }
+            else {
+                bool state = stringToState(val);
+                rsdio->digitalWrite(dio, pin, state);
+                if (rsdio->getLastError())
+                    errorString = rsdio->getLastErrorString();
+            }
         }
-    }
-    else if (cmd == "s" || cmd == "state") {
-        if (pin < 0) {
-            std::cerr << "Pin argument must be supplied!!" << std::endl;
-            showUsage();
-            return 1;
+        else if (cmd == "s" || cmd == "state") {
+            if (pin < 0) {
+                errorString = "Missing required option: pin";
+                userError = true;
+            }
+            else {
+                bool state = rsdio->digitalRead(dio, pin);
+                if (rsdio->getLastError())
+                    errorString = rsdio->getLastErrorString();
+                else if (human)
+                    printf("%s\n", stateToString(state));
+                else
+                    printf("%i", state);
+            }
         }
-
-        bool state = rsdio->digitalRead(dio, pin);
-        if (rsdio->getLastError()) {
-            std::cerr << rsdio->getLastErrorString() << std::endl;
-            return 1;
+        else if (cmd == "d=" || cmd == "direction=") {
+            if (pin < 0) {
+                errorString = "Missing required option: pin";
+                userError = true;
+            }
+            else {
+                rs::PinDirection dir = stringToDirection(val);
+                rsdio->setPinDirection(dio, pin, dir);
+                if (rsdio->getLastError())
+                    errorString = rsdio->getLastErrorString();
+            }
         }
-        else {
-            if (human)
-                printf("%s\n", stateToString(state));
-            else
-                printf("%i", state);
+        else if (cmd == "d" || cmd == "direction") {
+            if (pin < 0) {
+                errorString = "Missing required option: pin";
+                userError = true;
+            }
+            else {
+                rs::PinDirection dir = rsdio->getPinDirection(dio, pin);
+                if (rsdio->getLastError())
+                    errorString = rsdio->getLastErrorString();
+                else if (human)
+                    printf("%s\n", directionToString(dir));
+                else
+                    printf("%i", dir);
+            }
         }
-    }
-    else if (cmd == "m=" || cmd == "mode=") {
-        rs::OutputMode mode = stringToMode(val);
-        // stringToMode returns 0 on error.
-        if (mode == rs::OutputMode::Error) {
-            std::cerr << "Invalid mode supplied" << std::endl;
-            showUsage();
-            return 1;
+        else if (cmd == "m=" || cmd == "mode=") {
+            rs::OutputMode mode = stringToMode(val);
+            rsdio->setOutputMode(dio, mode);
+            if (rsdio->getLastError())
+                errorString = rsdio->getLastErrorString();
         }
-
-        rsdio->setOutputMode(dio, mode);
-        if (rsdio->getLastError()) {
-            std::cerr << rsdio->getLastErrorString() << std::endl;
-            return 1;
-        }
-    }
-    else if (cmd == "m" || cmd == "mode") {
-        rs::OutputMode mode = rsdio->getOutputMode(dio);
-        if (rsdio->getLastError()) {
-            std::cerr << rsdio->getLastErrorString() << std::endl;
-            return 1;
-        }
-        else {
-            if (human)
+        else if (cmd == "m" || cmd == "mode") {
+            rs::OutputMode mode = rsdio->getOutputMode(dio);
+            if (rsdio->getLastError())
+                errorString = rsdio->getLastErrorString();
+            else if (human)
                 printf("%s\n", modeToString(mode));
             else if (mode == rs::OutputMode::Source)
                 printf("0");
             else if (mode == rs::OutputMode::Sink)
                 printf("1");
         }
+        else {
+            errorString = "Invalid command";
+            userError = true;
+        }
     }
-    else {
-        std::cerr << "Invalid command supplied!!" << std::endl;
-        showUsage();
+    catch (std::invalid_argument& ex) {
+        errorString = ex.what();
+        userError = true;
+    }
+    catch (std::exception& ex) {
+        errorString = ex.what();
+    }
+    catch (...) {
+        errorString = "Unknown error";
+    }
+
+    if (!errorString.empty()) {
+        std::cerr << errorString << std::endl;
+        if (userError) showUsage();
         return 1;
     }
 

@@ -27,6 +27,9 @@ class RsDioImpl : public rs::RsDio {
     bool digitalRead(int dio, int pin) override;
     void digitalWrite(int dio, int pin, bool state) override;
 
+    void setPinDirection(int dio, int pin, rs::PinDirection dir) override;
+    rs::PinDirection getPinDirection(int dio, int pin) override;
+
     std::map<int, bool> readAll(int dio) override;
 
     std::error_code getLastError() const;

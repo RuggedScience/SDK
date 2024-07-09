@@ -28,7 +28,9 @@ struct PinInfo {
 typedef std::map<int, PinInfo> pinmap_t;
 typedef std::map<int, pinmap_t> diomap_t;
 
-enum class OutputMode { Error = 0, Source = -1, Sink = -2 };
+enum class OutputMode { Source = -1, Sink = -2 };
+
+enum class PinDirection { Input, Output };
 
 class RsDio {
    public:
@@ -45,6 +47,9 @@ class RsDio {
 
     virtual bool digitalRead(int dio, int pin) = 0;
     virtual void digitalWrite(int dio, int pin, bool state) = 0;
+
+    virtual void setPinDirection(int dio, int pin, PinDirection dir) = 0;
+    virtual PinDirection getPinDirection(int dio, int pin) = 0;
 
     virtual std::map<int, bool> readAll(int dio) = 0;
 
