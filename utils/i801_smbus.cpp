@@ -288,14 +288,13 @@ static void smbus_transaction(transaction_data *data)
     if (!isBlockTransaction(data)) {
         handleResult(data, waitForIntr(data));
         switch (data->type) {
+            case transaction_type::WORD_DATA:
+                if (data->read_write == SMBUS_READ)
+                    data->block[1] = inb(HST_DATA1(data->bus));
             case transaction_type::BYTE:
             case transaction_type::BYTE_DATA:
                 if (data->read_write == SMBUS_READ)
                     data->block[0] = inb(HST_DATA0(data->bus));
-            case transaction_type::WORD_DATA:
-                if (data->read_write == SMBUS_READ)
-                    data->block[1] = inb(HST_DATA1(data->bus));
-                break;
         }
     }
     else {
@@ -368,7 +367,7 @@ uint8_t smbus_read_register(uint16_t bus, uint8_t device, uint8_t command)
     data.read_write = SMBUS_READ;
 
     smbus_transaction(&data);
-    return data.block[0];
+    return block[0];
 }
 
 void smbus_write_register(
