@@ -9,8 +9,8 @@
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
 
-#ifndef RSDIO_VERSION_STRING
-#define RSDIO_VERSION_STRING "test"
+#ifndef RSSDK_VERSION_STRING
+#define RSSDK_VERSION_STRING "beta"
 #endif
 
 static tinyxml2::XMLError
@@ -720,4 +720,4 @@ std::string RsDioImpl::getLastErrorString() const
 
 rs::RsDio *rs::createRsDio() { return new RsDioImpl; }
 
-const char *rs::rsDioVersion() { return RSDIO_VERSION_STRING; }
+const char *rs::rsDioVersion() { return RSSDK_VERSION_STRING; }

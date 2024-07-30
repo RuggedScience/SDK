@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4...3.18)
 
 # TODO: Find a way to make this automatic like setuptools_scm
-project(rssdk VERSION 3.1.3)
+project(rssdk VERSION 3.19.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 11)
