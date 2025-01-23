@@ -16,7 +16,7 @@ except Exception as e:
     print(e)
     exit(1)
 
-dio.setOutputMode(1, OutputMode.ModeNpn)
+dio.setOutputMode(1, OutputMode.Source)
 
 dio.digitalRead(1, 1)
 dio.digitalWrite(1, 11, True)
