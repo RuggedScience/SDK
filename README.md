@@ -4,7 +4,7 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 
 *Passing the incorrect XML file will result in undefined behaviour and may harm the PC!*
 
-**The latest prebuilt release can be found [HERE](https://github.com/ruggedscience/SDK/releases/latest). Be sure to install the driver!**  
+**The latest prebuilt release can be found [HERE](https://github.com/ruggedscience/SDK/releases/latest). Be sure to install the [driver](https://ruggedsci-my.sharepoint.com/:u:/g/personal/tim_lassiter_ruggedscience_com/EdOIG7fpnWxEjXpaoet3vogByZhcZdLIcwn7wh1o2PN72g?e=3Jf1m2)!**  
 **Looking for a Python package? Check out the Python [documentation](/extras/python/README.md).**
 
 ## API References
