@@ -11,6 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_DEBUG_POSTFIX "d")
 
 include(GNUInstallDirs)
+
 option(BUILD_TESTS "Build all test" OFF)
 option(BUILD_UTILITIES "Build command line control utilities" OFF)
 option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
@@ -40,23 +41,13 @@ elseif("${TARGET_ARCH}" STREQUAL "i386")
     set(DRIVER_FILE ${CMAKE_CURRENT_SOURCE_DIR}/driver/x32/drv.dll)
 endif()
 
-
 if (WIN32)
     message(STATUS "Using ${DRIVER_FILE}")
 endif()
 
-
 if (BUILD_TESTS)
     enable_testing()
-    add_subdirectory(test_utils)
 endif()
-
-add_subdirectory(portio)
-add_subdirectory(errors)
-add_subdirectory(utils)
-add_subdirectory(dio)
-add_subdirectory(poe)
-
 
 set(_pic OFF)
 if (BUILD_SHARED_LIBS OR BUILD_PYTHON_BINDINGS)
@@ -65,13 +56,18 @@ endif()
 
 message(STATUS "Building libraries with position independent code ${_pic}")
 
+
+add_subdirectory(src)
+
+
+
+
 set_target_properties(rserrors rsdio rspoe PROPERTIES 
     COMPILE_DEFINITIONS "RSSDK_VERSION_STRING=\"${PROJECT_VERSION}\""
     VERSION ${rssdk_VERSION}
     SOVERSION ${rssdk_VERSION_MAJOR}
     POSITION_INDEPENDENT_CODE ${_pic}
 )
-
 
 if(MSVC)
     target_compile_definitions(rsdio PUBLIC -D_CRT_SECURE_NO_WARNINGS)
@@ -86,24 +82,12 @@ if (BUILD_PYTHON_BINDINGS)
     add_subdirectory(extras/python)
 endif()
 
-if (BUILD_UTILITIES)
-    add_subdirectory(dioctl)
-    add_subdirectory(poectl)
-endif()
+
 
 #*********#
 # Install #
 #*********#
-
 if (INSTALL_SDK)
-    
-    include(GNUInstallDirs)
-
-    if (NOT DEFINED rssdk_INSTALL_CMAKEDIR)
-        set(rssdk_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rssdk"
-            CACHE STRING "Path to rssdk CMake files")
-    endif ()
-
     if (WIN32)
         install(FILES ${DRIVER_FILE} TYPE BIN)
     endif()

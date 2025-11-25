@@ -8,11 +8,11 @@ The **Rugged Science SDK** is a set of cross platform libraries and utilities fo
 **Looking for a Python package? Check out the Python [documentation](/extras/python/README.md).**
 
 ## API References
-* [DIO Library - librsdio](./librsdio.md)
-* [PoE Library - librspoe](./librspoe.md)
-* [Error Library - librserrors](./errors.md)
-* [DIO Utility - rsdioctl](./rsdioctl.md)
-* [PoE Utility - rspoectl](./rspoectl.md)
+* [DIO Library - librsdio](./docs/librsdio.md)
+* [PoE Library - librspoe](./docs/librspoe.md)
+* [Error Library - librserrors](./docs/errors.md)
+* [DIO Utility - rsdioctl](./docs/rsdioctl.md)
+* [PoE Utility - rspoectl](./docs/rspoectl.md)
 
 # Building
 

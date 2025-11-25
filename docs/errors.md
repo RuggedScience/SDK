@@ -1,6 +1,6 @@
 # Error Handling
 
-This SDK uses [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for all errors. Internally these codes are used to populate and throw [std::system_error](https://en.cppreference.com/w/cpp/error/system_error). All exceptions are caught at the library boundry to prevent exceptions from crossing that boundry. The exception's [code](https://en.cppreference.com/w/cpp/error/system_error/code) and [message](https://en.cppreference.com/w/cpp/error/system_error/what) are stored in the library object and accessible through the [getLastError](/librsdio.md#getlasterror) and [getLastErrorString](/librsdio#getlasterrorstring) methods.
+This SDK uses [std::error_code](https://en.cppreference.com/w/cpp/error/error_code) for all errors. Internally these codes are used to populate and throw [std::system_error](https://en.cppreference.com/w/cpp/error/system_error). All exceptions are caught at the library boundry to prevent exceptions from crossing that boundry. The exception's [code](https://en.cppreference.com/w/cpp/error/system_error/code) and [message](https://en.cppreference.com/w/cpp/error/system_error/what) are stored in the library object and accessible through the [getLastError](./librsdio.md#getlasterror) and [getLastErrorString](./librsdio#getlasterrorstring) methods.
 
 ```c++
 #include <rsdio.h>
@@ -48,7 +48,7 @@ enum class RsErrorCode
 ---
 | Constant              |  Description                                                                                          |
 |-----------------------|-------------------------------------------------------------------------------------------------------|
-| NotInitialized        | [setXmlFile](/librsdio.md#setxmlfile) was never successfully called                                   |
+| NotInitialized        | [setXmlFile](/docs/librsdio.md#setxmlfile) was never successfully called                                   |
 | XmlParseError         | There was an error parsing the XML file                                                               |
 | UnknownError          | An exception occurred that the library doesn't know how to handle. Hopefully this never happens...    |
 

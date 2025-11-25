@@ -1,3 +1,7 @@
+"""
+RSSDK: Python Bindings for the Rugged Science SDK.
+"""
+
 import os
 
 if os.name == 'nt':
@@ -9,4 +13,12 @@ if os.name == 'nt':
     hllDll = ctypes.WinDLL(dll)
         
 
-from rssdk.rssdk import *
+# Import the Low-Level C++ Implementation
+# We assume the compiled module is named '_rssdk' and sits next to this file.
+try:
+    from .rssdk import *
+except ImportError:
+    raise ImportError("Could not import the '_rssdk' C++ extension. "
+                      "Ensure the package was built and installed correctly.")
+
+del rssdk
