@@ -100,22 +100,6 @@ if (INSTALL_SDK)
             CACHE STRING "Path to rssdk CMake files")
     endif ()
 
-    install(TARGETS rserrors rsdio rspoe EXPORT rssdk_Targets
-        RUNTIME COMPONENT rssdk_Runtime
-        LIBRARY COMPONENT rssdk_Runtime
-        NAMELINK_COMPONENT rssdk_Development
-        ARCHIVE COMPONENT rssdk_Development
-        INCLUDES COMPONENT rssdk_Development
-    )
-    
-    install(DIRECTORY 
-        "${rssdk_SOURCE_DIR}/error/include/"
-        "${rssdk_SOURCE_DIR}/dio/include/"
-        "${rssdk_SOURCE_DIR}/poe/include/"
-        "${CMAKE_CURRENT_BINARY_DIR}/include/"
-        TYPE INCLUDE
-    )
-
     if (WIN32)
         install(FILES ${DRIVER_FILE} TYPE BIN)
     endif()
@@ -125,6 +109,4 @@ if(INSTALL_UTILITIES)
     if(MSVC)
         set(CMAKE_INSTALL_SBINDIR bin)
     endif(MSVC)
-
-    install(TARGETS rsdioctl rspoectl)
 endif(INSTALL_UTILITIES)
