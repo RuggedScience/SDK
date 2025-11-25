@@ -1,41 +1,36 @@
 [build-system]
-requires = [
-    "wheel",
-    "setuptools>=45",
-    "setuptools_scm[toml]>=6.2",
-    "cmake",
-    "pybind11",
-    "mypy"
-]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.11", "pybind11>=3.0"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "rssdk"
-description = "Rugged Science SDK Python Bindings"
-readme = "extras/python/README.md"
-authors = [
-    {name = "Timothy Lassiter", email = "tim.lassiter@ruggedscience.com"}
-]
+version = "3.20.0"
+description = "Python bindings for RSSDK"
+readme = "README.md"
 requires-python = ">=3.7"
-keywords = ["rssdk", "rsdio", "rspoe", "cmake"]
-license = "MIT"
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Topic :: Software Development :: Build Tools",
-    'Operating System :: OS Independent',
-    'Programming Language :: Cython',
-    'Programming Language :: C',
-    'Programming Language :: Python :: Implementation :: CPython',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Utilities',
+authors = [
+  { name = "Timothy Lassiter", email = "tim.lassiter@ruggedscience.com" },
 ]
-dynamic = ["version"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows",
+]
 
 [project.urls]
-homepage = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
-documentation = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
-repository = "https://github.com/RuggedScience/SDK/tree/main/extras/python"
+Homepage = "https://github.com/ruggedscience/sdk"
 
-[tool.setuptools_scm]
-write_to = "_version.py"
+# --- SCIKIT-BUILD CONFIGURATION ---
+[tool.scikit-build]
+# Where to look for the CMakeLists.txt
+cmake.source-dir = "."
+
+# Pass variables to CMake
+cmake.define.BUILD_PYTHON_BINDINGS = "ON"
+cmake.define.BUILD_TESTS = "OFF"
+cmake.define.BUILD_SHARED_LIBS = "OFF"
+cmake.define.CMAKE_BUILD_TYPE = "Release"
+
+# Where to install the resulting artifacts inside the wheel
+# This puts the .so/.pyd file directly in the 'rssdk' package folder
+wheel.packages = ["extras/python/rssdk"] 

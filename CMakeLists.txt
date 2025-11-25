@@ -79,6 +79,10 @@ if(MSVC)
 endif(MSVC)
 
 if (BUILD_PYTHON_BINDINGS)
+    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    find_package(pybind11 CONFIG REQUIRED)
+    
+    # Add the python bindings folder
     add_subdirectory(extras/python)
 endif()
 
