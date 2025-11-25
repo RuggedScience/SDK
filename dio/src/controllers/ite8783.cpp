@@ -3,7 +3,7 @@
 #include <iostream>
 
 #ifdef __linux__
-#include <sys/io.h>
+#include "../../../utils/io_shim.hpp"
 #elif _WIN32
 #include "../../../utils/portio.hpp"
 #endif

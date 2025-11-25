@@ -8,7 +8,7 @@
 #include <thread>
 
 #ifdef __linux__
-#include <sys/io.h>
+#include "io_shim.hpp"
 #elif _WIN32
 #include "portio.hpp"
 #endif
