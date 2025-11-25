@@ -1,12 +1,7 @@
 #include "ite8783.h"
 
 #include <iostream>
-
-#ifdef __linux__
-#include "../../../utils/io_shim.hpp"
-#elif _WIN32
-#include "../../../utils/portio.hpp"
-#endif
+#include <portio.h>
 
 static const uint16_t kSpecialAddress =
     0x002E;  // MMIO of the SuperIO's address port. Set this to the value of the
@@ -131,14 +126,14 @@ void Ite8783::setPinMode(const PinConfig &config, PinMode mode)
 bool Ite8783::getPinState(const PinConfig &config)
 {
     uint16_t reg = m_baseAddress + config.offset;
-    if (ioperm(reg, 1, 1))
+    if (portio_ioperm(reg, 1, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
     bool state = false;
-    uint8_t data = inb(reg);
-    ioperm(reg, 1, 0);
+    uint8_t data = portio_inb(reg);
+    portio_ioperm(reg, 1, 0);
     if ((data & config.bitmask) == config.bitmask)
         state = true;
     else
@@ -165,19 +160,19 @@ void Ite8783::setPinState(const PinConfig &config, bool state)
 
     if (config.invert) state = !state;
     uint16_t reg = m_baseAddress + config.offset;
-    if (ioperm(reg, 1, 1))
+    if (portio_ioperm(reg, 1, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
-    uint8_t data = inb(reg);
+    uint8_t data = portio_inb(reg);
     if (state)
         data |= config.bitmask;
     else
         data &= ~config.bitmask;
 
-    outb(data, reg);
-    ioperm(reg, 1, 0);
+    portio_outb(data, reg);
+    portio_ioperm(reg, 1, 0);
 }
 
 void Ite8783::printRegs() {}
@@ -186,56 +181,56 @@ void Ite8783::printRegs() {}
 // enable access to the SuperIo's configuration registers.
 void Ite8783::enterSio()
 {
-    if (ioperm(0x2E, 1, 1))
+    if (portio_ioperm(0x2E, 1, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
-    outb(0x87, 0x2E);
-    outb(0x01, 0x2E);
-    outb(0x55, 0x2E);
-    outb(0x55, 0x2E);
+    portio_outb(0x87, 0x2E);
+    portio_outb(0x01, 0x2E);
+    portio_outb(0x55, 0x2E);
+    portio_outb(0x55, 0x2E);
 
-    ioperm(0x2E, 1, 0);
+    portio_ioperm(0x2E, 1, 0);
 }
 
 void Ite8783::exitSio()
 {
-    if (ioperm(kSpecialAddress, 2, 1))
+    if (portio_ioperm(kSpecialAddress, 2, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
-    outb(0x02, kSpecialAddress);
-    outb(0x02, kSpecialData);
+    portio_outb(0x02, kSpecialAddress);
+    portio_outb(0x02, kSpecialData);
 
-    ioperm(kSpecialAddress, 2, 0);
+    portio_ioperm(kSpecialAddress, 2, 0);
 }
 
 uint8_t Ite8783::readSioRegister(uint8_t reg)
 {
-    if (ioperm(kSpecialAddress, 2, 1))
+    if (portio_ioperm(kSpecialAddress, 2, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
-    outb(reg, kSpecialAddress);
-    return inb(kSpecialData);
+    portio_outb(reg, kSpecialAddress);
+    return portio_inb(kSpecialData);
 
-    ioperm(kSpecialAddress, 2, 0);
+    portio_ioperm(kSpecialAddress, 2, 0);
 }
 
 void Ite8783::writeSioRegister(uint8_t reg, uint8_t data)
 {
-    if (ioperm(kSpecialAddress, 2, 1))
+    if (portio_ioperm(kSpecialAddress, 2, 1))
         throw std::system_error(
             std::make_error_code(std::errc::operation_not_permitted)
         );
 
-    outb(reg, kSpecialAddress);
-    outb(data, kSpecialData);
+    portio_outb(reg, kSpecialAddress);
+    portio_outb(data, kSpecialData);
 
-    ioperm(kSpecialAddress, 2, 0);
+    portio_ioperm(kSpecialAddress, 2, 0);
 }
 
 // The SuperIo uses logical device numbers (LDN) to "multiplex" registers.

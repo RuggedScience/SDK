@@ -4,8 +4,9 @@
 
 #include <iostream>
 
-#include "../../error/include/rserrors.h"
-#include "../../utils/tinyxml2.h"
+#include <tinyxml2.h>
+#include <rserrors.h>
+
 #include "controllers/ite8783.h"
 #include "controllers/ite8786.h"
 
@@ -717,7 +718,3 @@ std::string RsDioImpl::getLastErrorString() const
     }
     return lastError;
 }
-
-rs::RsDio *rs::createRsDio() { return new RsDioImpl; }
-
-const char *rs::rsDioVersion() { return RSSDK_VERSION_STRING; }

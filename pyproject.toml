@@ -18,12 +18,11 @@ authors = [
 ]
 requires-python = ">=3.7"
 keywords = ["rssdk", "rsdio", "rspoe", "cmake"]
-license = {file = "LICENSE"}
+license = "MIT"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
-    "License :: OSI Approved :: MIT License",
     'Operating System :: OS Independent',
     'Programming Language :: Cython',
     'Programming Language :: C',

@@ -1,11 +1,21 @@
+# Include the root CMake file
+include CMakeLists.txt
+
+# Recursively include all source directories
+graft cmake
+graft utils
+graft portio
+graft errors
+graft dio
+graft poe
+
+# Exclude junk
 prune .github
-exclude .gitignore
-exclude .clang-format
-exclude rsdioctl.cpp
-exclude rspoectl.cpp
-exclude README.md
-exclude errors.md
-exclude librsdio.md
-exclude librspoe.md
-exclude rsdioctl.md
-exclude rspoectl.md
+global-exclude *.pyc
+global-exclude *.git*
+
+prune errors/test
+prune dio/tests
+prune poe/tests
+
+global-exclude test_*.cpp

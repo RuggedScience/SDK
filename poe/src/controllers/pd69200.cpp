@@ -1,12 +1,12 @@
 #include "pd69200.h"
 
+#include <i801_smbus.h>
+
 #include <fcntl.h>
 
 #include <cstring>
 #include <system_error>
 #include <thread>
-
-#include "../../../utils/i801_smbus.h"
 
 // #define DEBUG
 

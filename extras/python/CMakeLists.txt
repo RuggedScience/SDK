@@ -17,7 +17,7 @@ find_package(pybind11 QUIET)
 if (NOT pybind11_FOUND)
   message(DEBUG "pybind11 not found. Attempting to use Python package")
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -m pybind11 --cmake
+    COMMAND ${PYTHON_EXECUTABLE} -m pybind11 --cmakedir
     OUTPUT_VARIABLE PYBIND11_CMAKE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )

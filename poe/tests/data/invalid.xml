@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<computer id="test">
+  <dio_controller id="test">
+  </dio_controller>
+  <poe_controller id="test">
+  </poe_controller>
+</computer>

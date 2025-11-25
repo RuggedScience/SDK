@@ -1,7 +1,8 @@
 #include "rspoeimpl.h"
 
-#include "../../error/include/rserrors.h"
-#include "../../utils/tinyxml2.h"
+#include <tinyxml2.h>
+#include <rserrors.h>
+
 #include "controllers/ltc4266.h"
 #include "controllers/pd69104.h"
 #include "controllers/pd69200.h"
@@ -433,7 +434,3 @@ std::string RsPoeImpl::getLastErrorString() const
     }
     return lastError;
 }
-
-rs::RsPoe *rs::createRsPoe() { return new RsPoeImpl; }
-
-const char *rs::rsPoeVersion() { return RSSDK_VERSION_STRING; }

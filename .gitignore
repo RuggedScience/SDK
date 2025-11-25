@@ -56,12 +56,18 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Ignore virtual environments
 env/
+.env/
+venv/
+.venv/
 
 .vscode/
 build/
 install/
 
 _version.py
+
+
 
 !driver/**

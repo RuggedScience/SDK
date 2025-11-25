@@ -32,8 +32,8 @@ class RsDioImpl : public rs::RsDio {
 
     std::map<int, bool> readAll(int dio) override;
 
-    std::error_code getLastError() const;
-    std::string getLastErrorString() const;
+    std::error_code getLastError() const override;
+    std::string getLastErrorString() const override;
 
    private:
     std::error_code m_lastError;
