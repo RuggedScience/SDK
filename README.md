@@ -81,6 +81,4 @@ sudo cmake --install .
 | BUILD_UTILITIES           | Build the rsdioctl and rspoectl control utilities                     | OFF   |
 | INSTALL_UTILITIES         | Install the utilities when the install command is invoked             | OFF   |
 | INSTALL_SDK               | Install the SDK files when the install command is invoked             | ON    |
-| BUILD_PYTHON_BINDINGS     | Build the Python bindings. See [docs](./extras/python/README.md)      | OFF   |
-| INSTALL_PYTHON_BINDINGS   | Install the Python bindings package to the current Python interpreter | OFF   |
 | BUILD_TESTS               | Build and enable all library tests                                    | OFF   |

@@ -66,31 +66,3 @@ Using Python's build system is the recommended way to build the bindings. It wil
     ```console
     python -m pip install ./dist/<name of wheel file>.whl
     ```
-
-## Cmake build
-The cmake build process isn't quite as straightforward but offers more flexibility. Since multiple dependencies are required it is suggested that you create a virtual environment for the build process to use. Note that the resulting package will be installed into that virtual environment. Information on how to do this can be found in the official Python [docs](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment).
-
-
-1) Install requirements
-    ```console
-    python -m pip install pybind11 setuptools_scm mypy
-    ```
-    *Note: mypy is optional and used to generate stub files. This allows IDEs to offer code completion.*
-
-2) Create build folder
-    ```console
-    mkdir build
-    cd build
-    ```
-
-3) Configure cmake
-    ```console
-    cmake -DBUILD_PYTHON_BINDINGS=ON -DINSTALL_PYTHON_BINDINGS=ON -DBUILD_SHARED_LIBS=OFF -DINSTALL_XML=OFF -DINSTALL_UTILITIES=OFF -DINSTALL_SDK=OFF ..
-    ```
-    *Note: On Linux the build type should be set to release using `-DBUILD_TYPE=Release`.*
-
-4) Build and install
-    ```console
-    cmake --build . --target install
-    ```
-    *Note: On Windows the build type should be set to release using `--config Release`.*
