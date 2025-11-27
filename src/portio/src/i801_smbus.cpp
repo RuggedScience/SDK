@@ -1,4 +1,4 @@
-#include "../include/i801_smbus.h"
+#include "i801_smbus.h"
 #include "../include/portio.h"
 
 #include <assert.h>
@@ -326,7 +326,7 @@ static void smbus_transaction(transaction_data *data)
     cleanupBus(data);
 }
 
-uint8_t smbus_read(uint16_t bus, uint8_t device)
+uint8_t i801_smbus_read(uint16_t bus, uint8_t device)
 {
     uint8_t block[1];
     transaction_data data;
@@ -340,7 +340,7 @@ uint8_t smbus_read(uint16_t bus, uint8_t device)
     return data.block[0];
 }
 
-void smbus_write(uint16_t bus, uint8_t device, uint8_t command)
+void i801_smbus_write(uint16_t bus, uint8_t device, uint8_t command)
 {
     transaction_data data;
     data.bus = bus;
@@ -351,7 +351,7 @@ void smbus_write(uint16_t bus, uint8_t device, uint8_t command)
     smbus_transaction(&data);
 }
 
-uint8_t smbus_read_register(uint16_t bus, uint8_t device, uint8_t command)
+uint8_t i801_smbus_read_register(uint16_t bus, uint8_t device, uint8_t command)
 {
     uint8_t block[1];
     transaction_data data;
@@ -367,7 +367,7 @@ uint8_t smbus_read_register(uint16_t bus, uint8_t device, uint8_t command)
     return block[0];
 }
 
-void smbus_write_register(
+void i801_smbus_write_register(
     uint16_t bus,
     uint8_t device,
     uint8_t command,
@@ -385,7 +385,7 @@ void smbus_write_register(
     smbus_transaction(&data);
 }
 
-void smbus_read_block(
+void i801_smbus_read_block(
     uint16_t bus,
     uint8_t device,
     uint8_t command,
@@ -402,7 +402,7 @@ void smbus_read_block(
     smbus_transaction(&data);
 }
 
-void smbus_write_block(
+void i801_smbus_write_block(
     uint16_t bus,
     uint8_t device,
     uint8_t *block,
@@ -423,7 +423,7 @@ void smbus_write_block(
     smbus_transaction(&data);
 }
 
-void i2c_read_block(
+void i801_i2c_read_block(
     uint16_t bus,
     uint8_t device,
     uint8_t command,

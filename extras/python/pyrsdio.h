@@ -15,84 +15,56 @@ class PyRsDio {
         );
     }
 
-    void setXmlFile(const char *fileName)
+    void init(const char *configFile)
     {
-        m_rsdio->setXmlFile(fileName);
-        this->throwLastError();
+        m_rsdio->init(configFile);
     }
 
     bool canSetOutputMode(int dio)
     {
-        bool ret = m_rsdio->canSetOutputMode(dio);
-        this->throwLastError();
-        return ret;
+        return m_rsdio->canSetOutputMode(dio);
     }
 
     void setOutputMode(int dio, rs::OutputMode mode)
     {
         m_rsdio->setOutputMode(dio, mode);
-        this->throwLastError();
     }
 
     rs::OutputMode getOutputMode(int dio)
     {
-        rs::OutputMode mode = m_rsdio->getOutputMode(dio);
-        this->throwLastError();
-        return mode;
+        return m_rsdio->getOutputMode(dio);
     }
 
     bool digitalRead(int dio, int pin)
     {
-        bool state = m_rsdio->digitalRead(dio, pin);
-        this->throwLastError();
-        return state;
+        return m_rsdio->digitalRead(dio, pin);
     }
 
     void digitalWrite(int dio, int pin, bool state)
     {
         m_rsdio->digitalWrite(dio, pin, state);
-        this->throwLastError();
     }
 
     void setPinDirection(int dio, int pin, rs::PinDirection dir)
     {
         m_rsdio->setPinDirection(dio, pin, dir);
-        this->throwLastError();
     }
 
     rs::PinDirection getPinDirection(int dio, int pin)
     {
-        rs::PinDirection dir = m_rsdio->getPinDirection(dio, pin);
-        this->throwLastError();
-        return dir;
+        return m_rsdio->getPinDirection(dio, pin);
     }
 
     std::map<int, bool> readAll(int dio)
     {
-        std::map<int, bool> states = m_rsdio->readAll(dio);
-        this->throwLastError();
-        return states;
+        return m_rsdio->readAll(dio);
     }
 
     rs::diomap_t getPinList() const
     {
-        rs::diomap_t map = m_rsdio->getPinList();
-        this->throwLastError();
-        return map;
-    }
-
-    std::string getLastErrorString() const
-    {
-        return m_rsdio->getLastErrorString();
+        return m_rsdio->getPinList();
     }
 
    private:
     std::shared_ptr<rs::RsDio> m_rsdio;
-
-    void throwLastError() const
-    {
-        if (std::error_code ec = m_rsdio->getLastError()) {
-            throw std::system_error(ec);
-        }
-    }
 };

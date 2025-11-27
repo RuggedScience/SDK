@@ -14,7 +14,7 @@ target_include_directories(rspoe_impl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
 )
 
-target_link_libraries(rspoe_impl PUBLIC rserrors PRIVATE rsportio rsutils)
+target_link_libraries(rspoe_impl PUBLIC core config PRIVATE portio)
 set_target_properties(rspoe_impl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # -----------------------------------------------------------------------------
@@ -24,25 +24,24 @@ set_target_properties(rspoe_impl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_library(rspoe
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rspoe.cpp
 )
-target_link_libraries(rspoe PRIVATE rspoe_impl)
+target_link_libraries(rspoe PRIVATE rspoe_impl INTERFACE core)
 
-target_include_directories(
-    rspoe PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+target_include_directories(rspoe 
+    PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 )
 target_compile_definitions(
-    rspoe PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:RSPOE_STATIC_DEFINE>"
+    rspoe PUBLIC $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:RSPOE_STATIC_DEFINE>
 )
 
 include(GenerateExportHeader)
 generate_export_header(rspoe EXPORT_FILE_NAME include/rspoe_export.h)
 
-target_include_directories(
-    rspoe PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
-)
-
-set_target_properties(rspoe PROPERTIES
-    INSTALL_RPATH "$ORIGIN"
-    BUILD_WITH_INSTALL_RPATH FALSE
+set_target_properties(rspoe 
+    PROPERTIES
+        INSTALL_RPATH "$ORIGIN"
+        BUILD_WITH_INSTALL_RPATH FALSE
 )
 
 # -----------------------------------------------------------------------------

@@ -1,7 +1,8 @@
 #include "ite8786.h"
 
-#include <iostream>
 #include <portio.h>
+
+#include <iostream>
 
 static const uint16_t kSpecialAddress =
     0x002E;  // MMIO of the SuperIO's address port. Set this to the value of the
@@ -36,8 +37,7 @@ static const uint8_t kSimpleIoMax = 0xC4;
 static const uint8_t kOutputEnableBar = 0xC8;
 static const uint8_t kOutputEnableMax = 0xCF;
 
-Ite8786::Ite8786(bool debug)
-    : AbstractDioController(), m_currentLdn(0), m_baseAddress(0)
+Ite8786::Ite8786() : AbstractDioController(), m_currentLdn(0), m_baseAddress(0)
 {
     enterSio();
 
@@ -64,10 +64,6 @@ Ite8786::Ite8786(bool debug)
 
         setSioLdn(kGpioLdn);
         m_baseAddress = getBaseAddressRegister();
-
-        if (debug)
-            std::cout << "Found base address register of 0x" << std::hex
-                      << m_baseAddress << std::endl;
     }
     catch (...) {
         exitSio();
@@ -75,7 +71,7 @@ Ite8786::Ite8786(bool debug)
     }
 }
 
-Ite8786::Ite8786(const Ite8786::RegisterList_t &list, bool debug)
+Ite8786::Ite8786(const std::vector<RegisterConfig>& registers)
     : AbstractDioController(), m_currentLdn(0), m_baseAddress(0)
 {
     enterSio();
@@ -96,10 +92,6 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t &list, bool debug)
             chipId = getChipId();
         }
 
-        if (debug)
-            std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId
-                      << std::endl;
-
         if (chipId != 0x8786)
             throw std::system_error(
                 std::make_error_code(std::errc::no_such_device)
@@ -108,26 +100,12 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t &list, bool debug)
         setSioLdn(kGpioLdn);
         m_baseAddress = getBaseAddressRegister();
 
-        if (debug)
-            std::cout << "Found base address register of 0x" << std::hex
-                      << (int)m_baseAddress << std::endl;
-
-        for (const RegisterData &reg : list) {
+        for (const RegisterConfig& reg : registers) {
             setSioLdn(reg.ldn);
             uint8_t oldData = readSioRegister(reg.addr);
             uint8_t newData = oldData | reg.onBits;
             newData &= ~reg.offBits;
             writeSioRegister(reg.addr, newData);
-
-            if (debug) {
-                std::cout << std::endl;
-                std::cout << "Setting register 0x" << std::hex << (int)reg.addr
-                          << std::endl;
-                std::cout << "Old Value:\t0x" << std::hex << (int)oldData
-                          << std::endl;
-                std::cout << "New Value:\t0x" << std::hex << (int)newData
-                          << std::endl;
-            }
         }
     }
     catch (...) {
@@ -138,7 +116,7 @@ Ite8786::Ite8786(const Ite8786::RegisterList_t &list, bool debug)
 
 Ite8786::~Ite8786() { exitSio(); }
 
-void Ite8786::initPin(const PinConfig &config)
+void Ite8786::initPin(const DioPinConfig& config)
 {
     setSioLdn(kGpioLdn);
     uint8_t reg = kPolarityBar + config.offset;
@@ -163,31 +141,31 @@ void Ite8786::initPin(const PinConfig &config)
     }
 
     if (config.supportsInput)
-        setPinMode(config, ModeInput);
+        setPinMode(config, rs::PinDirection::Input);
     else
-        setPinMode(config, ModeOutput);
+        setPinMode(config, rs::PinDirection::Output);
 }
 
-PinMode Ite8786::getPinMode(const PinConfig &config)
+rs::PinDirection Ite8786::getPinMode(const DioPinConfig& config)
 {
     setSioLdn(kGpioLdn);
     uint8_t reg = kOutputEnableBar + config.offset;
     uint8_t data = readSioRegister(reg);
     if ((data & config.bitmask) == config.bitmask)
-        return ModeOutput;
+        return rs::PinDirection::Output;
     else
-        return ModeInput;
+        return rs::PinDirection::Input;
 }
 
-void Ite8786::setPinMode(const PinConfig &config, PinMode mode)
+void Ite8786::setPinMode(const DioPinConfig& config, rs::PinDirection mode)
 {
-    if (mode == ModeInput && !config.supportsInput)
+    if (mode == rs::PinDirection::Input && !config.supportsInput)
         throw std::system_error(
             std::make_error_code(std::errc::function_not_supported),
             "Input mode not supported on pin"
         );
 
-    if (mode == ModeOutput && !config.supportsOutput)
+    if (mode == rs::PinDirection::Output && !config.supportsOutput)
         throw std::system_error(
             std::make_error_code(std::errc::function_not_supported),
             "Output mode not supported on pin"
@@ -196,14 +174,14 @@ void Ite8786::setPinMode(const PinConfig &config, PinMode mode)
     setSioLdn(kGpioLdn);
     uint8_t reg = kOutputEnableBar + config.offset;
     uint8_t data = readSioRegister(reg);
-    if (mode == ModeInput)
+    if (mode == rs::PinDirection::Input)
         data &= ~config.bitmask;
-    else if (mode == ModeOutput)
+    else if (mode == rs::PinDirection::Output)
         data |= config.bitmask;
     writeSioRegister(reg, data);
 }
 
-bool Ite8786::getPinState(const PinConfig &config)
+bool Ite8786::getPinState(const DioPinConfig& config)
 {
     uint16_t reg = m_baseAddress + config.offset;
     if (portio_ioperm(reg, 1, 1))
@@ -224,7 +202,7 @@ bool Ite8786::getPinState(const PinConfig &config)
     return state;
 }
 
-void Ite8786::setPinState(const PinConfig &config, bool state)
+void Ite8786::setPinState(const DioPinConfig& config, bool state)
 {
     if (!config.supportsOutput)
         throw std::system_error(
@@ -232,7 +210,7 @@ void Ite8786::setPinState(const PinConfig &config, bool state)
             "Output mode not supported on pin"
         );
 
-    if (getPinMode(config) != ModeOutput)
+    if (getPinMode(config) != rs::PinDirection::Output)
         throw std::system_error(
             std::make_error_code(std::errc::invalid_argument),
             "Can't set state of pin in input mode"

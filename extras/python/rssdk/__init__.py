@@ -10,11 +10,11 @@ if os.name == 'nt':
     # is loaded in memory first before searching other directories.
     dir_path = os.path.dirname(os.path.realpath(__file__))
     dll = os.path.join(dir_path, 'drv.dll')
-    hllDll = ctypes.WinDLL(dll)
-        
-
+    try:
+        hllDll = ctypes.WinDLL(dll)
+    except FileNotFoundError:
+        pass
 # Import the Low-Level C++ Implementation
-# We assume the compiled module is named '_rssdk' and sits next to this file.
 try:
     from .rssdk import *
 except ImportError:

@@ -7,26 +7,16 @@
 class Ite8786 : public AbstractDioController
 {
 public:
-	struct RegisterData
-	{
-		uint8_t addr;
-		uint8_t ldn;
-		uint8_t onBits;
-		uint8_t offBits;
-	};
-
-	typedef std::vector<RegisterData> RegisterList_t;
-
-	Ite8786(bool debug=false);
-	Ite8786(const RegisterList_t& list, bool debug=false);
+	Ite8786();
+	Ite8786(const std::vector<RegisterConfig> &registers);
 	~Ite8786();
 	
-	void initPin(const PinConfig &config) override;
-	PinMode getPinMode(const PinConfig &config) override;
-	void setPinMode(const PinConfig &config, PinMode mode) override;
+	void initPin(const DioPinConfig &config) override;
+	rs::PinDirection getPinMode(const DioPinConfig &config) override;
+	void setPinMode(const DioPinConfig &config, rs::PinDirection mode) override;
 
-	bool getPinState(const PinConfig &config) override;
-	void setPinState(const PinConfig &config, bool state) override;
+	bool getPinState(const DioPinConfig &config) override;
+	void setPinState(const DioPinConfig &config, bool state) override;
 
 	void printRegs() override;
 

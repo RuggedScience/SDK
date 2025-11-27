@@ -8,10 +8,10 @@ The **librspoe** library is used to control the PoE ports on supported Rugged Sc
 #include <rspoe.h>
 ...
 rs::RsPoe *poe = rs::createRsPoe();
-poe->setXmlFile('ecs9000.xml')
-if (poe->getLastError())
-{
-    std::cerr << poe->getLastErrorString() << std::endl;
+try {
+    poe->init('ecs9000.xml');
+} catch (const rs::RsException &ex) {
+    std::cerr << ex.what() << std::endl;
     poe->destroy();
     return 1;
 }
@@ -32,18 +32,16 @@ if (!poe)
 }
 ```
 ## Error Handling
-After each function call you can call [getLastError](#getlasterror) to check if it was successfull.
+All errors are thrown as RsExceptions which contain an error code and message.
 
 ```c++
-poe->getBudgetTotal();
-if (poe->getLastError())
-{
-    std::cerr << "Failed to get budget: " << poe->getLastErrorString() << std::endl;
-    exit(1);
+try {
+    poe->getBudgetTotal();
+} catch (const rs::RsException &ex) {
+    std::cerr << "Failed to get budget: " << ex.what() << std::endl;
+    return 1;
 }
 ```
-
-For more advanced error handling see the [docs](./errors.md).
 
 ## Public Types
 
@@ -63,9 +61,9 @@ enum class rs::PoeState
 
 ## Public Functions
 
-### setXmlFile
+### init
 ```c++
-void RsPoe::setXmlFile(const char *fileName)
+void RsPoe::init(const char *configFile)
 ```
 
 Initializes the RsDio class with the appropriate hardware. Must be called before any other functions.
@@ -73,7 +71,7 @@ Initializes the RsDio class with the appropriate hardware. Must be called before
 ---
 
 ### Parameters
-fileName - This should be a path to the XML file specific to your model.
+configFile - This should be a path to the XML file specific to your model.
 
 <br>
 

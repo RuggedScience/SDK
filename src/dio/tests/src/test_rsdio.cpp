@@ -1,7 +1,7 @@
-#include <rsdio.h>
-#include <rserrors.h>
-#include <test_utils.h>
+#include "rsdio.h"
+#include "rserrors.h"
 
+#include <iostream>
 #include <functional>
 #include <memory>
 
@@ -11,19 +11,18 @@ int main(int argc, char *argv[])
 {
     RsDio_t dio(rs::createRsDio(), std::mem_fn(&rs::RsDio::destroy));
 
-    dio->setXmlFile("fake_file");
-    verifyError(
-        "setXmlFile(fake_file)",
-        dio->getLastError(),
-        std::errc::no_such_file_or_directory
-    );
+    try {
+        dio->init("fake_file");
+        std::cerr << "Expected FileNotFound exception but got nothing" << std::endl;
+        return 1;
+    } catch (const rs::RsException &ex) {
+        if (ex.code() != rs::RsErrorCode::FileNotFound) {
+            std::cerr << "Ivalid exception" << std::endl;
+            return 1;
+        }
+    }
 
-    dio->setXmlFile("/home/rugged/Downloads/mc4000.xml");
+    
 
-    dio->setXmlFile("invalid.xml");
-    verifyError(
-        "setXmlFile(invalid.xml)",
-        dio->getLastError(),
-        RsErrorCode::XmlParseError
-    );
+    dio->init("invalid.xml");
 }

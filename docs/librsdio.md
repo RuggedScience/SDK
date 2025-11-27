@@ -8,10 +8,10 @@ The **librsdio** library is used to control the DIO on supported Rugged Science 
 #include <rsdio.h>
 ...
 rs::RsDio *dio = rs::createRsDio();
-dio->setXmlFile('ecs9000.xml')
-if (dio->getLastError())
-{
-    std::cerr << dio->getLastErrorString() << std::endl;
+try {
+    dio->init('ecs9000.xml');
+} catch (const rs::RsException &ex) {
+    std::cerr << ex.what() << std::endl;
     dio->destroy();
     return 1;
 }
@@ -33,18 +33,18 @@ if (!dio)
 ```
 
 ## Error Handling
-After each function call you can call [getLastError](#getlasterror) to check if it was successfull.
+All errors are thrown as RsExceptions which contain an error code and message.
 
 ```c++
-dio->setOutputMode(rs::OutputMode::Sink);
-if (dio->getLastError())
-{
-    std::cerr << "Failed to set output mode: " << dio->getLastErrorString() << std::endl;
-    exit(1);
+try {
+    dio->setOutputMode(rs::OutputMode::Sink);
+} catch (const rs::RsException &ex) {
+    // We don't care if this model doesn't support setting it.
+    if (ex.code() != rs::RsErrorCode::UnsupportedFunction) {
+        std::cerr << "Failed to set output mode: " << ex.what() << std::endl;
+    }
 }
 ```
-
-For more advanced error handling see the [docs](./errors.md).
 
 ## Public Types
 
@@ -75,9 +75,9 @@ enum class rs::PinDirection
 
 ## Public Functions
 
-### setXmlFile
+### init
 ```c++
-void RsDio::setXmlFile(const char *fileName)
+void RsDio::init(const char *configFile)
 ```
 
 Initializes the RsDio class with the appropriate hardware. Must be called before any other functions.
@@ -85,7 +85,7 @@ Initializes the RsDio class with the appropriate hardware. Must be called before
 ---
 
 ### Parameters
-fileName - This should be a path to the XML file specific to your model.
+configFile - This should be a path to the XML file specific to your model.
 
 <br>
 

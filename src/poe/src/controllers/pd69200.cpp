@@ -1,6 +1,6 @@
 #include "pd69200.h"
 
-#include <i801_smbus.h>
+#include <smbus.h>
 
 #include <fcntl.h>
 
@@ -199,7 +199,7 @@ Pd69200::Pd69200(uint16_t bus, uint8_t dev, uint16_t totalBudget)
     // we should be good.
     int count = 0;
     while (count++ < MSG_LEN) {
-        if (smbus_read(bus, dev) != 0) count = 0;
+        if (portio_smbus_read(bus, dev) != 0) count = 0;
     }
 
     m_devId = getDeviceId();
@@ -249,11 +249,6 @@ void Pd69200::setPortState(uint8_t port, rs::PoeState state)
             setPortEnabled(port, true);
             setPortForce(port, false);
             break;
-        case rs::PoeState::Error:
-            throw std::system_error(
-                std::make_error_code(std::errc::invalid_argument),
-                "Invalid PoE state"
-            );
     }
 }
 
@@ -338,7 +333,7 @@ msg_t Pd69200::sendMsgToController(msg_t &msg)
     }
 
     for (size_t i = 0; i < MSG_LEN; ++i) {
-        smbus_write(m_busAddr, m_devAddr, msg[i]);
+        portio_smbus_write(m_busAddr, m_devAddr, msg[i]);
     }
 
     // See table 1-2 from the PD692x0 serial communication protocol user guide.
@@ -348,7 +343,7 @@ msg_t Pd69200::sendMsgToController(msg_t &msg)
 
     msg_t response;
     for (size_t i = 0; i < MSG_LEN; ++i) {
-        response[i] = smbus_read(m_busAddr, m_devAddr);
+        response[i] = portio_smbus_read(m_busAddr, m_devAddr);
     }
 
     // As described above, we need to wait between command messages.

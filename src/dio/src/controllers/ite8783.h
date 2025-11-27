@@ -6,15 +6,15 @@
 class Ite8783 : public AbstractDioController
 {
 public:
-	Ite8783(bool debug=false);
+	Ite8783();
 	~Ite8783();
 	
-	void initPin(const PinConfig &config) override;
-	PinMode getPinMode(const PinConfig &config) override;
-	void setPinMode(const PinConfig &config, PinMode mode) override;
+	void initPin(const DioPinConfig &config) override;
+	rs::PinDirection getPinMode(const DioPinConfig &config) override;
+	void setPinMode(const DioPinConfig &config, rs::PinDirection mode) override;
 
-	bool getPinState(const PinConfig &config) override;
-	void setPinState(const PinConfig &config, bool state) override;
+	bool getPinState(const DioPinConfig &config) override;
+	void setPinState(const DioPinConfig &config, bool state) override;
 
 	void printRegs() override;
 

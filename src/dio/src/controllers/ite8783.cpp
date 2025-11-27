@@ -35,7 +35,7 @@ static const uint8_t kSimpleIoMax = 0xC4;
 static const uint8_t kOutputEnableBar = 0xC8;
 static const uint8_t kOutputEnableMax = 0xCD;
 
-Ite8783::Ite8783(bool debug) : AbstractDioController(), m_baseAddress(0)
+Ite8783::Ite8783() : AbstractDioController(), m_baseAddress(0)
 {
     enterSio();
 
@@ -44,20 +44,12 @@ Ite8783::Ite8783(bool debug) : AbstractDioController(), m_baseAddress(0)
 
         uint16_t chipId = getChipId();
 
-        if (debug)
-            std::cout << "Hardware Controller ID: 0x" << std::hex << (int)chipId
-                      << std::endl;
-
         if (chipId != 0x8783)
             throw std::system_error(
                 std::make_error_code(std::errc::no_such_device)
             );
 
         m_baseAddress = getBaseAddressRegister();
-
-        if (debug)
-            std::cout << "Found base address register of 0x" << std::hex
-                      << (int)m_baseAddress << std::endl;
     }
     catch (...) {
         exitSio();
@@ -67,7 +59,7 @@ Ite8783::Ite8783(bool debug) : AbstractDioController(), m_baseAddress(0)
 
 Ite8783::~Ite8783() { exitSio(); }
 
-void Ite8783::initPin(const PinConfig &config)
+void Ite8783::initPin(const DioPinConfig &config)
 {
     setSioLdn(kGpioLdn);
     uint8_t reg = kPolarityBar + config.offset;
@@ -83,31 +75,31 @@ void Ite8783::initPin(const PinConfig &config)
         );  // Set pin as "Simple I/O" instead of "Alternate function"
 
     if (config.supportsInput)
-        setPinMode(config, ModeInput);
+        setPinMode(config, rs::PinDirection::Input);
     else
-        setPinMode(config, ModeOutput);
+        setPinMode(config, rs::PinDirection::Output);
 }
 
-PinMode Ite8783::getPinMode(const PinConfig &config)
+rs::PinDirection Ite8783::getPinMode(const DioPinConfig &config)
 {
     setSioLdn(kGpioLdn);
     uint8_t reg = kOutputEnableBar + config.offset;
     uint8_t data = readSioRegister(reg);
     if ((data & config.bitmask) == config.bitmask)
-        return ModeOutput;
+        return rs::PinDirection::Output;
     else
-        return ModeInput;
+        return rs::PinDirection::Input;
 }
 
-void Ite8783::setPinMode(const PinConfig &config, PinMode mode)
+void Ite8783::setPinMode(const DioPinConfig &config, rs::PinDirection mode)
 {
-    if (mode == ModeInput && !config.supportsInput)
+    if (mode == rs::PinDirection::Input && !config.supportsInput)
         throw std::system_error(
             std::make_error_code(std::errc::function_not_supported),
             "Input mode not supported on pin"
         );
 
-    if (mode == ModeOutput && !config.supportsOutput)
+    if (mode == rs::PinDirection::Output && !config.supportsOutput)
         throw std::system_error(
             std::make_error_code(std::errc::function_not_supported),
             "Output mode not supported on pin"
@@ -116,14 +108,14 @@ void Ite8783::setPinMode(const PinConfig &config, PinMode mode)
     setSioLdn(kGpioLdn);
     uint8_t reg = kOutputEnableBar + config.offset;
     uint8_t data = readSioRegister(reg);
-    if (mode == ModeInput)
+    if (mode == rs::PinDirection::Input)
         data &= ~config.bitmask;
-    else if (mode == ModeOutput)
+    else if (mode == rs::PinDirection::Output)
         data |= config.bitmask;
     writeSioRegister(reg, data);
 }
 
-bool Ite8783::getPinState(const PinConfig &config)
+bool Ite8783::getPinState(const DioPinConfig &config)
 {
     uint16_t reg = m_baseAddress + config.offset;
     if (portio_ioperm(reg, 1, 1))
@@ -144,7 +136,7 @@ bool Ite8783::getPinState(const PinConfig &config)
     return state;
 }
 
-void Ite8783::setPinState(const PinConfig &config, bool state)
+void Ite8783::setPinState(const DioPinConfig &config, bool state)
 {
     if (!config.supportsOutput)
         throw std::system_error(
@@ -152,7 +144,7 @@ void Ite8783::setPinState(const PinConfig &config, bool state)
             "Output mode not supported on pin"
         );
 
-    if (getPinMode(config) != ModeOutput)
+    if (getPinMode(config) != rs::PinDirection::Output)
         throw std::system_error(
             std::make_error_code(std::errc::invalid_argument),
             "Can't set state of pin in input mode"

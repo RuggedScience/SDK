@@ -3,20 +3,17 @@
 
 #include <string>
 
-#include "../include/rsdio.h"
+#include "rsdio.h"
 #include "controllers/abstractdiocontroller.h"
-
-typedef std::map<int, PinConfig> pinconfigmap_t;
-typedef std::map<int, pinconfigmap_t> dioconfigmap_t;
 
 class RsDioImpl : public rs::RsDio {
    public:
     RsDioImpl();
-    RsDioImpl(AbstractDioController *controller, dioconfigmap_t dioMap);
+    RsDioImpl(AbstractDioController *controller, DioControllerConfig config);
     ~RsDioImpl();
 
     void destroy() override;
-    void setXmlFile(const char *fileName, bool debug = false) override;
+    void init(const char *configFile) override;
 
     rs::diomap_t getPinList() const override;
 
@@ -32,14 +29,14 @@ class RsDioImpl : public rs::RsDio {
 
     std::map<int, bool> readAll(int dio) override;
 
-    std::error_code getLastError() const override;
-    std::string getLastErrorString() const override;
-
    private:
-    std::error_code m_lastError;
-    std::string m_lastErrorString;
-    dioconfigmap_t m_dioMap;
+    DioControllerConfig m_config;
     AbstractDioController *mp_controller;
+
+    void ensureInitialized() const;
+    const DioConnectorConfig & getConnectorConfig(int dio) const;
+    const DioPinConfig & getPinConfig(int dio, int pin) const;
+    const DioPinConfig & getPinConfig(const DioConnectorConfig &dio, int pin) const;
 };
 
 #endif  // RSDIOIMPL_H

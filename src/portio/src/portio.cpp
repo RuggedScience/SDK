@@ -1,4 +1,5 @@
 #include "../include/portio.h"
+#include "i801_smbus.h"
 #include <stdexcept>
 #include <cstdio>
 
@@ -65,7 +66,7 @@ int portio_ioperm(unsigned long from, unsigned long num, int turn_on) {
 #include <system_error>  
 #include <fstream>
 #include <string>
-#include "../include/io_defs.h"
+#include "io_defs.h"
 
 
 static int g_io_fd = -1;
@@ -183,3 +184,4 @@ void portio_outb(uint8_t value, uint16_t port) {
 #else
 #error "Unsupported Platform"
 #endif
+

@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-// Initialize the driver/proxy (Optional: lazy initialization is used by default)
+// Initialize the driver/proxy (Optional: lazy initialization is used by
+// default)
 void portio_init();
 
 // Close handles/file descriptors (Optional: OS cleans up on exit)
@@ -18,4 +19,6 @@ void portio_outb(uint8_t value, uint16_t port);
 // - On Legacy Linux: Calls the real ioperm() (Requires Root)
 int portio_ioperm(unsigned long from, unsigned long num, int turn_on);
 
-#endif // PORTIO_H
+
+
+#endif  // PORTIO_H

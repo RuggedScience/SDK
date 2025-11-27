@@ -24,6 +24,7 @@ Homepage = "https://github.com/ruggedscience/sdk"
 [tool.scikit-build]
 # Where to look for the CMakeLists.txt
 cmake.source-dir = "."
+build-dir = "build"
 
 # Pass variables to CMake
 cmake.define.BUILD_PYTHON_BINDINGS = "ON"

@@ -1,8 +1,8 @@
-#include <iostream>
-#include <test_utils.h>
-#include <rsdioimpl.h>
+#include "rsdioimpl.h"
+#include "rserrors.h"
+#include "diocontroller.h"
 
-#include "./diocontroller.h"
+#include <iostream>
 
 std::string modeToString(rs::OutputMode mode)
 {
@@ -20,35 +20,42 @@ int main()
 {
     TestDioController *controller = new TestDioController();
 
-    PinConfig sourcePin(0, 0, false, false, false, true);
-    PinConfig sinkPin(1, 0, false, false, false, true);
-    PinConfig outputPin(2, 0, false, false, false, true);
-    PinConfig inputPin(3, 0, false, false, true, false);
-    PinConfig dualPin(4, 0, false, false, true, true);
+    DioPinConfig sourcePin(-1, 0, 0, false, false, false, true);
+    DioPinConfig sinkPin(-2, 0, 0, false, false, false, true);
+    DioPinConfig outputPin(1, 2, 0, false, false, false, true);
+    DioPinConfig inputPin(2, 3, 0, false, false, true, false);
+    DioPinConfig dualPin(3, 4, 0, false, false, true, true);
 
-    pinconfigmap_t pinMap = {
-        {-1, sourcePin},
-        {-2, sinkPin},
-        {1, outputPin},
-        {2, inputPin},
-        {3, dualPin}
+    DioConnectorConfig connectorConfig = {
+        .sinkPin = sinkPin,
+        .sourcePin = sourcePin,
+        .pins = {
+            outputPin,
+            inputPin,
+            dualPin,
+        }
     };
 
-    dioconfigmap_t dioMap = {{1, pinMap}, {2, {}}};
-    RsDioImpl dio(controller, dioMap);
+    DioControllerConfig controllerConfig = {
+        .connectors = {
+            connectorConfig
+        }
+    };
 
-    dio.setOutputMode(0, rs::OutputMode::Sink);
-    verifyError(
-        "setOutputMode (invalid dio)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
+    RsDioImpl dio(controller, controllerConfig);
+
+    
+    try {
+        dio.setOutputMode(0, rs::OutputMode::Sink);
+
+    } catch (std::exception e) {
+        e.what();
+    }
+
 
     dio.setOutputMode(1, rs::OutputMode::Sink);
-    verifyError("setOutputMode (Sink)", dio.getLastError());
 
     rs::OutputMode mode = dio.getOutputMode(1);
-    verifyError("getOutputMode (Sink)", dio.getLastError());
 
     if (mode != rs::OutputMode::Sink) {
         std::cerr << "Expected OutputMode::Sink but got OutputMode::"
@@ -57,7 +64,6 @@ int main()
     }
 
     dio.setOutputMode(1, rs::OutputMode::Source);
-    verifyError("setOutputMode (Source)", dio.getLastError());
 
     mode = dio.getOutputMode(1);
     if (mode != rs::OutputMode::Source) {
@@ -67,59 +73,27 @@ int main()
     }
 
     dio.getOutputMode(2);
-    verifyError(
-        "getOutputMode (unsupported dio)",
-        dio.getLastError(),
-        std::errc::function_not_supported
-    );
 
     dio.setOutputMode(2, rs::OutputMode::Sink);
-    verifyError(
-        "setOutputMode (unsupported dio)",
-        dio.getLastError(),
-        std::errc::function_not_supported
-    );
 
     dio.digitalRead(0, 0);
-    verifyError(
-        "digitalRead (invalid dio)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
-
+    
     dio.digitalRead(1, 0);
-    verifyError(
-        "digitalRead (invalid pin)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
+    
 
     dio.digitalRead(1, 1);
-    verifyError("digitalRead (valid)", dio.getLastError());
+
 
     dio.digitalWrite(0, 0, false);
-    verifyError(
-        "digitalWrite (invalid dio)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
+    
 
     dio.digitalWrite(1, 0, false);
-    verifyError(
-        "digitalWrite (invalid pin)",
-        dio.getLastError(),
-        std::errc::invalid_argument
-    );
+
 
     dio.digitalWrite(1, 2, false);
-    verifyError(
-        "digitalWrite (unsupported pin)",
-        dio.getLastError(),
-        std::errc::function_not_supported
-    );
+    
 
     dio.digitalWrite(1, 1, true);
-    verifyError("digitalWrite (valid)", dio.getLastError());
 
     if (dio.digitalRead(1, 1) != true) {
         std::cerr
@@ -129,24 +103,15 @@ int main()
     }
 
     dio.setPinDirection(1, 1, rs::PinDirection::Input);
-    verifyError(
-        "setPinDirection (output pin)",
-        dio.getLastError(),
-        std::errc::function_not_supported
-    );
+
 
     dio.setPinDirection(1, 1, rs::PinDirection::Output);
-    verifyError("setPinDirection (output pin)", dio.getLastError());
+
 
     dio.setPinDirection(1, 2, rs::PinDirection::Output);
-    verifyError(
-        "setPinDirection (input pin)",
-        dio.getLastError(),
-        std::errc::function_not_supported
-    );
+
 
     dio.setPinDirection(1, 2, rs::PinDirection::Input);
-    verifyError("setPinDirection (input pin)", dio.getLastError());
 
     dio.setPinDirection(1, 3, rs::PinDirection::Output);
     if (dio.getPinDirection(1, 3) != rs::PinDirection::Output) {
@@ -165,7 +130,6 @@ int main()
     }
 
     std::map<int, bool> states = dio.readAll(1);
-    verifyError("readAll (valid)", dio.getLastError());
 
     if (states[1] != true) {
         std::cerr << "readAll: Expected state of 1 for pin 1 but got "

@@ -1,9 +1,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <rserrors.h>
 
 #include "pyrsdio.h"
 #include "pyrspoe.h"
+#include "rserrors.h"
 
 namespace py = pybind11;
 
@@ -11,6 +11,17 @@ PYBIND11_MODULE(rssdk, module)
 {
     module.doc() =
         "Rugged Science SDK for monitoring and controlling DIO and PoE";
+
+    py::enum_<rs::RsErrorCode>(module, "RsErrorCode")
+        .value("NotInitialized", rs::RsErrorCode::NotInitialized)
+        .value("FileNotFound", rs::RsErrorCode::FileNotFound)
+        .value("XmlParseError", rs::RsErrorCode::ConfigParseError)
+        .value("HardwareError", rs::RsErrorCode::HardwareError)
+        .value("PermissionError", rs::RsErrorCode::PermissionError)
+        .value("UnsupportedFunction", rs::RsErrorCode::UnsupportedFunction)
+        .value("InvalidParameter", rs::RsErrorCode::InvalidParameter)
+        .value("UnknownError", rs::RsErrorCode::UnknownError)
+        .export_values();
 
     py::enum_<rs::OutputMode>(module, "OutputMode")
         .value("Source", rs::OutputMode::Source)
@@ -29,10 +40,10 @@ PYBIND11_MODULE(rssdk, module)
     py::class_<PyRsDio>(module, "RsDio")
         .def(py::init<>())
         .def(
-            "setXmlFile",
-            &PyRsDio::setXmlFile,
-            "Set hardware XML file",
-            py::arg("fileName")
+            "init",
+            &PyRsDio::init,
+            "Initialize the hardware with the given config file.",
+            py::arg("configFile")
         )
         .def(
             "canSetOutputMode",
@@ -88,11 +99,6 @@ PYBIND11_MODULE(rssdk, module)
             "getPinList",
             &PyRsDio::getPinList,
             "Get the list of DIO pins as a map"
-        )
-        .def(
-            "getLastErrorString",
-            &PyRsDio::getLastErrorString,
-            "Get the message for the last error"
         );
 
     py::enum_<rs::PoeState>(module, "PoeState")
@@ -103,10 +109,10 @@ PYBIND11_MODULE(rssdk, module)
     py::class_<PyRsPoe>(module, "RsPoe")
         .def(py::init<>())
         .def(
-            "setXmlFile",
-            &PyRsPoe::setXmlFile,
-            "Set hardware XML file",
-            py::arg("fileName")
+            "init",
+            &PyRsPoe::init,
+            "Initialize the hardware with the given config file.",
+            py::arg("configFile")
         )
         .def(
             "getPortList",
@@ -164,16 +170,17 @@ PYBIND11_MODULE(rssdk, module)
         try {
             if (p) std::rethrow_exception(p);
         }
-        catch (const std::system_error &e) {
-            const std::error_code &ec = e.code();
-            if (ec == RsErrorCondition::PermissionError)
-                PyErr_SetString(PyExc_PermissionError, e.what());
-            else if (ec == RsErrorCondition::UnsupportedFunction)
-                PyErr_SetString(PyExc_NotImplementedError, e.what());
-            else if (ec == std::make_error_code(std::errc::invalid_argument))
-                throw std::invalid_argument(e.what());
-            else
-                throw e;
+        catch (const rs::RsException& ex) {
+            switch (ex.code()) {
+                case rs::RsErrorCode::PermissionError:
+                    py::set_error(PyExc_PermissionError, ex.what());
+                    break;
+                case rs::RsErrorCode::InvalidParameter:
+                    py::set_error(PyExc_ValueError, ex.what());
+                    break;
+                default:
+                    throw ex;
+            }
         }
     });
 }

@@ -1,4 +1,5 @@
 #include <rsdio.h>
+#include <rserrors.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -101,8 +102,7 @@ static void showUsage()
         << "-h, --human-readable \toutput data in a human readable format\n"
         << "\n"
         << "--help \t\t\tdisplay this help text and exit\n"
-        << "--version \t\tdisplay library version information\n"
-        << "--debug \t\tprint debug information\n";
+        << "--version \t\tdisplay library version information\n";
 }
 
 int main(int argc, char* argv[])
@@ -110,7 +110,6 @@ int main(int argc, char* argv[])
     // Create a list of args without optional switches
     // Allows for switches to be position independent
     bool human = false;
-    bool debug = false;
     int dio = 1, pin = -1;
     std::vector<std::string> argList;
     std::vector<std::string> ignoredArgs;
@@ -160,8 +159,6 @@ int main(int argc, char* argv[])
         }
         else if (arg == "-h" || arg == "--human-readable")
             human = true;
-        else if (arg == "--debug")
-            debug = true;
         else if (arg.find("-") == 0)
             ignoredArgs.emplace_back(arg);
         else
@@ -195,9 +192,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    rsdio->setXmlFile(argList[0].data(), debug);
-    if (rsdio->getLastError()) {
-        std::cerr << rsdio->getLastErrorString() << std::endl;
+    try {
+        rsdio->init(argList[0].data());
+    } catch (const rs::RsException &ex) {
+        std::cerr << ex.what() << std::endl;
         return 1;
     }
 
@@ -223,8 +221,6 @@ int main(int argc, char* argv[])
             else {
                 bool state = stringToState(val);
                 rsdio->digitalWrite(dio, pin, state);
-                if (rsdio->getLastError())
-                    errorString = rsdio->getLastErrorString();
             }
         }
         else if (cmd == "s" || cmd == "state") {
@@ -234,9 +230,7 @@ int main(int argc, char* argv[])
             }
             else {
                 bool state = rsdio->digitalRead(dio, pin);
-                if (rsdio->getLastError())
-                    errorString = rsdio->getLastErrorString();
-                else if (human)
+                if (human)
                     printf("%s\n", stateToString(state));
                 else
                     printf("%i", state);
@@ -250,8 +244,6 @@ int main(int argc, char* argv[])
             else {
                 rs::PinDirection dir = stringToDirection(val);
                 rsdio->setPinDirection(dio, pin, dir);
-                if (rsdio->getLastError())
-                    errorString = rsdio->getLastErrorString();
             }
         }
         else if (cmd == "d" || cmd == "direction") {
@@ -261,9 +253,7 @@ int main(int argc, char* argv[])
             }
             else {
                 rs::PinDirection dir = rsdio->getPinDirection(dio, pin);
-                if (rsdio->getLastError())
-                    errorString = rsdio->getLastErrorString();
-                else if (human)
+                if (human)
                     printf("%s\n", directionToString(dir));
                 else
                     printf("%i", static_cast<int>(dir));
@@ -272,14 +262,10 @@ int main(int argc, char* argv[])
         else if (cmd == "m=" || cmd == "mode=") {
             rs::OutputMode mode = stringToMode(val);
             rsdio->setOutputMode(dio, mode);
-            if (rsdio->getLastError())
-                errorString = rsdio->getLastErrorString();
         }
         else if (cmd == "m" || cmd == "mode") {
             rs::OutputMode mode = rsdio->getOutputMode(dio);
-            if (rsdio->getLastError())
-                errorString = rsdio->getLastErrorString();
-            else if (human)
+            if (human)
                 printf("%s\n", modeToString(mode));
             else if (mode == rs::OutputMode::Source)
                 printf("0");
@@ -288,6 +274,12 @@ int main(int argc, char* argv[])
         }
         else {
             errorString = "Invalid command";
+            userError = true;
+        }
+    }
+    catch (rs::RsException &ex) {
+        errorString = ex.what();
+        if (ex.code() == rs::RsErrorCode::InvalidParameter) {
             userError = true;
         }
     }

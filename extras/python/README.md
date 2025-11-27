@@ -11,7 +11,7 @@ from rssdk import RsDio, OutputMode
 
 dio = RsDio()
 try:
-    dio.setXmlFile("ecs9000.xml")
+    dio.init("ecs9000.xml")
 except Exception as e:
     print(e)
     exit(1)
@@ -29,7 +29,7 @@ from rssdk import RsPoe, PoeState
 
 poe = RsPoe()
 try:
-    poe.setXmlFile("ecs9000.xml")
+    poe.init("ecs9000.xml")
 except Exception as e:
     print(e)
     exit(1)

@@ -1,12 +1,12 @@
-#include <map>
+#include "controllers/abstractdiocontroller.h"
 
-#include "../../dio/src/controllers/abstractdiocontroller.h"
+#include <map>
 
 struct PinStatus
 {
     bool state;
-    PinMode mode;
-    PinConfig config;
+    rs::PinDirection mode;
+    DioPinConfig config;
 };
 
 class TestDioController : public AbstractDioController
@@ -14,36 +14,36 @@ class TestDioController : public AbstractDioController
 public:
     TestDioController() {}
 
-    void initPin(const PinConfig &config) override final
+    void initPin(const DioPinConfig &config) override final
     {
         uint16_t id = idFromConfig(config);
         PinStatus status;
         status.state = 0;
         status.config = config;
         if (config.supportsInput)
-            status.mode = PinMode::ModeInput;
+            status.mode = rs::PinDirection::Input;
         else
-            status.mode = PinMode::ModeOutput;
+            status.mode = rs::PinDirection::Output;
         
         m_pins[id] = status;
     }
 
-    PinMode getPinMode(const PinConfig &config) override final
+    rs::PinDirection getPinMode(const DioPinConfig &config) override final
     {
         return getOrThrow(config).mode;
     }
 
-    void setPinMode(const PinConfig &config, PinMode mode) override final
+    void setPinMode(const DioPinConfig &config, rs::PinDirection mode) override final
     {
         getOrThrow(config).mode = mode;
     }
 
-    bool getPinState(const PinConfig &config) override final
+    bool getPinState(const DioPinConfig &config) override final
     {
         return getOrThrow(config).state;
     }
 
-    void setPinState(const PinConfig &config, bool state) override final
+    void setPinState(const DioPinConfig &config, bool state) override final
     {
         getOrThrow(config).state = state;
     }
@@ -51,12 +51,12 @@ public:
     void printRegs() override final {}
 
 private:
-    uint16_t idFromConfig(const PinConfig &config) const
+    uint16_t idFromConfig(const DioPinConfig &config) const
     {
         return config.bitmask << 8 | config.offset;
     }
 
-    PinStatus &getOrThrow(const PinConfig &config)
+    PinStatus &getOrThrow(const DioPinConfig &config)
     {
         uint16_t id = idFromConfig(config);
         auto it = m_pins.find(id);

@@ -1,3 +1,4 @@
+#include <rserrors.h>
 #include <rspoe.h>
 
 #include <algorithm>
@@ -20,7 +21,7 @@ static rs::PoeState stringToState(std::string str)
     else if (str == "AUTO")
         return rs::PoeState::Auto;
 
-    return rs::PoeState::Error;
+    throw std::invalid_argument("Invalid state");
 }
 
 static const char* stateToString(rs::PoeState state)
@@ -116,9 +117,11 @@ int main(int argc, char* argv[])
         std::cerr << "Failed to create instance of RsPoe" << std::endl;
     }
 
-    rspoe->setXmlFile(argList[0].data());
-    if (rspoe->getLastError()) {
-        std::cerr << rspoe->getLastErrorString() << std::endl;
+    try {
+        rspoe->init(argList[0].data());
+    }
+    catch (const rs::RsException& ex) {
+        std::cerr << ex.what() << std::endl;
         return 1;
     }
 
@@ -132,31 +135,27 @@ int main(int argc, char* argv[])
     }
 
     // If the command is "state=" we need to break it up into command / value.
-    rs::PoeState state = rs::PoeState::Error;
+    rs::PoeState state;
     std::string& cmd = argList[1];
     size_t index = cmd.find("=");
     if (index != cmd.npos) {
         std::string val = cmd.substr(index + 1);
         cmd = cmd.substr(0, cmd.size() - val.size());
-        state = stringToState(val);
 
-        // stringToState returs "StateError" if it couldn't convert it.
-        // Let's check if they used a number instead of string.
-        if (state == rs::PoeState::Error) {
+        try {
+            state = stringToState(val);
+        }
+        catch (std::invalid_argument) {
             try {
                 int s = std::stoi(val);
-                if (s >= 0 && s < (int)rs::PoeState::Error)
+                if (s >= 0 && s < (int)rs::PoeState::Auto)
                     state = (rs::PoeState)s;
             }
             catch (...) {
+                std::cerr << "Invalid state" << std::endl;
+                showUsage();
+                return 1;
             }
-        }
-
-        // Couldn't convert the state from a string or an int... give up.
-        if (state == rs::PoeState::Error) {
-            std::cerr << "Invalid state supplied" << std::endl;
-            showUsage();
-            return 1;
         }
     }
 
@@ -171,99 +170,66 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (cmd == "s=" || cmd == "state=") {
-        rspoe->setPortState(port, state);
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
+    try {
+        if (cmd == "s=" || cmd == "state=") {
+            rspoe->setPortState(port, state);
+        }
+        else if (cmd == "s" || cmd == "state") {
+            state = rspoe->getPortState(port);
+            if (human)
+                printf("%s\n", stateToString(state));
+            else
+                printf("%d", (int)state);
+        }
+        else if (cmd == "v" || cmd == "voltage") {
+            float voltage = rspoe->getPortVoltage(port);
+            if (human)
+                printf("%fV\n", voltage);
+            else
+                printf("%f", voltage);
+        }
+        else if (cmd == "c" || cmd == "current") {
+            float current = rspoe->getPortCurrent(port);
+            if (human)
+                printf("%fA\n", current);
+            else
+                printf("%f", current);
+        }
+        else if (cmd == "w" || cmd == "wattage") {
+            float watts = rspoe->getPortPower(port);
+            if (human)
+                printf("%fW\n", watts);
+            else
+                printf("%f", watts);
+        }
+        else if (cmd == "b" || cmd == "budget-consumed") {
+            int consumed = rspoe->getBudgetConsumed();
+            if (human)
+                printf("%dW\n", consumed);
+            else
+                printf("%d", consumed);
+        }
+        else if (cmd == "a" || cmd == "budget-available") {
+            int available = rspoe->getBudgetAvailable();
+            if (human)
+                printf("%dW\n", available);
+            else
+                printf("%d", available);
+        }
+        else if (cmd == "t" || cmd == "budget-total") {
+            int total = rspoe->getBudgetTotal();
+            if (human)
+                printf("%dW\n", total);
+            else
+                printf("%d", total);
+        }
+        else {
+            showUsage();
             return 1;
         }
     }
-    else if (cmd == "s" || cmd == "state") {
-        state = rspoe->getPortState(port);
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%s\n", stateToString(state));
-        else
-            printf("%d", (int)state);
-    }
-    else if (cmd == "v" || cmd == "voltage") {
-        float voltage = rspoe->getPortVoltage(port);
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%fV\n", voltage);
-        else
-            printf("%f", voltage);
-    }
-    else if (cmd == "c" || cmd == "current") {
-        float current = rspoe->getPortCurrent(port);
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%fA\n", current);
-        else
-            printf("%f", current);
-    }
-    else if (cmd == "w" || cmd == "wattage") {
-        float watts = rspoe->getPortPower(port);
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%fW\n", watts);
-        else
-            printf("%f", watts);
-    }
-    else if (cmd == "b" || cmd == "budget-consumed") {
-        int consumed = rspoe->getBudgetConsumed();
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%dW\n", consumed);
-        else
-            printf("%d", consumed);
-    }
-    else if (cmd == "a" || cmd == "budget-available") {
-        int available = rspoe->getBudgetAvailable();
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%dW\n", available);
-        else
-            printf("%d", available);
-    }
-    else if (cmd == "t" || cmd == "budget-total") {
-        int total = rspoe->getBudgetTotal();
-        if (rspoe->getLastError()) {
-            std::cerr << rspoe->getLastErrorString() << std::endl;
-            return 1;
-        }
-
-        if (human)
-            printf("%dW\n", total);
-        else
-            printf("%d", total);
-    }
-    else {
-        showUsage();
+    catch (const rs::RsException& ex) {
+        std::cerr << ex.what() << std::endl;
         return 1;
     }
 

@@ -15,76 +15,53 @@ class PyRsPoe {
         );
     }
 
-    void setXmlFile(const char *fileName)
+    void init(const char *configFile)
     {
-        m_rspoe->setXmlFile(fileName);
-        this->throwLastError();
+        m_rspoe->init(configFile);
     }
 
     std::vector<int> getPortList() const { return m_rspoe->getPortList(); }
 
     rs::PoeState getPortState(int port)
     {
-        rs::PoeState ret = m_rspoe->getPortState(port);
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getPortState(port);
     }
 
     void setPortState(int port, rs::PoeState state)
     {
         m_rspoe->setPortState(port, state);
-        this->throwLastError();
     }
 
     float getPortVoltage(int port)
     {
-        float ret = m_rspoe->getPortVoltage(port);
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getPortVoltage(port);
     }
 
     float getPortCurrent(int port)
     {
-        float ret = m_rspoe->getPortCurrent(port);
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getPortCurrent(port);
     }
 
     float getPortPower(int port)
     {
-        float ret = m_rspoe->getPortPower(port);
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getPortPower(port);
     }
 
     int getBudgetConsumed()
     {
-        int ret = m_rspoe->getBudgetConsumed();
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getBudgetConsumed();
     }
 
     int getBudgetAvailable()
     {
-        int ret = m_rspoe->getBudgetAvailable();
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getBudgetAvailable();
     }
 
     int getBudgetTotal()
     {
-        int ret = m_rspoe->getBudgetTotal();
-        this->throwLastError();
-        return ret;
+        return m_rspoe->getBudgetTotal();
     }
 
    private:
     std::shared_ptr<rs::RsPoe> m_rspoe;
-
-    void throwLastError() const
-    {
-        if (std::error_code ec = m_rspoe->getLastError()) {
-            throw std::system_error(ec);
-        }
-    }
 };

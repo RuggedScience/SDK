@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.4...3.18)
+cmake_minimum_required(VERSION 3.15)
 
 # TODO: Find a way to make this automatic like setuptools_scm
-project(rssdk VERSION 3.20.0)
+project(rssdk VERSION 4.0.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -56,13 +56,18 @@ endif()
 
 message(STATUS "Building libraries with position independent code ${_pic}")
 
+add_subdirectory(src/core)
+add_subdirectory(src/portio)
+add_subdirectory(src/config)
+add_subdirectory(src/dio)
+add_subdirectory(src/poe)
 
-add_subdirectory(src)
+if (BUILD_UTILITIES)
+    add_subdirectory(src/dioctl)
+    add_subdirectory(src/poectl)
+endif()
 
-
-
-
-set_target_properties(rserrors rsdio rspoe PROPERTIES 
+set_target_properties(rsdio rspoe PROPERTIES 
     COMPILE_DEFINITIONS "RSSDK_VERSION_STRING=\"${PROJECT_VERSION}\""
     VERSION ${rssdk_VERSION}
     SOVERSION ${rssdk_VERSION_MAJOR}

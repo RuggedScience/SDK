@@ -1,6 +1,8 @@
 #ifndef RSDIO_H
 #define RSDIO_H
 
+#include "rsdio_types.h"
+
 #include <map>
 #include <string>
 #include <system_error>
@@ -28,16 +30,12 @@ struct PinInfo {
 typedef std::map<int, PinInfo> pinmap_t;
 typedef std::map<int, pinmap_t> diomap_t;
 
-enum class OutputMode { Source = -1, Sink = -2 };
-
-enum class PinDirection { Input, Output };
-
 class RsDio {
    public:
     virtual ~RsDio() {}
 
     virtual void destroy() = 0;
-    virtual void setXmlFile(const char *fileName, bool debug = false) = 0;
+    virtual void init(const char *configFile) = 0;
 
     virtual diomap_t getPinList() const = 0;
 
@@ -52,9 +50,6 @@ class RsDio {
     virtual PinDirection getPinDirection(int dio, int pin) = 0;
 
     virtual std::map<int, bool> readAll(int dio) = 0;
-
-    virtual std::error_code getLastError() const = 0;
-    virtual std::string getLastErrorString() const = 0;
 };
 
 extern "C" RSDIO_EXPORT RsDio *createRsDio();
