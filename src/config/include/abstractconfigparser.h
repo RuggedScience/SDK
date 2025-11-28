@@ -10,6 +10,8 @@
 
 class AbstractConfigParser {
    public:
+    virtual ~AbstractConfigParser() = default;
+    
     void parse(const char* fileName);
     virtual std::vector<DioControllerConfig> getDioControllerConfigs() const;
     virtual std::vector<PoeControllerConfig> getPoeControllerConfigs() const;
