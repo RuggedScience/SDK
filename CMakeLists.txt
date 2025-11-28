@@ -12,13 +12,12 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 include(GNUInstallDirs)
 
-option(BUILD_TESTS "Build all test" OFF)
-option(BUILD_UTILITIES "Build command line control utilities" OFF)
-option(INSTALL_UTILITIES "Installs command line control utilities" OFF)
+option(BUILD_TESTS "Build all test" ON)
+option(BUILD_UTILITIES "Build command line control utilities" ON)
+option(INSTALL_UTILITIES "Installs command line control utilities" ON)
 option(INSTALL_SDK "Install SDK files" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
-option(INSTALL_PYTHON_BINDINGS "Install Python bindings to current interpreter" OFF)
 
 if (NOT BUILD_UTILITIES AND INSTALL_UTILITIES)
     message(WARNING 
