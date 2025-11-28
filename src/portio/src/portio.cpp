@@ -111,7 +111,7 @@ static void ensureLoaded() {
                 "  Kernel Lockdown is ACTIVE (Secure Boot enabled).\n"
                 "  The 'io_proxy' kernel module is NOT loaded.\n"
                 "  Direct hardware access (ioperm) WILL FAIL.\n"
-                "  Please install the driver or sign the kernel module.\n"
+                "  Please install the io_proxy module or disable lockdown.\n"
                 "  See https://github.com/RuggedScience/io_proxy\n\n"
             );
         }
