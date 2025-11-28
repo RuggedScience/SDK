@@ -233,32 +233,6 @@ void Ite8786::setPinState(const DioPinConfig& config, bool state)
     portio_ioperm(reg, 1, 0);
 }
 
-void Ite8786::printRegs()
-{
-    setSioLdn(kGpioLdn);
-
-    std::cout << std::endl << "Polarity Registers" << std::endl;
-    for (int reg = kPolarityBar; reg <= kPolarityMax; ++reg) {
-        int gpio = (reg - kPolarityBar) + 1;
-        std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x"
-                  << (int)readSioRegister(reg) << std::endl;
-    }
-
-    std::cout << std::endl << "Simple I/O Registers" << std::endl;
-    for (int reg = kSimpleIoBar; reg <= kSimpleIoMax; ++reg) {
-        int gpio = (reg - kSimpleIoBar) + 1;
-        std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x"
-                  << (int)readSioRegister(reg) << std::endl;
-    }
-
-    std::cout << std::endl << "Pullup Enable Registers" << std::endl;
-    for (int reg = kPullUpBar; reg <= kPullupMax; ++reg) {
-        int gpio = (reg - kPullUpBar) + 1;
-        std::cout << std::hex << "GPIO " << gpio << " (0x" << reg << "):\t0x"
-                  << (int)readSioRegister(reg) << std::endl;
-    }
-}
-
 // Special series of data that must be written to a specific memory address to
 // enable access to the SuperIo's configuration registers.
 void Ite8786::enterSio()

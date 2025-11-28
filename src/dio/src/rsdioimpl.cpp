@@ -12,32 +12,29 @@
 #endif
 
 RsDioImpl::RsDioImpl()
-    : mp_controller(nullptr)
+    : m_controller()
 {
 }
 
 RsDioImpl::RsDioImpl(
-    AbstractDioController* controller,
+    std::unique_ptr<AbstractDioController> controller,
     DioControllerConfig config
 )
-    : mp_controller(controller), m_config(config)
+    : m_controller(std::move(controller)), m_config(config)
 {
     for (const auto& connector : config.connectors) {
         for (const auto& pin : connector.pins) {
-            mp_controller->initPin(pin);
+            m_controller->initPin(pin);
         }
     }
 }
-
-RsDioImpl::~RsDioImpl() { delete mp_controller; }
 
 void RsDioImpl::destroy() { delete this; }
 
 void RsDioImpl::init(const char* configFile)
 {
     m_config = DioControllerConfig();
-    if (mp_controller) delete mp_controller;
-    mp_controller = nullptr;
+    m_controller.reset();
 
     ConfigParser parser;
     parser.parse(configFile);
@@ -55,10 +52,10 @@ void RsDioImpl::init(const char* configFile)
 
     try {
         if (controller.controllerId == "ite8783") {
-            mp_controller = new Ite8783();
+            m_controller.reset(new Ite8783());
         }
         else if (controller.controllerId == "ite8786") {
-            mp_controller = new Ite8786(controller.registers);
+            m_controller.reset(new Ite8786(controller.registers));
         }
         else {
             throw rs::RsException(rs::RsErrorCode::ConfigParseError, "Invalid DIO controller ID");
@@ -74,7 +71,7 @@ void RsDioImpl::init(const char* configFile)
     const int modeSource = static_cast<int>(rs::OutputMode::Source);
     for (const DioConnectorConfig& connector : controller.connectors) {
         for (const DioPinConfig& pin : connector.pins) {
-            mp_controller->initPin(pin);
+            m_controller->initPin(pin);
             if (pin.id == modeSink) {
                 sinkPin = &pin;
             }
@@ -88,10 +85,10 @@ void RsDioImpl::init(const char* configFile)
         try {
             // If these two pins are in the same state the dio will not operate.
             // Let's fix that.
-            if (mp_controller->getPinState(*sinkPin) ==
-                mp_controller->getPinState(*sourcePin)) {
-                mp_controller->setPinState(*sinkPin, true);
-                mp_controller->setPinState(*sourcePin, false);
+            if (m_controller->getPinState(*sinkPin) ==
+                m_controller->getPinState(*sourcePin)) {
+                m_controller->setPinState(*sinkPin, true);
+                m_controller->setPinState(*sourcePin, false);
             }
         }
         catch (...) {
@@ -124,7 +121,7 @@ bool RsDioImpl::canSetOutputMode(int dio)
 {
     ensureInitialized();
 
-    DioConnectorConfig connectorConfig = getConnectorConfig(dio);
+    const DioConnectorConfig& connectorConfig = getConnectorConfig(dio);
     return connectorConfig.supportsOutputConfig();
 }
 
@@ -132,14 +129,14 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
 {
     ensureInitialized();
 
-    DioConnectorConfig connectorConfig = getConnectorConfig(dio);
+    const DioConnectorConfig &connectorConfig = getConnectorConfig(dio);
     if (!connectorConfig.supportsOutputConfig()) {
         throw rs::RsException(rs::RsErrorCode::UnsupportedFunction, "Setting output mode not supported");
     }
 
     try {
-        mp_controller->setPinState(connectorConfig.sinkPin, (mode == rs::OutputMode::Sink));
-        mp_controller->setPinState(connectorConfig.sourcePin, (mode == rs::OutputMode::Source));
+        m_controller->setPinState(connectorConfig.sinkPin, (mode == rs::OutputMode::Sink));
+        m_controller->setPinState(connectorConfig.sourcePin, (mode == rs::OutputMode::Source));
     }
     catch (...) {
         rs::rethrowAsRsException();
@@ -149,14 +146,14 @@ void RsDioImpl::setOutputMode(int dio, rs::OutputMode mode)
 rs::OutputMode RsDioImpl::getOutputMode(int dio)
 {
     ensureInitialized();
-    DioConnectorConfig connectorConfig = getConnectorConfig(dio);
+    const DioConnectorConfig &connectorConfig = getConnectorConfig(dio);
     if (!connectorConfig.supportsOutputConfig()) {
         throw rs::RsException(rs::RsErrorCode::UnsupportedFunction, "Setting output mode not supported");
     }
 
     try {
-        bool sink = mp_controller->getPinState(connectorConfig.sinkPin);
-        bool source = mp_controller->getPinState(connectorConfig.sourcePin);
+        bool sink = m_controller->getPinState(connectorConfig.sinkPin);
+        bool source = m_controller->getPinState(connectorConfig.sourcePin);
 
         if (sink && !source) {
             return rs::OutputMode::Sink;
@@ -179,10 +176,10 @@ rs::OutputMode RsDioImpl::getOutputMode(int dio)
 bool RsDioImpl::digitalRead(int dio, int pin)
 {
     ensureInitialized();
-    DioPinConfig pinConfig = getPinConfig(dio, pin);
+    const DioPinConfig& pinConfig = getPinConfig(dio, pin);
 
     try {
-        return mp_controller->getPinState(pinConfig);
+        return m_controller->getPinState(pinConfig);
     }
     catch (...) {
         rs::rethrowAsRsException();
@@ -193,13 +190,13 @@ void RsDioImpl::digitalWrite(int dio, int pin, bool state)
 {
     ensureInitialized();
 
-    DioPinConfig pinConfig = getPinConfig(dio, pin);
+    const DioPinConfig& pinConfig = getPinConfig(dio, pin);
     if (!pinConfig.supportsOutput) {
         throw rs::RsException(rs::RsErrorCode::UnsupportedFunction, "Pin does not support output mode");
     }
 
     try {
-        mp_controller->setPinState(pinConfig, state);
+        m_controller->setPinState(pinConfig, state);
     }
     catch (...) {
         rs::rethrowAsRsException();
@@ -209,7 +206,7 @@ void RsDioImpl::digitalWrite(int dio, int pin, bool state)
 void RsDioImpl::setPinDirection(int dio, int pin, rs::PinDirection dir)
 {
     ensureInitialized();
-    DioPinConfig pinConfig = getPinConfig(dio, pin);
+    const DioPinConfig& pinConfig = getPinConfig(dio, pin);
 
     if (getPinDirection(dio, pin) == dir) {
         return;
@@ -222,7 +219,7 @@ void RsDioImpl::setPinDirection(int dio, int pin, rs::PinDirection dir)
     }
 
     try {
-        mp_controller->setPinMode(pinConfig, dir);
+        m_controller->setPinMode(pinConfig, dir);
     }
     catch (...) {
         rs::rethrowAsRsException();
@@ -232,10 +229,10 @@ void RsDioImpl::setPinDirection(int dio, int pin, rs::PinDirection dir)
 rs::PinDirection RsDioImpl::getPinDirection(int dio, int pin)
 {
     ensureInitialized();
-    DioPinConfig pinConfig = getPinConfig(dio, pin);
+    const DioPinConfig& pinConfig = getPinConfig(dio, pin);
 
     try {
-        return mp_controller->getPinMode(pinConfig);
+        return m_controller->getPinMode(pinConfig);
     }
     catch (...) {
         rs::rethrowAsRsException();
@@ -251,7 +248,7 @@ std::map<int, bool> RsDioImpl::readAll(int dio)
 
     try {
         for (const auto& pinConfig : connectorConfig.pins) {
-            values[pinConfig.id] = mp_controller->getPinState(pinConfig);
+            values[pinConfig.id] = m_controller->getPinState(pinConfig);
         }
     }
     catch (...) {
@@ -263,8 +260,8 @@ std::map<int, bool> RsDioImpl::readAll(int dio)
 
 void RsDioImpl::ensureInitialized() const
 {
-    if (mp_controller == nullptr) {
-        throw rs::RsException(rs::RsErrorCode::NotInitialized, "XML file never set");
+    if (!m_controller) {
+        throw rs::RsException(rs::RsErrorCode::NotInitialized, "init never called");
     }
 }
 
@@ -280,7 +277,7 @@ const DioConnectorConfig & RsDioImpl::getConnectorConfig(int dio) const
 
 const DioPinConfig & RsDioImpl::getPinConfig(int dio, int pin) const
 {
-    DioConnectorConfig connectorConfig = getConnectorConfig(dio);
+    const DioConnectorConfig& connectorConfig = getConnectorConfig(dio);
     return getPinConfig(connectorConfig, pin);
 }
 

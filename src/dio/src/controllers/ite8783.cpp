@@ -167,8 +167,6 @@ void Ite8783::setPinState(const DioPinConfig &config, bool state)
     portio_ioperm(reg, 1, 0);
 }
 
-void Ite8783::printRegs() {}
-
 // Special series of data that must be written to a specific memory address to
 // enable access to the SuperIo's configuration registers.
 void Ite8783::enterSio()

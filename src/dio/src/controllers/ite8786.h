@@ -18,8 +18,6 @@ public:
 	bool getPinState(const DioPinConfig &config) override;
 	void setPinState(const DioPinConfig &config, bool state) override;
 
-	void printRegs() override;
-
 private:
 	uint8_t m_currentLdn;
 	uint16_t m_baseAddress;

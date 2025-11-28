@@ -2,6 +2,7 @@
 #define RSDIOIMPL_H
 
 #include <string>
+#include <memory>
 
 #include "rsdio.h"
 #include "controllers/abstractdiocontroller.h"
@@ -9,8 +10,7 @@
 class RsDioImpl : public rs::RsDio {
    public:
     RsDioImpl();
-    RsDioImpl(AbstractDioController *controller, DioControllerConfig config);
-    ~RsDioImpl();
+    RsDioImpl(std::unique_ptr<AbstractDioController> controller, DioControllerConfig config);
 
     void destroy() override;
     void init(const char *configFile) override;
@@ -31,7 +31,7 @@ class RsDioImpl : public rs::RsDio {
 
    private:
     DioControllerConfig m_config;
-    AbstractDioController *mp_controller;
+    std::unique_ptr<AbstractDioController> m_controller;
 
     void ensureInitialized() const;
     const DioConnectorConfig & getConnectorConfig(int dio) const;

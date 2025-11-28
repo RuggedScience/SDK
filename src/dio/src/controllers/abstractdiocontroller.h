@@ -24,8 +24,6 @@ public:
 
 	virtual bool getPinState(const DioPinConfig &config) = 0;
 	virtual void setPinState(const DioPinConfig &config, bool state) = 0;
-
-	virtual void printRegs() = 0;
 };
 
 #endif

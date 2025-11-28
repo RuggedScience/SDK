@@ -7,15 +7,14 @@
 
 #include <stdint.h>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 class RsPoeImpl : public rs::RsPoe {
    public:
     RsPoeImpl();
-    RsPoeImpl(AbstractPoeController *controller, PoeControllerConfig config);
-
-    ~RsPoeImpl();
+    RsPoeImpl(std::unique_ptr<AbstractPoeController> controller, PoeControllerConfig config);
 
     void destroy() override;
     void init(const char *configFile) override;
@@ -35,7 +34,7 @@ class RsPoeImpl : public rs::RsPoe {
 
    private:
     PoeControllerConfig m_config;
-    AbstractPoeController *mp_controller;
+    std::unique_ptr<AbstractPoeController> m_controller;
 
     void ensureInitialized() const;
     const PoePortConfig & getPortConfig(int port) const;
