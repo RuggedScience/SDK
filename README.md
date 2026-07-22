@@ -1,22 +1,56 @@
-# ![Rugged Science logo](https://www.ruggedscience.com/sites/default/files/RuggedScienceLogo.png)
+# ![Rugged Science logo](./docs/rugged-logo.png)
 
-The **Rugged Science SDK** is a set of cross platform libraries and utilities for controlling the hardware on Rugged Science embedded PCs. This SDK is not model dependent meaning it will function the same across all supported Rugged Science models. This is acheived by having individual XML files that contain hardware specific information. The correct file must be passed to the libraries and utilities for the libraries to know how to interact with the underlying hardware. 
+The **Rugged Science SDK** is a set of cross-platform libraries and utilities for controlling the hardware on Rugged Science embedded PCs. This SDK is not model dependent meaning it will function the same across all supported Rugged Science models. This is achieved by having hardware specific config files (XML) that have to be provided to the SDK. The correct file must be passed to the libraries and utilities for the libraries to know how to interact with the underlying hardware. 
 
-*Passing the incorrect XML file will result in undefined behaviour and may harm the PC!*
+> **WARNING:** The correct XML file must be passed to the libraries and utilities for them to know how to interact with the underlying hardware. **Passing the incorrect XML file will result in undefined behavior and may harm the PC!** If you are unsure of the correct file to use, contact your sales rep.
 
-**The latest prebuilt release can be found [HERE](https://github.com/ruggedscience/SDK/releases/latest). Be sure to install the [driver](https://ruggedsci-my.sharepoint.com/:u:/g/personal/tim_lassiter_ruggedscience_com/EdOIG7fpnWxEjXpaoet3vogByZhcZdLIcwn7wh1o2PN72g?e=3Jf1m2)!**  
-**Looking for a Python package? Check out the Python [documentation](/extras/python/README.md).**
+## Quickstart (Command Line Utilities)
+If you just want to control the DIO or PoE functions without writing any code, you can use the prebuilt command-line utilities. 
+
+### 1. Download
+Start by downloading the [Latest prebuilt release](https://github.com/ruggedscience/SDK/releases/latest). Look under the `Assets` dropdown for a zip file that starts with `rssdk` and download the appropriate file for your environment. 
+
+* Windows: `rssdk-windows-2019.zip`
+* Linux: `rssdk-ubuntu-20.04.zip`
+
+If you are running on Windows, you will also need to download and install the [driver](./driver/dio-driver_x64.zip). Once downloaded, extract the files and run the `install.exe` file as an administrator to install it.
+
+### Usage
+Extract the release files and navigate to the `bin` folder. In there you will find two utilities: `rsdioctl` and `rspoectl`. These utilities can be used to query and control the DIO pins and PoE ports respectively. For example, to read the state of pin 1 on an ECS-9000 you would use the following command:
+
+```bash
+rsdioctl.exe .\ecs9000.xml state --pin 1 -h
+```
+
+Command Breakdown:
+* `rsdioctl.exe`: The utility you are running.
+* `.\ecs9000.xml`: The hardware config file to use.
+* `state`: The command to perform (in this case, reading the current state).
+* `--pin 1`: The target pin you want to query.
+* `-h`: Formats the output to be human-readable ("high" or "low" instead of "1" or "0").
+
+Below is an example of setting the state of pin 11 on the same unit using the shorthand syntax.
+```bash
+rsdioctl.exe .\ecs9000.xml -p 11 s=high
+```
+
+To see a full list of available commands and options, use the `--help` flag.
+```bash
+rsdioctl.exe --help
+rspoectl.exe --help
+```
+
+# Configuration File
+In the above example we assumed there was an `ecs9000.xml` file in the `bin` folder along with the utilities. You will need to manually download the actual hardware config file for your unit and pass that to the utility. Look in the [XML](./xml/) directory for a config file that matches your model number and download that. If you are unsure which config file to use, reach out to your sales rep for guidance.
 
 ## API References
-* [DIO Library - librsdio](./librsdio.md)
-* [PoE Library - librspoe](./librspoe.md)
-* [Error Library - librserrors](./errors.md)
-* [DIO Utility - rsdioctl](./rsdioctl.md)
-* [PoE Utility - rspoectl](./rspoectl.md)
+* [DIO Library - librsdio](./docs/librsdio.md)
+* [PoE Library - librspoe](./docs/librspoe.md)
+* [Error Library - librserrors](./docs/errors.md)
 
 # Building
 
-## Prerequesites
+## Prerequisites
 The build process relies on the [CMake](https://cmake.org/) utility. This can be easily installed on most Linux distributions using `sudo apt install cmake` or `sudo yum install cmake`. For Windows, you can find the latest downloads [HERE](https://cmake.org/download/). Be sure to add the CMake directory to your PATH or use the full path when calling the cmake command. 
 
 ## Getting Started
@@ -28,7 +62,7 @@ The build process relies on the [CMake](https://cmake.org/) utility. This can be
     cd SDK
     ```
 
-2) Now all of the sources should be available to be built. It's best practice to create a seperate build directory to isolate the build files from the source files.
+2) Now all of the sources should be available to be built. It's best practice to create a separate build directory to isolate the build files from the source files.
     ```console
     mkdir build
     cd build
