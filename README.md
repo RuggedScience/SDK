@@ -8,12 +8,12 @@ The **Rugged Science SDK** is a set of cross-platform libraries and utilities fo
 If you just want to control the DIO or PoE functions without writing any code, you can use the prebuilt command-line utilities. 
 
 ### 1. Download
-Start by downloading the [Latest prebuilt release](https://github.com/ruggedscience/SDK/releases/latest). Look under the `Assets` dropdown for a zip file that starts with `rssdk` and download the appropriate file for your environment. 
+Start by downloading the [Latest prebuilt release](https://github.com/ruggedscience/SDK/releases/latest).
 
-* Windows: `rssdk-windows-2019.zip`
-* Linux: `rssdk-ubuntu-20.04.zip`
+* Windows: [rssdk-windows-2019.zip](https://github.com/ruggedscience/SDK/releases/latest/download/rssdk-windows-2019.zip)
+* Linux: [rssdk-ubuntu-20.04.zip](https://github.com/ruggedscience/SDK/releases/latest/download/rssdk-ubuntu-20.04.zip)
 
-If you are running on Windows, you will also need to download and install the [driver](./driver/dio-driver_x64.zip). Once downloaded, extract the files and run the `install.exe` file as an administrator to install it.
+If you are running on Windows, you will also need to download and install the [driver](./driver/dio-driver_x64.zip?raw=true). Once downloaded, extract the files and run the `install.exe` file as an administrator to install it.
 
 ### Usage
 Extract the release files and navigate to the `bin` folder. In there you will find two utilities: `rsdioctl` and `rspoectl`. These utilities can be used to query and control the DIO pins and PoE ports respectively. For example, to read the state of pin 1 on an ECS-9000 you would use the following command:
